@@ -1,0 +1,18 @@
+<section class="section approach">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container">
+    <app-section-heading eyebrow="Methodology" title="How I Think About AI Engineering"></app-section-heading>
+
+    <ol class="approach-list">
+      <li *ngFor="let step of data.approach; let last = last" class="approach-item" appReveal [revealDelay]="60">
+        <span class="approach-index">{{ step.index }}</span>
+        <div class="approach-body">
+          <h3 class="approach-title">{{ step.title }}</h3>
+          <p class="approach-description">{{ step.description }}</p>
+        </div>
+        <span *ngIf="!last" class="approach-connector" aria-hidden="true"></span>
+      </li>
+    </ol>
+  </div>
+</section>

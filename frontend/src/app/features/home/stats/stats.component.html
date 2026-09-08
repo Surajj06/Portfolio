@@ -1,0 +1,10 @@
+<section class="stats" aria-label="Career highlights, by the numbers">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container stats-grid">
+    <div class="stat" *ngFor="let stat of stats; let i = index" appReveal [revealDelay]="i * 80">
+      <p class="stat-value" [class.stat-value-pop]="i % 2 === 1" [appCountUp]="stat.value">{{ stat.value }}</p>
+      <p class="stat-label">{{ stat.label }}</p>
+    </div>
+  </div>
+</section>

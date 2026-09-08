@@ -1,0 +1,39 @@
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-identity">
+      <p class="footer-name">{{ data.profile.name }}</p>
+      <p class="footer-role">{{ data.profile.role }}</p>
+    </div>
+
+    <div class="footer-links">
+      <a [href]="data.profile.github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <app-icon name="github" [size]="18"></app-icon>
+        GitHub
+      </a>
+      <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <app-icon name="linkedin" [size]="18"></app-icon>
+        LinkedIn
+      </a>
+      <a *ngIf="data.profile.instagram" [href]="data.profile.instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <app-icon name="instagram" [size]="18"></app-icon>
+        Instagram
+      </a>
+      <a [href]="data.profile.resumePath" download aria-label="Resume">
+        <app-icon name="file-text" [size]="18"></app-icon>
+        Resume
+      </a>
+      <a [href]="'mailto:' + data.profile.email" aria-label="Email">
+        <app-icon name="mail" [size]="18"></app-icon>
+        Email
+      </a>
+      <a routerLink="/" fragment="contact" aria-label="Contact">
+        <app-icon name="arrow-right" [size]="18"></app-icon>
+        Contact
+      </a>
+    </div>
+
+    <div class="footer-meta">
+      <p>&copy; {{ year }} {{ data.profile.name }}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,48 @@
+<header class="navbar" [class.navbar-scrolled]="isScrolled">
+  <div class="container navbar-inner">
+    <a routerLink="/" fragment="top" class="navbar-sys" (click)="closeMenu()">
+      <span class="navbar-sys-dot" aria-hidden="true"></span>
+      <span class="navbar-sys-label">SYS: ONLINE //</span>
+      <span class="navbar-sys-name">{{ firstName }}<span class="navbar-brand-accent">{{ ' ' + restOfName }}</span></span>
+    </a>
+
+    <nav class="navbar-links" [class.navbar-links-open]="isMenuOpen">
+      <a
+        *ngFor="let link of links; let i = index"
+        routerLink="/"
+        [fragment]="link.fragment"
+        (click)="closeMenu()"
+        class="navbar-link"
+        [class.navbar-link-active]="activeFragment === link.fragment"
+      ><span class="navbar-link-index">{{ (i + 1).toString().padStart(2, '0') }} //</span> {{ link.label }}</a>
+
+      <span class="navbar-status">
+        <span class="navbar-status-dot" aria-hidden="true"></span>
+        {{ data.profile.status }}
+      </span>
+    </nav>
+
+    <div class="navbar-actions">
+      <button
+        type="button"
+        class="navbar-theme-toggle"
+        (click)="theme.toggle()"
+        aria-label="Toggle light / dark theme"
+      >
+        <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="16"></app-icon>
+      </button>
+
+      <a routerLink="/" fragment="contact" class="navbar-cta" (click)="closeMenu()">CONTACT</a>
+
+      <button
+        type="button"
+        class="navbar-toggle"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="isMenuOpen"
+        aria-label="Toggle navigation menu"
+      >
+        <app-icon [name]="isMenuOpen ? 'close' : 'menu'" [size]="22"></app-icon>
+      </button>
+    </div>
+  </div>
+</header>

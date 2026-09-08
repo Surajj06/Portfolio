@@ -1,0 +1,15 @@
+<section id="about" class="section about">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container about-grid">
+    <app-section-heading eyebrow="Who I Am" title="About Me"></app-section-heading>
+
+    <div class="about-body" appReveal [revealDelay]="80">
+      <p class="about-summary">{{ data.about.summary }}</p>
+
+      <ul class="about-focus">
+        <li *ngFor="let area of data.about.focusAreas">{{ area }}</li>
+      </ul>
+    </div>
+  </div>
+</section>

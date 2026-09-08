@@ -1,0 +1,5 @@
+<div class="heading" [class.heading-center]="align === 'center'" appReveal>
+  <span *ngIf="eyebrow" class="heading-eyebrow">{{ eyebrow }}</span>
+  <h2 class="heading-title">{{ title }}</h2>
+  <p *ngIf="lede" class="heading-lede">{{ lede }}</p>
+</div>

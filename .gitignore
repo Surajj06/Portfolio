@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Angular build output / cache
+frontend/dist/
+frontend/.angular/
+
+# .NET build output
+backend/PortfolioApi/bin/
+backend/PortfolioApi/obj/
+*.user
+.vs/
+
+# Env / local secrets — never commit real values
+.env
+.env.local
+appsettings.*.local.json
+
+# Editor / tool artifacts
+.serena/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

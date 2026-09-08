@@ -1,0 +1,71 @@
+<ng-container *ngIf="project; else notFound">
+  <header class="case-header section">
+    <div class="grid-backdrop" aria-hidden="true"></div>
+    <div class="container">
+      <a routerLink="/" fragment="projects" class="case-back">
+        <app-icon name="arrow-right" [size]="15" class="case-back-icon"></app-icon>
+        <span>Back to projects</span>
+      </a>
+
+      <p class="case-index fade-up-in">{{ project.index }}</p>
+      <h1 class="case-title fade-up-in" style="--fade-delay: 60ms">{{ project.title }}</h1>
+      <p class="case-description fade-up-in" style="--fade-delay: 120ms">{{ project.description }}</p>
+
+      <div class="case-tags fade-up-in" style="--fade-delay: 180ms">
+        <span *ngFor="let concept of project.concepts">{{ concept }}</span>
+      </div>
+
+      <div class="case-links fade-up-in" style="--fade-delay: 220ms">
+        <a *ngIf="project.githubUrl" [href]="project.githubUrl" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <app-icon name="github" [size]="16"></app-icon> GitHub
+        </a>
+        <a *ngIf="project.liveUrl" [href]="project.liveUrl" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <app-icon name="external" [size]="16"></app-icon> Live Demo
+        </a>
+        <span *ngIf="!project.githubUrl && !project.liveUrl" class="case-links-placeholder">
+          Links coming soon
+        </span>
+      </div>
+
+      <img
+        *ngIf="project.screenshotUrl"
+        [src]="project.screenshotUrl"
+        [alt]="project.title + ' screenshot'"
+        class="case-screenshot"
+      />
+    </div>
+  </header>
+
+  <section class="section case-body">
+    <div class="container">
+      <div class="case-stack" *ngIf="project.techStack.length" appReveal>
+        <h2 class="case-subheading">Tech stack</h2>
+        <div class="case-stack-chips">
+          <span *ngFor="let tech of project.techStack">{{ tech }}</span>
+        </div>
+      </div>
+
+      <div class="case-workflow" *ngIf="project.workflowSteps.length" appReveal>
+        <h2 class="case-subheading">How it works</h2>
+        <app-workflow-diagram [steps]="project.workflowSteps"></app-workflow-diagram>
+      </div>
+
+      <ol class="case-sections">
+        <li *ngFor="let row of rows" class="case-section" appReveal>
+          <span class="case-section-index">{{ row.index }}</span>
+          <div>
+            <h2 class="case-section-heading">{{ row.heading }}</h2>
+            <p class="case-section-body">{{ row.body }}</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #notFound>
+  <div class="section container case-missing">
+    <p>That project couldn't be found.</p>
+    <a routerLink="/" class="btn btn-secondary">Back to home</a>
+  </div>
+</ng-template>

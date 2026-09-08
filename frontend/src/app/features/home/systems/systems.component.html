@@ -1,0 +1,47 @@
+<section id="systems" class="section systems">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container">
+    <app-section-heading
+      eyebrow="Neural Orchestration"
+      title="The System, Rendered As What It Is"
+      lede="Not a flowchart — a network. Every request moves through layers of orchestration before it reaches a model and back."
+    ></app-section-heading>
+
+    <div class="systems-stage" appReveal>
+      @if (networkEnabled) {
+        @defer (on idle) {
+          <app-systems-network></app-systems-network>
+        }
+      }
+
+      <div class="systems-panel glass-panel">
+        <p class="systems-panel-title">AI PIPELINE // PRODUCTION</p>
+        <div class="systems-panel-grid">
+          <div class="systems-panel-stat" *ngFor="let stat of stats">
+            <span class="systems-panel-label">{{ stat.label }}</span>
+            <span class="systems-panel-value">{{ stat.value }}</span>
+            <span class="systems-panel-unit">{{ stat.unit }}</span>
+          </div>
+        </div>
+        <p class="systems-panel-hint">Interaction: drag to rotate</p>
+      </div>
+
+      <div class="systems-panel systems-live-panel glass-panel">
+        <p class="systems-panel-title">Live Orchestration</p>
+        <div class="systems-live-status">
+          <span>Network Status</span>
+          <span class="systems-live-running"><span class="systems-live-dot-status" aria-hidden="true"></span>Running</span>
+        </div>
+        <div class="systems-live-bar" aria-hidden="true"><span></span></div>
+        <div class="systems-live-layer" *ngFor="let layer of liveLayers">
+          <span>
+            <span class="systems-live-dot" [class.is-orange]="layer.orange" aria-hidden="true"></span>
+            {{ layer.name }}
+          </span>
+          <span class="systems-live-state">{{ layer.state }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

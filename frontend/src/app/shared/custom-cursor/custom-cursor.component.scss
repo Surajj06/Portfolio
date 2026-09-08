@@ -1,0 +1,120 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+  --glow-x: 50vw;
+  --glow-y: 50vh;
+  --cursor-opacity: 0;
+}
+
+.cursor-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 420px;
+  margin-left: -210px;
+  margin-top: -210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(86, 104, 255, 0.16), rgba(8, 120, 255, 0.06) 45%, transparent 72%);
+  opacity: var(--cursor-opacity);
+  transform: translate(var(--glow-x), var(--glow-y));
+  transition: opacity 0.4s ease;
+  will-change: transform;
+}
+
+.cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--accent-pop);
+  opacity: var(--cursor-opacity);
+  transform: translate(var(--cursor-x), var(--cursor-y));
+  transition: opacity 0.3s ease, transform 0.06s linear;
+  will-change: transform;
+}
+
+.cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid rgba(245, 246, 248, 0.55);
+  opacity: var(--cursor-opacity);
+  transform: translate(var(--cursor-x), var(--cursor-y)) scale(0.001);
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    margin 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+  will-change: transform;
+}
+
+.cursor-label {
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.18s ease 0.08s;
+}
+
+:host([data-state='interactive']) .cursor-ring {
+  transform: translate(var(--cursor-x), var(--cursor-y)) scale(1);
+  background: rgba(86, 104, 255, 0.1);
+}
+
+:host([data-state='project']) .cursor-ring,
+:host([data-state='link']) .cursor-ring,
+:host([data-state='drag']) .cursor-ring {
+  width: 88px;
+  height: 88px;
+  margin-left: -44px;
+  margin-top: -44px;
+  transform: translate(var(--cursor-x), var(--cursor-y)) scale(1);
+  background: rgba(23, 26, 32, 0.82);
+  border-color: var(--accent-pop);
+}
+
+:host([data-state='project']) .cursor-label,
+:host([data-state='link']) .cursor-label,
+:host([data-state='drag']) .cursor-label {
+  opacity: 1;
+}
+
+:host([data-state='interactive']) .cursor-dot,
+:host([data-state='project']) .cursor-dot,
+:host([data-state='link']) .cursor-dot,
+:host([data-state='drag']) .cursor-dot {
+  transform: translate(var(--cursor-x), var(--cursor-y)) scale(0);
+}
+
+// Text fields fall back to the native I-beam + blinking caret (see the
+// `cursor: text` exemption in styles.scss) — the dot/ring would otherwise
+// sit right on top of whatever's being typed and hide the real caret.
+:host([data-state='text']) .cursor-ring,
+:host([data-state='text']) .cursor-dot,
+:host([data-state='text']) .cursor-glow {
+  opacity: 0;
+}

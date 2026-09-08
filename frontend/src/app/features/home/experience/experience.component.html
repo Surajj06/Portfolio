@@ -1,0 +1,47 @@
+<section id="experience" class="section experience">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container">
+    <app-section-heading
+      eyebrow="Career"
+      title="Experience"
+      lede="A timeline of roles — durations and specifics are placeholders until confirmed."
+    ></app-section-heading>
+
+    <ol class="experience-timeline">
+      <li *ngFor="let entry of data.experience" class="experience-entry" appReveal>
+        <div class="experience-marker" aria-hidden="true"></div>
+
+        <div class="experience-card glass-panel">
+          <div class="experience-head">
+            <div>
+              <h3 class="experience-role">{{ entry.role }}</h3>
+              <p class="experience-company">{{ entry.company }}</p>
+            </div>
+            <span class="experience-duration">{{ entry.duration }}</span>
+          </div>
+
+          <p class="experience-description">{{ entry.description }}</p>
+
+          <div class="experience-block" *ngIf="entry.responsibilities.length">
+            <h4>Responsibilities</h4>
+            <ul>
+              <li *ngFor="let item of entry.responsibilities">{{ item }}</li>
+            </ul>
+          </div>
+
+          <div class="experience-block" *ngIf="entry.contributions.length">
+            <h4>Key contributions</h4>
+            <ul>
+              <li *ngFor="let item of entry.contributions">{{ item }}</li>
+            </ul>
+          </div>
+
+          <div class="experience-tech">
+            <span *ngFor="let tech of entry.technologies">{{ tech }}</span>
+          </div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,142 @@
+.case-header {
+  position: relative;
+  padding-top: 64px;
+}
+
+.case-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  transition: color 0.15s ease;
+
+  &:hover { color: var(--text-primary); }
+
+  &-icon { display: inline-flex; transform: rotate(180deg); }
+}
+
+.case-index {
+  font-family: var(--font-display);
+  color: var(--accent-violet);
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.case-title {
+  font-size: clamp(32px, 5vw, 52px);
+  max-width: 20ch;
+}
+
+.case-description {
+  margin-top: 20px;
+  color: var(--text-secondary);
+  font-size: 17px;
+  max-width: 68ch;
+  line-height: 1.7;
+}
+
+.case-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 28px;
+
+  span {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 13px;
+  }
+}
+
+.case-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+
+  &-placeholder {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    align-self: center;
+  }
+}
+
+.case-screenshot {
+  display: block;
+  width: 100%;
+  max-width: 920px;
+  margin-top: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.case-body {
+  border-top: 1px solid var(--border);
+}
+
+.case-subheading {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  margin-bottom: 16px;
+}
+
+.case-stack {
+  max-width: 780px;
+  margin-bottom: 44px;
+
+  &-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    span {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 13px;
+    }
+  }
+}
+
+.case-workflow {
+  max-width: 780px;
+  margin-bottom: 52px;
+}
+
+.case-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  max-width: 780px;
+}
+
+.case-section {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 20px;
+
+  &-index {
+    font-family: var(--font-display);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  &-heading { font-size: 19px; margin-bottom: 10px; }
+  &-body { color: var(--text-secondary); font-size: 15.5px; line-height: 1.75; }
+}
+
+.case-missing {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+@media (max-width: 600px) {
+  .case-section { grid-template-columns: 1fr; gap: 8px; }
+}

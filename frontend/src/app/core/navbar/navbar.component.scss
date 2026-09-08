@@ -1,0 +1,282 @@
+.navbar {
+  // `position: sticky` here silently breaks the instant any ancestor sets
+  // `overflow-x` (or `-y`) to anything but `visible` — which `html` needs,
+  // globally, to stop content overflowing horizontally on mobile (see
+  // styles.scss). `fixed` has no such dependency: it's always relative to
+  // the viewport regardless of ancestor overflow, so it can't silently stop
+  // sticking the way `sticky` just did. `main` gets a compensating
+  // `padding-top` in styles.scss since `fixed` removes this from the
+  // normal document flow entirely (`sticky` did not).
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  background: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(14px);
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &-scrolled {
+    border-bottom-color: var(--border-strong);
+    background: rgba(var(--bg-rgb), 0.9);
+  }
+
+  &-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    max-width: 1700px;
+    gap: 20px;
+  }
+
+  // Left: a HUD-style "system status" readout, standing in for a plain
+  // logo/name lockup — a small always-on pulse, a muted status label, and
+  // the name itself as the one piece with real visual weight.
+  &-sys {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 14px 7px 11px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    min-width: 0;
+  }
+
+  &-sys-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--accent-pop);
+    box-shadow: 0 0 8px var(--accent-pop);
+    animation: navbar-sys-pulse 2.2s ease-in-out infinite;
+  }
+
+  &-sys-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  &-sys-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &-brand-accent {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  &-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+
+  &-link {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    transition: color 0.15s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: -6px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--accent-gradient);
+      transition: right 0.25s ease;
+    }
+
+    &:hover { color: var(--text-primary); }
+
+    &-active {
+      color: var(--text-primary);
+
+      &::after { right: 0; }
+
+      .navbar-link-index { color: var(--accent-pop); }
+    }
+  }
+
+  &-link-index {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+    transition: color 0.15s ease;
+  }
+
+  &-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+
+    &-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      box-shadow: 0 0 8px var(--accent-blue);
+    }
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &-cta {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--bg);
+    background: var(--accent-pop-gradient);
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 8px 20px rgba(31, 224, 196, 0.28);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(31, 224, 196, 0.4);
+    }
+  }
+
+  &-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+  }
+
+  &-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-secondary);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: rgba(8, 120, 255, 0.46);
+      background: rgba(8, 120, 255, 0.08);
+    }
+  }
+}
+
+@keyframes navbar-sys-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.25); }
+}
+
+@media (max-width: 980px) {
+  .navbar-sys-label { display: none; }
+}
+
+@media (max-width: 860px) {
+  .navbar {
+    &-links {
+      position: fixed;
+      // Not `inset: 68px 0 0 0` — `.navbar` has `backdrop-filter`, which
+      // makes it the containing block for this fixed-position child, so a
+      // `bottom` value resolves against the ~68px navbar bar itself, not
+      // the viewport, collapsing this to near-zero height (children then
+      // overflow outside it with no background behind them). `vh` always
+      // resolves against the real viewport regardless, so it sidesteps
+      // the containing-block quirk entirely.
+      top: 68px;
+      left: 0;
+      right: 0;
+      height: calc(100vh - 68px);
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 24px 20px;
+      // Fully solid, not the 98%-opacity version this used to be — a
+      // position:fixed descendant of an ancestor with backdrop-filter
+      // (`.navbar` has one) can end up compositing on its own GPU layer in
+      // a way that visibly blends the ancestor's blurred backdrop through
+      // it, even though this element's own background is separately opaque.
+      // `isolation: isolate` plus a fully solid fill (not "0.98") closes
+      // that gap — confirmed live: the hero photo/text were bleeding
+      // through this panel at 98% opacity.
+      background: var(--bg);
+      isolation: isolate;
+      backdrop-filter: none;
+      border-top: 1px solid var(--border);
+      transform: translateY(-8px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    }
+
+    &-links-open {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    &-link {
+      padding: 12px 4px;
+      width: 100%;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+    }
+
+    &-status { margin-top: 14px; }
+
+    &-cta { display: none; }
+
+    &-toggle { display: block; }
+
+    &-link {
+      &::after { display: none; }
+
+      &-active {
+        color: var(--text-primary);
+        padding-left: 14px;
+        border-left: 2px solid var(--accent-blue);
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-sys-name { max-width: 120px; }
+}

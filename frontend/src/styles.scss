@@ -1,0 +1,391 @@
+/* ==========================================================================
+   Design tokens
+   A near-black, node-graph inspired system. One accent gradient
+   (violet → blue) is used deliberately and sparingly — it marks the single
+   thread that runs through every section: the flow of data through a system.
+   ========================================================================== */
+:root {
+  /* Surfaces — true black, not the dark-gray-navy this used to be */
+  --bg: #000000;
+  --bg-rgb: 0, 0, 0;
+  --bg-elevated: #121214;
+  --bg-panel: #16161a;
+  --bg-panel-hover: #1c1c22;
+
+  /* Accent (used sparingly — nodes, active states, the flow line) */
+  --accent-violet: #5668ff;
+  --accent-blue: #0878ff;
+  --accent-gradient: linear-gradient(135deg, #5668ff, var(--accent-blue));
+  /* A second, hotter pop accent — used deliberately in a few high-energy
+     spots (hero glow, alternating stat numbers) so the palette has a beat,
+     not scattered everywhere like the primary gradient. */
+  --accent-pop: #1fe0c4;
+  --accent-pop-gradient: linear-gradient(135deg, var(--accent-pop), var(--accent-blue));
+
+  /* Text */
+  --text-primary: #f5f6f8;
+  --text-secondary: #b8bec8;
+  --text-muted: #858d9c;
+
+  /* Structure */
+  --border: rgba(237, 239, 247, 0.09);
+  --border-strong: rgba(237, 239, 247, 0.16);
+  --grid-line: rgba(237, 239, 247, 0.035);
+
+  /* Type */
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Layout */
+  --content-width: 1180px;
+  --section-pad-y: 64px;
+  --section-pad-y-mobile: 48px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  /* Surfaces */
+  --bg: #f7f7fb;
+  --bg-rgb: 247, 247, 251;
+  --bg-elevated: #ffffff;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f0f1f8;
+
+  /* Text */
+  --text-primary: #14151f;
+  --text-secondary: #4c4f60;
+  --text-muted: #7d8093;
+
+  /* Structure */
+  --border: rgba(20, 21, 31, 0.09);
+  --border-strong: rgba(20, 21, 31, 0.16);
+  --grid-line: rgba(20, 21, 31, 0.045);
+
+  color-scheme: light;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --section-pad-y: var(--section-pad-y-mobile);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+// Stops the browser from silently nudging scroll position when content
+// above the viewport (e.g. the hero photo) resizes as it finishes loading.
+html { overflow-anchor: none; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lenis (SmoothScrollService) takes over scroll physics once it boots, so
+   native CSS smooth-scroll should step aside rather than fight it. Lenis
+   adds this class itself; if JS never runs (or reduced-motion skipped init)
+   the plain `html { scroll-behavior: smooth }` above still applies. */
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
+// `overflow-x: hidden` forces the OTHER axis to compute as `auto` too (a
+// browser can't mix "hidden" on one axis with "visible" on the other) —
+// harmless on its own, but ONLY if the element can still grow to fit its
+// content. `html` gets an explicit `height: 100%` (it's the element
+// Lenis/native scroll targets as document.scrollingElement, so it needs a
+// defined viewport-relative height to scroll *within*). `body` must NOT
+// also get a fixed height — giving both a fixed height plus this rule
+// turns `body` into its own fixed-height auto-scroll container nested
+// inside `html`, silently splitting the page's real scrollable content
+// away from the element the mouse wheel actually scrolls (confirmed live:
+// scrollY stuck at 0 while document.body.scrollHeight kept the real
+// height). `overflow-x: hidden` stays on both — that part was never the
+// problem — `body` just needs to stay height: auto (the default) so nothing
+// overflows *within* it.
+html { height: 100%; overflow-x: hidden; }
+body { overflow-x: hidden; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(139, 124, 250, 0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(78, 140, 255, 0.08), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  position: relative;
+}
+
+/* Faint film-grain texture over the whole page — a premium, "designed"
+   surface instead of a flat fill. Pure CSS/SVG, no image asset, and cheap
+   enough to leave running (it's a static pattern, not animated). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The navbar is position:fixed (see navbar.component.scss) and so no longer
+   occupies flow space the way position:sticky did — this restores that
+   reserved space so page content starts right below it instead of
+   underneath it. */
+main {
+  display: block;
+  padding-top: 68px;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+p { margin: 0; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+ul { margin: 0; padding: 0; list-style: none; }
+
+::selection {
+  background: rgba(139, 124, 250, 0.35);
+  color: var(--text-primary);
+}
+
+/* Visible keyboard focus everywhere — never suppressed */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* CustomCursorComponent toggles this class itself once it confirms desktop +
+   fine pointer + motion allowed — never applied on touch or reduced-motion,
+   so the native cursor is only ever hidden when a replacement is drawn. */
+body.custom-cursor-active,
+body.custom-cursor-active * {
+  cursor: none !important;
+}
+
+/* Text-editable fields are exempted so the native I-beam and its blinking
+   caret stay visible — CustomCursorComponent hides its own dot/ring over
+   these elements (data-state="text") to match. */
+body.custom-cursor-active input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']):not([type='file']):not([type='range']):not([type='color']),
+body.custom-cursor-active textarea,
+body.custom-cursor-active [contenteditable='true'] {
+  cursor: text !important;
+}
+
+/* Shared layout primitives, used by every section component */
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+@media (max-width: 640px) {
+  .container { padding: 0 20px; }
+}
+
+.section {
+  position: relative;
+  padding: var(--section-pad-y) 0;
+  // The navbar is position:fixed (68px tall) — without this, jumping to a
+  // fragment (e.g. clicking "About" in the nav) lands the section right
+  // under the fixed bar, with its heading tucked out of sight behind it.
+  scroll-margin-top: 84px;
+}
+
+.eyebrow-index {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fine grid backdrop used behind a few key sections for the "engineered" feel */
+.grid-backdrop {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  pointer-events: none;
+}
+
+/* Glowing circuit-trace backdrop — a hand-drawn PCB-style pattern (traces +
+   node dots), tinted with the pop accent. Used behind sections that want a
+   "live AI system" feel rather than the plain engineering grid above. */
+.circuit-backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg fill='none' stroke='%231fe0c4' stroke-width='1' opacity='0.55'%3E%3Cpath d='M20 20H140V70H220'/%3E%3Cpath d='M20 100H80V180'/%3E%3Cpath d='M140 20V90H220'/%3E%3Cpath d='M180 130H220M180 130V190H120'/%3E%3Cpath d='M20 180H60'/%3E%3Cpath d='M100 100H140V130'/%3E%3C/g%3E%3Cg fill='%231fe0c4'%3E%3Ccircle cx='20' cy='20' r='3'/%3E%3Ccircle cx='140' cy='20' r='3'/%3E%3Ccircle cx='220' cy='70' r='3'/%3E%3Ccircle cx='140' cy='70' r='3'/%3E%3Ccircle cx='20' cy='100' r='3'/%3E%3Ccircle cx='80' cy='100' r='3'/%3E%3Ccircle cx='80' cy='180' r='3'/%3E%3Ccircle cx='220' cy='90' r='3'/%3E%3Ccircle cx='180' cy='130' r='3'/%3E%3Ccircle cx='220' cy='130' r='3'/%3E%3Ccircle cx='120' cy='190' r='3'/%3E%3Ccircle cx='20' cy='180' r='3'/%3E%3Ccircle cx='60' cy='180' r='3'/%3E%3Ccircle cx='140' cy='130' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 38%, black, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 38%, black, transparent 82%);
+  pointer-events: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.18s ease, background 0.18s ease;
+}
+.btn:active { transform: translateY(0) scale(0.97); }
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #07080c;
+  font-weight: 600;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 10px 24px rgba(86, 104, 255, 0.28);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 16px 34px rgba(86, 104, 255, 0.4);
+}
+
+.btn-secondary {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: rgba(237, 239, 247, 0.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.btn-secondary:hover {
+  border-color: var(--accent-violet);
+  background: rgba(139, 124, 250, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* Shared card surface — no glassmorphism (no blur, no sheen, no frosted
+   streak): a solid dark card with a thin border and a soft ambient glow
+   tucked into one corner, the same language as a modern AI-product panel
+   (think a Linear/Vercel-style card, not a frosted phone-case). Reused
+   wherever a card-like surface should read as part of the same design
+   system: class="skill-cluster glass-panel". */
+.glass-panel {
+  position: relative;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease;
+}
+
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -18%;
+  width: 65%;
+  height: 65%;
+  background: radial-gradient(circle, rgba(31, 224, 196, 0.14), transparent 72%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.glass-panel:hover {
+  transform: translateY(-3px);
+  border-color: rgba(31, 224, 196, 0.3);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.38);
+}
+
+/* Reveal directive states */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px) scale(0.98);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Skip-to-content link — invisible until keyboard-focused */
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: -60px;
+  left: 16px;
+  padding: 12px 20px;
+  background: var(--accent-gradient);
+  color: #07080c;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  transition: top 0.2s ease;
+
+  &:focus-visible {
+    top: 16px;
+    outline: 2px solid var(--text-primary);
+    outline-offset: 3px;
+  }
+}
+
+/* Shared entrance keyframes — used for above-the-fold content that should
+   animate in on load rather than wait for scroll (the reveal directive is
+   scroll-triggered and not appropriate for what's already in the viewport). */
+@keyframes fade-up-in {
+  from {
+    opacity: 0;
+    transform: translateY(38px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fade-up-in {
+  animation: fade-up-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--fade-delay, 0ms);
+}
+
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, -4%) scale(1.06); }
+  66% { transform: translate(-3%, 3%) scale(0.96); }
+}

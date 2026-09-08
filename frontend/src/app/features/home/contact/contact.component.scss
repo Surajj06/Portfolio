@@ -1,0 +1,89 @@
+.contact {
+  position: relative;
+
+  &-grid {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 56px;
+    align-items: start;
+  }
+
+  &-title {
+    font-size: clamp(30px, 4vw, 44px);
+    max-width: 12ch;
+  }
+
+  &-channels {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      transition: color 0.15s ease;
+
+      &:hover { color: var(--text-primary); }
+    }
+  }
+}
+
+.contact-form {
+  // Visual surface comes from .glass-panel (applied in the template). Not
+  // the hover-lift though — a form shouldn't drift while someone's filling
+  // it in, unlike a card meant to invite a click.
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &:hover {
+    transform: none;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  input, textarea {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    resize: vertical;
+    transition: border-color 0.15s ease;
+
+    &:focus { border-color: var(--accent-violet); }
+  }
+}
+
+.field-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.field-error { color: #ff8a8a; font-size: 13px; }
+.field-success { color: #7fe0a5; font-size: 13px; }
+
+@media (max-width: 860px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}

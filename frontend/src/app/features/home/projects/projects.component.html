@@ -1,0 +1,43 @@
+<section id="projects" class="section projects">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container">
+    <app-section-heading
+      eyebrow="Selected Work"
+      title="Projects"
+      lede="Selected systems, spanning voice AI, LLM orchestration, data-matching engines, and conversational interfaces."
+    ></app-section-heading>
+
+    <div class="projects-list">
+      <a
+        *ngFor="let project of data.projects; let i = index"
+        [routerLink]="['/projects', project.id]"
+        class="project-card glass-panel"
+        data-cursor="project"
+        appReveal
+        [revealDelay]="(i % 4) * 90"
+        appTilt
+        [tiltMax]="2"
+      >
+        <span class="project-card-corner project-card-corner-tl" aria-hidden="true"></span>
+        <span class="project-card-corner project-card-corner-br" aria-hidden="true"></span>
+
+        <div class="project-card-index">NO. {{ project.index }}</div>
+
+        <div class="project-card-body">
+          <h3 class="project-card-title">{{ project.title }}</h3>
+          <p class="project-card-summary">{{ project.summary }}</p>
+
+          <div class="project-card-tags">
+            <span *ngFor="let concept of project.concepts.slice(0, 5)">{{ concept }}</span>
+          </div>
+        </div>
+
+        <div class="project-card-cta">
+          Inspect Spec
+          <app-icon name="arrow-right" [size]="16"></app-icon>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>

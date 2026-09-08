@@ -1,0 +1,18 @@
+<section class="section dotnet">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container dotnet-inner" appReveal>
+    <div class="dotnet-equation">
+      <ng-container *ngFor="let term of equation; let last = last">
+        <span class="dotnet-term">{{ term }}</span>
+        <span *ngIf="!last" class="dotnet-plus" aria-hidden="true">+</span>
+      </ng-container>
+    </div>
+
+    <p class="dotnet-message">Building AI systems requires more than models — it requires reliable software.</p>
+
+    <div class="dotnet-concepts">
+      <span *ngFor="let concept of data.engineeringConcepts">{{ concept }}</span>
+    </div>
+  </div>
+</section>

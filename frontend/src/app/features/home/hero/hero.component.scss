@@ -1,0 +1,495 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 892px;
+  height: calc(100vh - 68px);
+  max-height: 960px;
+  background:
+    radial-gradient(ellipse 680px 520px at 50% 46%, rgba(8, 120, 255, 0.28), transparent 66%),
+    var(--bg);
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+
+  .grid-backdrop {
+    opacity: 0.18;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  }
+
+  &-blobs {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translate3d(calc(var(--parallax-x) * 0.3), calc(var(--parallax-y) * 0.3), 0);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(64px);
+    opacity: 0.7;
+    animation: blob-drift 16s ease-in-out infinite;
+
+    &-a {
+      top: -14%;
+      right: 2%;
+      width: 50vw;
+      max-width: 660px;
+      height: 50vw;
+      max-height: 660px;
+      background: radial-gradient(circle, rgba(86, 104, 255, 0.4), transparent 68%);
+    }
+
+    &-b {
+      bottom: -20%;
+      left: -8%;
+      width: 42vw;
+      max-width: 560px;
+      height: 42vw;
+      max-height: 560px;
+      background: radial-gradient(circle, rgba(31, 224, 196, 0.28), transparent 68%);
+      animation-duration: 21s;
+      animation-delay: -6s;
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(var(--bg-rgb), 0.42), transparent 30%, transparent 70%, rgba(var(--bg-rgb), 0.38)),
+      linear-gradient(0deg, rgba(var(--bg-rgb), 0.28), transparent 34%, rgba(var(--bg-rgb), 0.1));
+  }
+
+  /* Three real columns — content, photo, sidebar — instead of two columns
+     bridged by an absolutely-positioned photo. Nothing overlaps by
+     construction, so the sidebar text is never fighting the portrait for
+     legibility. */
+  &-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(420px, 1fr) minmax(300px, 0.86fr) minmax(250px, 0.58fr);
+    align-items: stretch;
+    gap: 28px;
+    max-width: 1700px;
+    height: 100%;
+    min-height: 892px;
+  }
+
+  &-content {
+    max-width: 620px;
+    padding: clamp(48px, 6vh, 72px) 0 clamp(70px, 9vh, 108px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: 5;
+    transform: translate3d(calc(var(--parallax-x) * -0.25), 0, 0);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    // Legibility scrim against the drifting blobs/particles behind — tied to
+    // the current surface color so it reads as a shadow in dark mode and a
+    // soft glow (not a stray black smear) in light mode. Inherits to every
+    // descendant.
+    text-shadow: 0 2px 18px rgba(var(--bg-rgb), 0.45);
+  }
+
+  &-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 20px;
+    padding: 7px 16px 7px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-panel);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+
+    app-rotating-words {
+      font-weight: 700;
+    }
+  }
+
+  &-eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-pop);
+    box-shadow: 0 0 10px var(--accent-pop);
+    flex-shrink: 0;
+    animation: eyebrow-pulse 2.2s ease-in-out infinite;
+  }
+
+  &-rule {
+    display: block;
+    width: 130px;
+    height: 7px;
+    background: var(--text-primary);
+    margin-bottom: 46px;
+  }
+
+  &-title {
+    font-size: clamp(56px, 4.15vw, 72px);
+    line-height: 1.06;
+    font-weight: 800;
+
+    span {
+      display: block;
+
+      &:not(.hero-title-accent) {
+        color: var(--text-primary);
+      }
+    }
+
+    /* Gradient/shimmer text lives on app-rotating-words itself now
+       (accent="shimmer") — this span is just a block-layout wrapper. */
+    &-accent {
+      display: block;
+    }
+  }
+
+  &-support {
+    margin-top: 24px;
+    color: var(--text-secondary);
+    font-size: 17px;
+    line-height: 1.62;
+    max-width: 51ch;
+  }
+
+  &-scroll-cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 106px;
+    height: 106px;
+    margin-top: 64px;
+    border-radius: 50%;
+    background: var(--accent-pop-gradient);
+    color: #07080c;
+    box-shadow: 0 18px 42px rgba(31, 224, 196, 0.3);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(31, 224, 196, 0.5);
+      animation: cta-ring-pulse 2.4s ease-out infinite;
+    }
+
+    &:hover {
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 22px 54px rgba(31, 224, 196, 0.38);
+    }
+  }
+
+  &-visual {
+    position: relative;
+    margin: 48px 0 0;
+    height: calc(90% - 48px);
+    // NgOptimizedImage's fill-mode image reads this container's height on
+    // its very first check, which can race ahead of the grid/vh layout
+    // chain resolving on a cold load — this floor keeps that read non-zero.
+    min-height: 432px;
+    z-index: 2;
+    pointer-events: none;
+    transform: translate3d(calc(var(--parallax-x) * 0.6), 0, 0);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  }
+
+  // Glowing rotating gradient ring. A real wrapper is needed (not just a
+  // pseudo-element) because it needs its OWN ::before to do the spinning:
+  // .hero-visual-ring clips (overflow: hidden) to a thin -4px window around
+  // the photo, while its ::before — a large SQUARE sized past the window's
+  // diagonal — is what actually rotates underneath. Rotating the thin
+  // window's own (tall, non-square) rectangle directly would swing its
+  // corners far outside the frame at non-90° angles, since a rectangle's
+  // diagonal reach is much longer than its sides.
+  &-visual-ring {
+    position: absolute;
+    inset: -4px;
+    z-index: -1;
+    border-radius: 26px;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1400px;
+      height: 1400px;
+      margin: -700px 0 0 -700px;
+      background: conic-gradient(from 0deg, #22e5c8, #5668ff, #0878ff, #22e5c8);
+      animation: hero-ring-spin 7s linear infinite;
+    }
+  }
+
+  &-photo-glow {
+    position: absolute;
+    inset: 8% -20% 0;
+    z-index: -1;
+    background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(31, 224, 196, 0.22), transparent 70%);
+    filter: blur(30px);
+  }
+
+  // HUD-style corner brackets — a "viewfinder" frame around the photo,
+  // reads as engineered/technical rather than a decorative glass card.
+  &-visual-corner {
+    position: absolute;
+    z-index: 3;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+    border-color: var(--accent-pop);
+    filter: drop-shadow(0 0 6px rgba(31, 224, 196, 0.55));
+
+    &-tl { top: -11px; left: -11px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 8px; }
+    &-tr { top: -11px; right: -11px; border-top: 2px solid; border-right: 2px solid; border-top-right-radius: 8px; }
+    &-bl { bottom: -11px; left: -11px; border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: 8px; }
+    &-br { bottom: -11px; right: -11px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 8px; }
+  }
+
+  // Faint vertical scan line drifting down the photo, on a long loop — a
+  // quiet "system is alive" accent rather than a constant distraction.
+  &-visual-scanline {
+    position: absolute;
+    z-index: 3;
+    left: 6%;
+    right: 6%;
+    height: 1px;
+    top: 0;
+    background: linear-gradient(90deg, transparent, rgba(160, 240, 225, 0.55), transparent);
+    filter: blur(0.5px);
+    animation: hero-scanline-sweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  &-diagram-slot {
+    position: relative;
+    align-self: center;
+    width: 100%;
+    max-width: 380px;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  &-diagram-panel {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 28px;
+    background: linear-gradient(180deg, rgba(8, 120, 255, 0.08), transparent 60%);
+  }
+
+  &-photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 18%;
+    border-radius: 22px;
+    filter:
+      saturate(1.02)
+      contrast(1.08)
+      brightness(0.96)
+      drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+    mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  }
+
+  &-sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 34px;
+    padding: clamp(48px, 6vh, 72px) 0 clamp(70px, 9vh, 108px) 26px;
+    z-index: 5;
+    border-left: 1px solid var(--border);
+    transform: translate3d(calc(var(--parallax-x) * -0.15), 0, 0);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    text-shadow: 0 2px 18px rgba(var(--bg-rgb), 0.45);
+
+    &-label {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    &-text {
+      font-size: 15.5px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      max-width: 33ch;
+    }
+
+    &-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 22px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--text-primary);
+      padding-bottom: 2px;
+    }
+
+    &-divider {
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    &-social {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+
+      a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        color: var(--text-primary);
+        transition: color 0.15s ease, background 0.15s ease;
+
+        &:hover {
+          color: var(--accent-pop);
+          background: transparent;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1320px) {
+  .hero {
+    &-inner {
+      grid-template-columns: minmax(400px, 1fr) minmax(260px, 0.8fr) minmax(230px, 0.55fr);
+      max-width: 1180px;
+    }
+
+    &-title {
+      font-size: clamp(48px, 4.65vw, 60px);
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero {
+    height: auto;
+    min-height: auto;
+    max-height: none;
+
+    &-inner {
+      grid-template-columns: 1fr;
+      gap: 0;
+      min-height: auto;
+      height: auto;
+    }
+
+    &-content {
+      max-width: 640px;
+      padding: 72px 0 0;
+    }
+
+    &-title {
+      font-size: clamp(40px, 8vw, 58px);
+    }
+
+    &-scroll-cta {
+      width: 72px;
+      height: 72px;
+      margin-top: 40px;
+    }
+
+    &-visual {
+      width: 100%;
+      max-width: 560px;
+      // The fill-mode photo (see hero.component.html) is absolutely
+      // positioned and contributes no intrinsic size of its own, so this
+      // container needs its own aspect-ratio — height:auto here would
+      // collapse to 0 and the image would render invisible.
+      height: auto;
+      aspect-ratio: 4 / 5;
+      min-height: 0;
+      margin: 34px auto 18px;
+    }
+
+    &-diagram-slot {
+      max-width: 380px;
+      margin: 40px auto;
+    }
+
+    &-sidebar {
+      max-width: 520px;
+      padding: 0 0 72px;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    &-rule {
+      width: 92px;
+      height: 5px;
+      margin-bottom: 34px;
+    }
+
+    &-support {
+      font-size: 15.5px;
+    }
+  }
+}
+
+@keyframes eyebrow-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+@keyframes cta-ring-pulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.hero-pop-in {
+  animation: hero-pop-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 100ms;
+}
+
+@keyframes hero-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes hero-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes hero-scanline-sweep {
+  0% { top: 4%; opacity: 0; }
+  10% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { top: 94%; opacity: 0; }
+}

@@ -1,0 +1,22 @@
+<section id="resume" class="section resume">
+  <div class="circuit-backdrop" aria-hidden="true"></div>
+
+  <div class="container">
+    <app-section-heading eyebrow="Download" title="Resume"></app-section-heading>
+
+    <div class="resume-card glass-panel" appReveal>
+      <p class="resume-summary">{{ data.about.summary }}</p>
+
+      <div class="resume-actions">
+        <a [href]="data.profile.resumePath" download class="btn btn-primary" appMagnetic>
+          Download Resume
+          <app-icon name="download" [size]="16"></app-icon>
+        </a>
+        <a [href]="data.profile.resumePath" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          View Resume
+          <app-icon name="external" [size]="16"></app-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

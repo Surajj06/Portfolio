@@ -1,0 +1,119 @@
+<section
+  id="top"
+  class="hero"
+  [class.hero-has-photo]="data.profile.photoUrl"
+  (mousemove)="onMouseMove($event)"
+  (mouseleave)="onMouseLeave()"
+  #heroSection
+>
+  <div class="hero-blobs" aria-hidden="true">
+    <span class="hero-blob hero-blob-a"></span>
+    <span class="hero-blob hero-blob-b"></span>
+  </div>
+  @if (particlesEnabled) {
+    @defer (on idle; prefetch on idle) {
+      <app-hero-particles></app-hero-particles>
+    }
+  }
+  <div class="grid-backdrop" aria-hidden="true"></div>
+
+  <div class="container hero-inner">
+    <div class="hero-content">
+      <p class="hero-eyebrow fade-up-in">
+        <span class="hero-eyebrow-dot" aria-hidden="true"></span>
+        Focused on <app-rotating-words [words]="focusWords"></app-rotating-words>
+      </p>
+
+      <span class="hero-rule fade-up-in" style="--fade-delay: 40ms" aria-hidden="true"></span>
+
+      <h1 class="hero-title fade-up-in" style="--fade-delay: 80ms">
+        <span>I'm {{ firstName }}, an</span>
+        <span class="hero-title-accent">
+          <app-rotating-words [words]="data.profile.heroIdentities" mode="mask" accent="shimmer" [intervalMs]="2600"></app-rotating-words>
+        </span>
+      </h1>
+
+      <p class="hero-support fade-up-in" style="--fade-delay: 160ms">
+        I build intelligent, production-ready AI systems — real-time voice AI, LLM orchestration,
+        and the backend engineering to run them reliably at scale.
+      </p>
+
+      <a href="#about" class="hero-scroll-cta fade-up-in" style="--fade-delay: 260ms" aria-label="Scroll to About section" appMagnetic [magneticStrength]="0.25">
+        <app-icon name="chevron-down" [size]="22"></app-icon>
+      </a>
+    </div>
+
+    <div class="hero-visual hero-pop-in" *ngIf="data.profile.photoUrl">
+      <div class="hero-visual-ring" aria-hidden="true"></div>
+      <div class="hero-photo-glow" aria-hidden="true"></div>
+      <span class="hero-visual-corner hero-visual-corner-tl" aria-hidden="true"></span>
+      <span class="hero-visual-corner hero-visual-corner-tr" aria-hidden="true"></span>
+      <span class="hero-visual-corner hero-visual-corner-bl" aria-hidden="true"></span>
+      <span class="hero-visual-corner hero-visual-corner-br" aria-hidden="true"></span>
+      <div class="hero-visual-scanline" aria-hidden="true"></div>
+      <img
+        [ngSrc]="data.profile.photoUrl!"
+        [alt]="data.profile.name"
+        class="hero-photo"
+        fill
+        sizes="(max-width: 1100px) 100vw, 32vw"
+        priority
+      />
+    </div>
+
+    <div class="hero-diagram-slot hero-pop-in" *ngIf="!data.profile.photoUrl">
+      <div class="hero-diagram-panel">
+        <app-ai-flow-diagram></app-ai-flow-diagram>
+      </div>
+    </div>
+
+    <aside class="hero-sidebar">
+      <div class="hero-sidebar-block fade-up-in" style="--fade-delay: 200ms">
+        <h2 class="hero-sidebar-label">About Me</h2>
+        <p class="hero-sidebar-text">
+          AI Engineer specializing in Generative AI, LLM systems, and real-time Voice AI — with
+          production experience building at scale.
+        </p>
+        <a href="#about" class="hero-sidebar-link">
+          Learn More <app-icon name="arrow-right" [size]="14"></app-icon>
+        </a>
+      </div>
+
+      <div class="hero-sidebar-divider" aria-hidden="true"></div>
+
+      <div class="hero-sidebar-block fade-up-in" style="--fade-delay: 280ms">
+        <h2 class="hero-sidebar-label">My Work</h2>
+        <p class="hero-sidebar-text">
+          Production systems spanning voice AI, LLM orchestration, data automation, and
+          conversational interfaces.
+        </p>
+        <a href="#projects" class="hero-sidebar-link">
+          Browse Portfolio <app-icon name="arrow-right" [size]="14"></app-icon>
+        </a>
+      </div>
+
+      <div class="hero-sidebar-divider" aria-hidden="true"></div>
+
+      <div class="hero-sidebar-block fade-up-in" style="--fade-delay: 360ms">
+        <h2 class="hero-sidebar-label">Follow Me</h2>
+        <div class="hero-sidebar-social">
+          <a [href]="data.profile.github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <app-icon name="github" [size]="16"></app-icon>
+          </a>
+          <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <app-icon name="linkedin" [size]="16"></app-icon>
+          </a>
+          <a *ngIf="data.profile.instagram" [href]="data.profile.instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <app-icon name="instagram" [size]="16"></app-icon>
+          </a>
+          <a [href]="'mailto:' + data.profile.email" aria-label="Email">
+            <app-icon name="mail" [size]="16"></app-icon>
+          </a>
+          <a [href]="data.profile.resumePath" download aria-label="Resume">
+            <app-icon name="file-text" [size]="16"></app-icon>
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

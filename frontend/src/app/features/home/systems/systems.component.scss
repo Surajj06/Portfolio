@@ -1,0 +1,192 @@
+// Overrides the shared `.section` vertical rhythm (148px top/bottom) —
+// this section is a single self-contained "stage" (diagram + stats), not a
+// scrolling read, so it needs to fit inside one viewport rather than use
+// the same breathing room as text-heavy sections. `section.systems` beats
+// `.section`'s specificity regardless of stylesheet order.
+section.systems {
+  padding: clamp(48px, 6vh, 72px) 0 clamp(40px, 5vh, 56px);
+  overflow: hidden;
+}
+
+.systems-stage {
+  position: relative;
+  height: clamp(320px, 42vh, 440px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: radial-gradient(ellipse 60% 60% at 50% 45%, rgba(8, 120, 255, 0.08), transparent 70%), var(--bg-elevated);
+  overflow: hidden;
+}
+
+.systems-panel {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  // Sized so the stats panel (left) and the live-orchestration panel
+  // (right) always fit side by side with a gap, shrinking together.
+  width: min(300px, calc(50% - 36px));
+  padding: 22px 24px;
+  border-radius: var(--radius-md);
+}
+
+.systems-live-panel {
+  left: auto;
+  right: 24px;
+}
+
+.systems-panel-title {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent-pop);
+}
+
+.systems-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 18px;
+  margin-top: 18px;
+}
+
+.systems-panel-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.systems-panel-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.systems-panel-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+
+.systems-panel-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.systems-panel-hint {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.systems-live-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.systems-live-running {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #43d99b;
+}
+
+.systems-live-dot-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #43d99b;
+  box-shadow: 0 0 8px rgba(67, 217, 155, 0.6);
+}
+
+.systems-live-bar {
+  height: 2px;
+  margin-top: 10px;
+  background: rgba(237, 239, 247, 0.1);
+  overflow: hidden;
+
+  span {
+    display: block;
+    width: 76%;
+    height: 100%;
+    background: #ff6800;
+    animation: systems-live-pulse 1.7s ease-in-out infinite;
+  }
+}
+
+@keyframes systems-live-pulse {
+  50% { width: 95%; opacity: 0.55; }
+}
+
+.systems-live-layer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  &:last-child { border-bottom: 0; }
+}
+
+.systems-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #35d8ef;
+  box-shadow: 0 0 7px rgba(53, 216, 239, 0.5);
+  margin-right: 8px;
+
+  &.is-orange {
+    background: #ff6800;
+    box-shadow: 0 0 7px rgba(255, 104, 0, 0.5);
+  }
+}
+
+.systems-live-state {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+// The drag-rotate interaction only attaches on fine-pointer devices (see
+// SystemsNetworkComponent) — the hint would be misleading on touch.
+@media not all and (hover: hover) and (pointer: fine) {
+  .systems-panel-hint { display: none; }
+}
+
+@media (max-width: 640px) {
+  .systems-panel {
+    left: 14px;
+    bottom: 14px;
+    padding: 16px 16px;
+    width: min(220px, calc(50% - 22px));
+  }
+
+  .systems-live-panel {
+    left: auto;
+    right: 14px;
+  }
+
+  .systems-panel-grid { grid-template-columns: 1fr; gap: 10px; }
+  .systems-panel-value { font-size: 16px; }
+  .systems-live-layer { font-size: 10.5px; }
+  .systems-panel-hint, .systems-live-bar { display: none; }
+}

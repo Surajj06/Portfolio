@@ -1,0 +1,83 @@
+.rotating-words {
+  display: inline-block;
+  position: relative;
+}
+
+.rotating-words-current,
+.rotating-words-current .char-fill {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.rotating-words-current {
+  display: inline-block;
+}
+
+.rotating-words-swap {
+  animation: rotating-word-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rotating-words-current--shimmer,
+.rotating-words-current--shimmer .char-fill {
+  background: linear-gradient(90deg, #22e5c8, #5668ff, #0878ff, #22e5c8);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hero-accent-shimmer 6s ease-in-out infinite;
+}
+
+@keyframes hero-accent-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes rotating-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* mask mode — built with raw DOM APIs, see ViewEncapsulation.None note in the
+   .ts. `.char-mask` clips, `.char` is what GSAP animates (transform/filter),
+   `.char-fill` holds the actual glyph + gradient-clip — kept off the
+   animated element on purpose, see the buildChars() comment in the .ts. */
+.word-group {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.char-mask {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.char {
+  display: inline-block;
+  will-change: transform, filter, opacity;
+}
+
+.char-fill {
+  display: inline-block;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

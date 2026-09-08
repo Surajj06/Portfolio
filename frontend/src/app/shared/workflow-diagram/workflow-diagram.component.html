@@ -1,0 +1,8 @@
+<div class="workflow" role="img" [attr.aria-label]="'Workflow: ' + steps.join(' to ')">
+  <ng-container *ngFor="let step of steps; let last = last">
+    <div class="workflow-step">
+      <span class="workflow-step-label">{{ step }}</span>
+    </div>
+    <app-icon *ngIf="!last" name="arrow-right" [size]="16" class="workflow-arrow"></app-icon>
+  </ng-container>
+</div>

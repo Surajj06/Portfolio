@@ -1,0 +1,36 @@
+<svg
+  class="flow-diagram"
+  [attr.viewBox]="'0 0 260 ' + svgHeight"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="Diagram: User leads to Input, to the AI Engine, to the LLM, to Tools, APIs and Data, and finally to a Response."
+>
+  <defs>
+    <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--accent-violet)" />
+      <stop offset="100%" stop-color="var(--accent-blue)" />
+    </linearGradient>
+  </defs>
+
+  <!-- connecting spine -->
+  <line
+    [attr.x1]="nodeX" [attr.y1]="y(0)"
+    [attr.x2]="nodeX" [attr.y2]="y(nodes.length - 1)"
+    stroke="url(#lineGradient)" stroke-width="1.5" stroke-opacity="0.35"
+  />
+
+  <!-- travelling pulse -->
+  <circle *ngIf="!prefersReducedMotion" class="flow-pulse" [attr.cx]="nodeX" r="3" fill="var(--accent-blue)">
+    <animate attributeName="cy" [attr.values]="y(0) + ';' + y(nodes.length - 1)" dur="3.2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" dur="3.2s" repeatCount="indefinite" />
+  </circle>
+
+  <g *ngFor="let node of nodes; let i = index">
+    <circle
+      [attr.cx]="nodeX" [attr.cy]="y(i)" r="5.5"
+      fill="var(--bg-panel)" stroke="var(--accent-violet)" stroke-width="1.4"
+    />
+    <text [attr.x]="nodeX + 20" [attr.y]="y(i) - 4" class="flow-label">{{ node.label }}</text>
+    <text [attr.x]="nodeX + 20" [attr.y]="y(i) + 14" class="flow-sublabel">{{ node.sublabel }}</text>
+  </g>
+</svg>

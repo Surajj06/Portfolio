@@ -1,0 +1,53 @@
+<div class="skill-graph">
+  <div class="skill-cluster glass-panel" *ngFor="let category of categories">
+    <div class="skill-cluster-header">
+      <span class="skill-cluster-icon"><app-icon [name]="category.icon" [size]="20"></app-icon></span>
+      <div>
+        <h4 class="skill-cluster-name">{{ category.name }}</h4>
+        <p class="skill-cluster-subtitle">{{ category.subtitle }}</p>
+      </div>
+    </div>
+
+    <div class="skill-cluster-stage">
+      <svg class="skill-cluster-lines" viewBox="0 0 220 220" aria-hidden="true" focusable="false">
+        <line
+          *ngFor="let item of category.items; let i = index"
+          [attr.x1]="110"
+          [attr.y1]="110"
+          [attr.x2]="nodeX(i, category.items.length)"
+          [attr.y2]="nodeY(i, category.items.length)"
+          class="skill-line"
+          [class.skill-line--active]="isActive(category, item)"
+        />
+      </svg>
+
+      <span class="skill-hub">{{ category.name }}</span>
+
+      <button
+        type="button"
+        *ngFor="let item of category.items; let i = index"
+        class="skill-node"
+        [class.skill-node--active]="isActive(category, item)"
+        [style.left.%]="nodeXPct(i, category.items.length)"
+        [style.top.%]="nodeYPct(i, category.items.length)"
+        (click)="selectItem(category, item)"
+      >
+        {{ item }}
+      </button>
+    </div>
+  </div>
+
+  <div class="skill-detail glass-panel" *ngIf="selected" aria-live="polite">
+    <p class="skill-detail-eyebrow">{{ selected.category }}</p>
+    <h4 class="skill-detail-name">{{ selected.item }}</h4>
+    <p class="skill-detail-used-in" *ngIf="usedIn.length; else noProjects">
+      Used in:
+      <ng-container *ngFor="let project of usedIn; let last = last">
+        <a [routerLink]="['/projects', project.id]">{{ project.title }}</a>{{ last ? '' : ', ' }}
+      </ng-container>
+    </p>
+    <ng-template #noProjects>
+      <p class="skill-detail-used-in">Core to my day-to-day toolkit, not tied to one single case study.</p>
+    </ng-template>
+  </div>
+</div>
