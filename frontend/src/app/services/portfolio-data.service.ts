@@ -19,7 +19,7 @@ export class PortfolioDataService {
     github: 'https://github.com/Surajj06',
     linkedin: 'https://www.linkedin.com/in/suraj-jha-638991225/',
     instagram: 'https://www.instagram.com/_surajj06/' as string | null,
-    photoUrl: '/assets/profile.png' as string | null,
+    photoUrl: '/assets/profile.webp' as string | null,
     resumePath: '/assets/resume.pdf',
     status: 'Building with AI + .NET',
     // Rotating hero identity line — each one maps directly to a techStack
