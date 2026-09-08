@@ -1,4 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.surajjha.dev/api'
+  // Same-origin: the contact form is served by a Vercel serverless function
+  // living in this same project (see frontend/api/contact.ts), not a
+  // separately-hosted backend — no CORS needed.
+  apiUrl: '/api'
 };
