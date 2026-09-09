@@ -1,6 +1,8 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { IconComponent } from '../../shared/icons/icon.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
@@ -35,6 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private observer?: IntersectionObserver;
   private readonly visibleRatios = new Map<string, number>();
+  private navigationSubscription?: Subscription;
 
   private readonly onScroll = (): void => {
     const scrolled = window.scrollY > 12;
@@ -50,7 +53,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     readonly data: PortfolioDataService,
     readonly theme: ThemeService,
     readonly commandPalette: CommandPaletteService,
-    private readonly zone: NgZone
+    private readonly zone: NgZone,
+    private readonly router: Router
   ) {}
 
   /** First name plain, rest of the name in the accent — the brand mark
@@ -66,9 +70,28 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
 
+    // This component (declared directly in AppComponent's template) finishes
+    // its own ngOnInit synchronously during the app's initial render, which
+    // is BEFORE the router-outlet's content activates -- Router navigation
+    // resolves asynchronously even for an eager-loaded route. Querying
+    // document.getElementById('projects') etc. here would always return
+    // null, so section observation is (re)built after every completed
+    // navigation instead, once the section elements actually exist.
+    this.setupSectionObserver();
+    this.navigationSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      // A macrotask tick after NavigationEnd, rather than calling this
+      // synchronously in the subscription, to be sure the activated route's
+      // view has actually flushed to the DOM before we go looking for it.
+      .subscribe(() => setTimeout(() => this.setupSectionObserver()));
+  }
+
+  private setupSectionObserver(): void {
     if (typeof IntersectionObserver === 'undefined') return;
 
-    // Only observe fragments that exist on the current route (home page sections).
+    this.observer?.disconnect();
+    this.visibleRatios.clear();
+
     const sections = this.links
       .map((link) => document.getElementById(link.fragment))
       .filter((el): el is HTMLElement => !!el);
@@ -111,5 +134,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     window.removeEventListener('scroll', this.onScroll);
     this.observer?.disconnect();
+    this.navigationSubscription?.unsubscribe();
   }
 }
