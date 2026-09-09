@@ -5,6 +5,12 @@ import { Directive, ElementRef, Input, OnDestroy, OnInit, Renderer2 } from '@ang
  * Used sparingly (section openers, not every card) so motion stays purposeful.
  * Fully inert when prefers-reduced-motion is set, or if IntersectionObserver
  * is unavailable (SSR / very old browsers) — content just renders visible.
+ *
+ * Replays every time the element enters/leaves the viewport (toggles the
+ * class both ways) rather than revealing once and staying visible forever —
+ * this also means anchor-link navigation that jumps straight to a section
+ * (skipping ones above it) still gets the correct visibility immediately,
+ * since the observer's first callback reports the true current state.
  */
 @Directive({
   selector: '[appReveal]',
@@ -28,17 +34,6 @@ export class RevealDirective implements OnInit, OnDestroy {
       return;
     }
 
-    // Anchor-link navigation (e.g. clicking "About" in the navbar) can jump
-    // straight past an earlier section without it ever crossing the
-    // viewport, so its IntersectionObserver never fires and it stays
-    // invisible forever. If we're initializing already scrolled past this
-    // element, just show it — there's no scroll-into-view moment coming.
-    const rect = this.el.nativeElement.getBoundingClientRect();
-    if (rect.bottom < 0) {
-      this.renderer.addClass(this.el.nativeElement, 'reveal-visible');
-      return;
-    }
-
     if (this.revealDelay) {
       this.el.nativeElement.style.setProperty('--reveal-delay', `${this.revealDelay}ms`);
     }
@@ -46,10 +41,8 @@ export class RevealDirective implements OnInit, OnDestroy {
     this.observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            this.renderer.addClass(this.el.nativeElement, 'reveal-visible');
-            this.observer?.unobserve(entry.target);
-          }
+          const method = entry.isIntersecting ? 'addClass' : 'removeClass';
+          this.renderer[method](this.el.nativeElement, 'reveal-visible');
         }
       },
       { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
