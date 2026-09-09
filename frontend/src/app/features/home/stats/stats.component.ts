@@ -22,10 +22,14 @@ interface Stat {
   styleUrl: './stats.component.scss'
 })
 export class StatsComponent {
-  constructor(readonly data: PortfolioDataService) {}
+  // A stable array/object reference, computed once — *ngFor tracks items by
+  // identity by default, so a getter rebuilding this on every CD cycle would
+  // make it destroy and recreate every `.stat` node (and its directives,
+  // mid-animation) on every single tick instead of just rendering it once.
+  readonly stats: Stat[];
 
-  get stats(): Stat[] {
-    return [
+  constructor(readonly data: PortfolioDataService) {
+    this.stats = [
       { value: '20,000+', label: 'Outbound calls/day handled by the voice platform' },
       { value: '74+', label: 'Partner APIs monitored in real time' },
       { value: '15+', label: 'Insurance partners integrated in the matching engine' },
