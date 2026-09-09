@@ -2,8 +2,6 @@ import { Injectable, effect, signal } from '@angular/core';
 
 export type Theme = 'dark' | 'light';
 
-const STORAGE_KEY = 'portfolio-theme';
-
 // View Transitions API isn't yet in TypeScript's bundled DOM lib.
 declare global {
   interface Document {
@@ -13,13 +11,14 @@ declare global {
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  readonly theme = signal<Theme>(this.readInitial());
+  // Every fresh page load always starts dark, regardless of system
+  // preference or any previously toggled choice — the toggle can still
+  // switch to light for the current session, but it isn't persisted.
+  readonly theme = signal<Theme>('dark');
 
   constructor() {
     effect(() => {
-      const value = this.theme();
-      document.documentElement.setAttribute('data-theme', value);
-      localStorage.setItem(STORAGE_KEY, value);
+      document.documentElement.setAttribute('data-theme', this.theme());
     });
   }
 
@@ -36,11 +35,5 @@ export class ThemeService {
     } else {
       this.theme.set(next);
     }
-  }
-
-  private readInitial(): Theme {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
-    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
 }
