@@ -28,6 +28,17 @@ export class RevealDirective implements OnInit, OnDestroy {
       return;
     }
 
+    // Anchor-link navigation (e.g. clicking "About" in the navbar) can jump
+    // straight past an earlier section without it ever crossing the
+    // viewport, so its IntersectionObserver never fires and it stays
+    // invisible forever. If we're initializing already scrolled past this
+    // element, just show it — there's no scroll-into-view moment coming.
+    const rect = this.el.nativeElement.getBoundingClientRect();
+    if (rect.bottom < 0) {
+      this.renderer.addClass(this.el.nativeElement, 'reveal-visible');
+      return;
+    }
+
     if (this.revealDelay) {
       this.el.nativeElement.style.setProperty('--reveal-delay', `${this.revealDelay}ms`);
     }

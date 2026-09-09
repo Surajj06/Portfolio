@@ -38,6 +38,14 @@ export class CountUpDirective implements OnInit, OnDestroy {
       return;
     }
 
+    // Same anchor-jump edge case as RevealDirective: if we're already
+    // scrolled past this element when it initializes, it'll never intersect,
+    // so counting up from 0 would leave it stuck at 0 forever.
+    if (this.el.nativeElement.getBoundingClientRect().bottom < 0) {
+      this.el.nativeElement.textContent = this.value;
+      return;
+    }
+
     this.el.nativeElement.textContent = `${prefix}0${suffix}`;
 
     this.observer = new IntersectionObserver(
