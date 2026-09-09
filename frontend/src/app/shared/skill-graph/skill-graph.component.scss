@@ -9,6 +9,11 @@
 }
 @media (max-width: 620px) {
   .skill-graph { grid-template-columns: 1fr; }
+
+  // Single-column layout frees up horizontal room, and denser categories
+  // (see nodeRadius() in the component) need it so node pills don't overlap.
+  .skill-cluster-stage { max-width: 320px; }
+  .skill-node { font-size: 9px; padding: 3px 7px; }
 }
 
 .skill-cluster {

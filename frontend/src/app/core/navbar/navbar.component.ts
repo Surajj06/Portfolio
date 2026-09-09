@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../shared/icons/icon.component';
@@ -35,7 +35,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private observer?: IntersectionObserver;
   private readonly visibleRatios = new Map<string, number>();
 
-  constructor(readonly data: PortfolioDataService, readonly theme: ThemeService) {}
+  private readonly onScroll = (): void => {
+    const scrolled = window.scrollY > 12;
+    const atTop = window.scrollY < 40;
+    if (scrolled === this.isScrolled && !(atTop && this.activeFragment !== 'top')) return;
+    this.zone.run(() => {
+      this.isScrolled = scrolled;
+      if (atTop) this.activeFragment = 'top';
+    });
+  };
+
+  constructor(readonly data: PortfolioDataService, readonly theme: ThemeService, private readonly zone: NgZone) {}
 
   /** First name plain, rest of the name in the accent — the brand mark
    * (replaces the old "</>" icon lockup). */
@@ -48,6 +58,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
+
     if (typeof IntersectionObserver === 'undefined') return;
 
     // Only observe fragments that exist on the current route (home page sections).
@@ -57,31 +69,29 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     if (!sections.length) return;
 
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          this.visibleRatios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
-        }
-        let topId = this.activeFragment;
-        let topRatio = 0;
-        for (const [id, ratio] of this.visibleRatios) {
-          if (ratio > topRatio) {
-            topRatio = ratio;
-            topId = id;
+    this.zone.runOutsideAngular(() => {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            this.visibleRatios.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0);
           }
-        }
-        if (topRatio > 0) this.activeFragment = topId;
-      },
-      { threshold: [0, 0.25, 0.5, 0.75, 1], rootMargin: '-15% 0px -55% 0px' }
-    );
+          let topId = this.activeFragment;
+          let topRatio = 0;
+          for (const [id, ratio] of this.visibleRatios) {
+            if (ratio > topRatio) {
+              topRatio = ratio;
+              topId = id;
+            }
+          }
+          if (topRatio > 0 && topId !== this.activeFragment) {
+            this.zone.run(() => (this.activeFragment = topId));
+          }
+        },
+        { threshold: [0, 0.25, 0.5, 0.75, 1], rootMargin: '-15% 0px -55% 0px' }
+      );
 
-    sections.forEach((el) => this.observer!.observe(el));
-  }
-
-  @HostListener('window:scroll')
-  onScroll(): void {
-    this.isScrolled = window.scrollY > 12;
-    if (window.scrollY < 40) this.activeFragment = 'top';
+      sections.forEach((el) => this.observer!.observe(el));
+    });
   }
 
   toggleMenu(): void {
@@ -93,6 +103,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.onScroll);
     this.observer?.disconnect();
   }
 }

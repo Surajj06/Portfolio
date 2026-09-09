@@ -29,7 +29,7 @@
           <p class="project-card-summary">{{ project.summary }}</p>
 
           <div class="project-card-tags">
-            <span *ngFor="let concept of project.concepts.slice(0, 5)">{{ concept }}</span>
+            <span *ngFor="let concept of project.concepts | slice:0:5">{{ concept }}</span>
           </div>
         </div>
 

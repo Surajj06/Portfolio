@@ -1,4 +1,4 @@
-import { Component, HostListener, signal } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../icons/icon.component';
 import { SmoothScrollService } from '../../services/smooth-scroll.service';
@@ -25,14 +25,26 @@ import { SmoothScrollService } from '../../services/smooth-scroll.service';
   `,
   styleUrl: './back-to-top.component.scss'
 })
-export class BackToTopComponent {
+export class BackToTopComponent implements OnInit, OnDestroy {
   readonly visible = signal(false);
 
-  constructor(private readonly smoothScroll: SmoothScrollService) {}
+  private readonly onScroll = (): void => {
+    const shouldShow = window.scrollY > window.innerHeight * 0.8;
+    if (shouldShow !== this.visible()) {
+      this.zone.run(() => this.visible.set(shouldShow));
+    }
+  };
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    this.visible.set(window.scrollY > window.innerHeight * 0.8);
+  constructor(private readonly smoothScroll: SmoothScrollService, private readonly zone: NgZone) {}
+
+  ngOnInit(): void {
+    // Runs on every scroll frame — only re-enters the zone when the visible
+    // state actually flips, since that's the only case that needs a re-render.
+    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.onScroll);
   }
 
   scrollToTop(): void {

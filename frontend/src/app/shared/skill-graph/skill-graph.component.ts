@@ -48,11 +48,18 @@ export class SkillGraphComponent implements AfterViewInit, OnDestroy {
     return (360 / count) * index - 90;
   }
 
-  nodeX(index: number, count: number, radius = 92): number {
+  // Denser categories (more items, e.g. LLMs & Agentic with 10) get a
+  // slightly larger radius so adjacent node pills — sized to fit their own
+  // label text — have more arc length between them and don't overlap.
+  private nodeRadius(count: number): number {
+    return 92 + Math.max(0, count - 6) * 4;
+  }
+
+  nodeX(index: number, count: number, radius = this.nodeRadius(count)): number {
     return 110 + radius * Math.cos((this.nodeAngle(index, count) * Math.PI) / 180);
   }
 
-  nodeY(index: number, count: number, radius = 92): number {
+  nodeY(index: number, count: number, radius = this.nodeRadius(count)): number {
     return 110 + radius * Math.sin((this.nodeAngle(index, count) * Math.PI) / 180);
   }
 

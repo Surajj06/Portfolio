@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 
 /**
  * Animates the host element's text from 0 up to a target number when it
@@ -18,7 +18,7 @@ export class CountUpDirective implements OnInit, OnDestroy {
   private observer?: IntersectionObserver;
   private raf?: number;
 
-  constructor(private readonly el: ElementRef<HTMLElement>) {}
+  constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
 
   ngOnInit(): void {
     const target = parseInt(this.value.replace(/[^0-9]/g, ''), 10);
@@ -48,18 +48,20 @@ export class CountUpDirective implements OnInit, OnDestroy {
 
     this.el.nativeElement.textContent = `${prefix}0${suffix}`;
 
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            this.animate(target, prefix, suffix);
-            this.observer?.unobserve(entry.target);
+    this.zone.runOutsideAngular(() => {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              this.animate(target, prefix, suffix);
+              this.observer?.unobserve(entry.target);
+            }
           }
-        }
-      },
-      { threshold: 0.4 }
-    );
-    this.observer.observe(this.el.nativeElement);
+        },
+        { threshold: 0.4 }
+      );
+      this.observer.observe(this.el.nativeElement);
+    });
   }
 
   private animate(target: number, prefix: string, suffix: string): void {

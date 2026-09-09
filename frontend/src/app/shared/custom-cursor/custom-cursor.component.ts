@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostBinding, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type CursorState = 'default' | 'interactive' | 'project' | 'link' | 'drag' | 'text';
@@ -56,50 +56,56 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
   private glowY = 0;
   private raf?: number;
 
-  constructor(private readonly el: ElementRef<HTMLElement>) {}
-
-  ngOnInit(): void {
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
-    this.enabled = !prefersReducedMotion && !!isFinePointer;
-
-    if (this.enabled) {
-      document.body.classList.add('custom-cursor-active');
-      this.loop();
-    } else {
-      this.el.nativeElement.style.display = 'none';
-    }
-  }
-
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent): void {
-    if (!this.enabled) return;
+  private readonly onMouseMove = (event: MouseEvent): void => {
     this.targetX = event.clientX;
     this.targetY = event.clientY;
     this.el.nativeElement.style.setProperty('--cursor-opacity', '1');
-  }
+  };
 
-  @HostListener('window:mouseleave')
-  onWindowLeave(): void {
+  private readonly onWindowLeave = (): void => {
     this.el.nativeElement.style.setProperty('--cursor-opacity', '0');
-  }
+  };
 
-  @HostListener('window:mouseover', ['$event'])
-  onMouseOver(event: MouseEvent): void {
-    if (!this.enabled) return;
+  private readonly onMouseOver = (event: MouseEvent): void => {
     this.applyState(event.target as HTMLElement | null);
-  }
+  };
 
   // A click often swaps the DOM under the pointer (SPA route navigation,
   // *ngIf toggles) without the mouse physically moving — mouseover/mouseout
   // only fire on boundary crossings, so the label (e.g. "VIEW PROJECT")
   // would otherwise stay stuck until the next real mouse movement. Re-hit-test
   // the same screen point once the click's DOM update has settled.
-  @HostListener('window:click')
-  onClick(): void {
-    if (!this.enabled) return;
+  private readonly onClick = (): void => {
     requestAnimationFrame(() => {
       this.applyState(document.elementFromPoint(this.targetX, this.targetY) as HTMLElement | null);
+    });
+  };
+
+  constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
+
+  ngOnInit(): void {
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+    this.enabled = !prefersReducedMotion && !!isFinePointer;
+
+    if (!this.enabled) {
+      this.el.nativeElement.style.display = 'none';
+      return;
+    }
+
+    document.body.classList.add('custom-cursor-active');
+
+    // Mouse tracking and the render loop mutate CSS custom properties
+    // directly and run at pointer/frame rate — none of that needs Angular's
+    // change detection, so it all runs outside the zone. `applyState` is the
+    // one path that touches template-bound state (`state`/`label`), so it
+    // explicitly re-enters the zone, but only when it actually changes.
+    this.zone.runOutsideAngular(() => {
+      window.addEventListener('mousemove', this.onMouseMove);
+      window.addEventListener('mouseleave', this.onWindowLeave);
+      window.addEventListener('mouseover', this.onMouseOver);
+      window.addEventListener('click', this.onClick);
+      this.loop();
     });
   }
 
@@ -108,21 +114,29 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
 
     if (explicit) {
       const kind = explicit.dataset['cursor'] as CursorState;
-      this.state = kind;
-      this.label = STATE_LABELS[kind] ?? '';
+      this.zone.run(() => {
+        this.state = kind;
+        this.label = STATE_LABELS[kind] ?? '';
+      });
       return;
     }
 
     const textEntry = target?.closest?.('input, textarea, [contenteditable]');
     if (textEntry && isTextEntry(textEntry)) {
-      this.state = 'text';
-      this.label = '';
+      this.zone.run(() => {
+        this.state = 'text';
+        this.label = '';
+      });
       return;
     }
 
     const interactive = target?.closest?.('a, button, input, select, [role="button"]');
-    this.state = interactive ? 'interactive' : 'default';
-    this.label = '';
+    const nextState: CursorState = interactive ? 'interactive' : 'default';
+    if (nextState === this.state && !this.label) return;
+    this.zone.run(() => {
+      this.state = nextState;
+      this.label = '';
+    });
   }
 
   private loop = (): void => {
@@ -144,6 +158,12 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.enabled) {
+      window.removeEventListener('mousemove', this.onMouseMove);
+      window.removeEventListener('mouseleave', this.onWindowLeave);
+      window.removeEventListener('mouseover', this.onMouseOver);
+      window.removeEventListener('click', this.onClick);
+    }
     document.body.classList.remove('custom-cursor-active');
   }
 }
