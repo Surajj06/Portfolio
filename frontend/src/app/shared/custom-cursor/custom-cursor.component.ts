@@ -140,12 +140,14 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
   }
 
   private loop = (): void => {
-    // Dot tracks tightly, the ambient glow trails looser — same easing feel
-    // the previous cursor-glow component used, now paired with a real cursor.
-    this.dotX += (this.targetX - this.dotX) * 0.35;
-    this.dotY += (this.targetY - this.dotY) * 0.35;
-    this.glowX += (this.targetX - this.glowX) * 0.12;
-    this.glowY += (this.targetY - this.glowY) * 0.12;
+    // Dot tracks tightly, the ambient glow trails a bit looser for an
+    // ambient feel — both raised from their original factors since the CSS
+    // used to double up a `transition: transform` on top of this same lerp,
+    // which made the whole cursor read as noticeably laggy.
+    this.dotX += (this.targetX - this.dotX) * 0.55;
+    this.dotY += (this.targetY - this.dotY) * 0.55;
+    this.glowX += (this.targetX - this.glowX) * 0.2;
+    this.glowY += (this.targetY - this.glowY) * 0.2;
 
     const host = this.el.nativeElement;
     host.style.setProperty('--cursor-x', `${this.dotX}px`);

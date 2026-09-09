@@ -25,7 +25,8 @@ export type IconName =
   | 'server'
   | 'layers'
   | 'database'
-  | 'cpu';
+  | 'cpu'
+  | 'search';
 
 /**
  * Minimal, dependency-free SVG icon set. Every icon inherits currentColor so
@@ -138,6 +139,10 @@ export type IconName =
           <rect x="7" y="7" width="10" height="10" rx="1.5"/>
           <rect x="10" y="10" width="4" height="4"/>
           <path d="M9 3.5v2M15 3.5v2M9 18.5v2M15 18.5v2M3.5 9h2M3.5 15h2M18.5 9h2M18.5 15h2"/>
+        </ng-container>
+        <ng-container *ngSwitchCase="'search'">
+          <circle cx="10.5" cy="10.5" r="6.5"/>
+          <path d="m20 20-4.85-4.85"/>
         </ng-container>
       </ng-container>
     </svg>

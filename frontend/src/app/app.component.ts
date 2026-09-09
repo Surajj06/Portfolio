@@ -5,13 +5,22 @@ import { FooterComponent } from './core/footer/footer.component';
 import { ScrollProgressComponent } from './shared/scroll-progress/scroll-progress.component';
 import { BackToTopComponent } from './shared/back-to-top/back-to-top.component';
 import { CustomCursorComponent } from './shared/custom-cursor/custom-cursor.component';
+import { CommandPaletteComponent } from './shared/command-palette/command-palette.component';
 import { SmoothScrollService } from './services/smooth-scroll.service';
 import { GsapService } from './services/gsap.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, FooterComponent, ScrollProgressComponent, BackToTopComponent, CustomCursorComponent],
+  imports: [
+    RouterOutlet,
+    NavbarComponent,
+    FooterComponent,
+    ScrollProgressComponent,
+    BackToTopComponent,
+    CustomCursorComponent,
+    CommandPaletteComponent
+  ],
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {

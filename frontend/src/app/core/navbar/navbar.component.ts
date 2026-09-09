@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../shared/icons/icon.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
+import { CommandPaletteService } from '../../shared/command-palette/command-palette.service';
 
 interface NavLink {
   label: string;
@@ -45,7 +46,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   };
 
-  constructor(readonly data: PortfolioDataService, readonly theme: ThemeService, private readonly zone: NgZone) {}
+  constructor(
+    readonly data: PortfolioDataService,
+    readonly theme: ThemeService,
+    readonly commandPalette: CommandPaletteService,
+    private readonly zone: NgZone
+  ) {}
 
   /** First name plain, rest of the name in the accent — the brand mark
    * (replaces the old "</>" icon lockup). */

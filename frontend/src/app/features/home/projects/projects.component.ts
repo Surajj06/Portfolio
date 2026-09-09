@@ -5,12 +5,13 @@ import { SectionHeadingComponent } from '../../../shared/section-heading/section
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { IconComponent } from '../../../shared/icons/icon.component';
 import { TiltDirective } from '../../../shared/tilt/tilt.directive';
+import { SpotlightDirective } from '../../../shared/spotlight/spotlight.directive';
 import { PortfolioDataService } from '../../../services/portfolio-data.service';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, RouterLink, SectionHeadingComponent, RevealDirective, IconComponent, TiltDirective],
+  imports: [CommonModule, RouterLink, SectionHeadingComponent, RevealDirective, IconComponent, TiltDirective, SpotlightDirective],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss'
 })

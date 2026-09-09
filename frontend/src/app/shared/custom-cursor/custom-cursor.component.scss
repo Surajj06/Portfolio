@@ -39,11 +39,29 @@
   background: var(--accent-pop);
   opacity: var(--cursor-opacity);
   transform: translate(var(--cursor-x), var(--cursor-y));
-  transition: opacity 0.3s ease, transform 0.06s linear;
+  // Position is already smoothed by the JS lerp in the rAF loop — a CSS
+  // transition on `transform` here would re-ease toward a target that moves
+  // every frame, compounding into a noticeably laggy trail. Only opacity
+  // (a real discrete state change) gets a transition.
+  transition: opacity 0.3s ease;
   will-change: transform;
 }
 
+// Positioning wrapper only — `transform: translate(...)` here is driven
+// directly by the JS rAF loop every frame with no CSS transition, so it
+// tracks the pointer at exactly the lerp's rate with no extra lag stacked
+// on top. The grow/shrink-on-hover animation lives on `.cursor-ring-shape`
+// below instead, which is free to transition since it never moves.
 .cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(var(--cursor-x), var(--cursor-y));
+  opacity: var(--cursor-opacity);
+  transition: opacity 0.3s ease;
+}
+
+.cursor-ring-shape {
   position: absolute;
   top: 0;
   left: 0;
@@ -56,14 +74,12 @@
   justify-content: center;
   border-radius: 50%;
   border: 1.5px solid rgba(245, 246, 248, 0.55);
-  opacity: var(--cursor-opacity);
-  transform: translate(var(--cursor-x), var(--cursor-y)) scale(0.001);
+  transform: scale(0.001);
   transition:
     transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     margin 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.3s ease,
     border-color 0.2s ease,
     background 0.2s ease;
   will-change: transform;
@@ -80,19 +96,19 @@
   transition: opacity 0.18s ease 0.08s;
 }
 
-:host([data-state='interactive']) .cursor-ring {
-  transform: translate(var(--cursor-x), var(--cursor-y)) scale(1);
+:host([data-state='interactive']) .cursor-ring-shape {
+  transform: scale(1);
   background: rgba(86, 104, 255, 0.1);
 }
 
-:host([data-state='project']) .cursor-ring,
-:host([data-state='link']) .cursor-ring,
-:host([data-state='drag']) .cursor-ring {
+:host([data-state='project']) .cursor-ring-shape,
+:host([data-state='link']) .cursor-ring-shape,
+:host([data-state='drag']) .cursor-ring-shape {
   width: 88px;
   height: 88px;
   margin-left: -44px;
   margin-top: -44px;
-  transform: translate(var(--cursor-x), var(--cursor-y)) scale(1);
+  transform: scale(1);
   background: rgba(23, 26, 32, 0.82);
   border-color: var(--accent-pop);
 }

@@ -7,6 +7,7 @@ import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { TechCategory } from '../../models/tech.model';
 import { Project } from '../../models/project.model';
 import { IconComponent } from '../icons/icon.component';
+import { SpotlightDirective } from '../spotlight/spotlight.directive';
 
 interface SkillSelection {
   category: string;
@@ -25,7 +26,7 @@ interface SkillSelection {
 @Component({
   selector: 'app-skill-graph',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconComponent],
+  imports: [CommonModule, RouterLink, IconComponent, SpotlightDirective],
   templateUrl: './skill-graph.component.html',
   styleUrl: './skill-graph.component.scss'
 })

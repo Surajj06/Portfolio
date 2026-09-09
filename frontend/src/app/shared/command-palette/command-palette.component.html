@@ -1,0 +1,52 @@
+<div class="palette-backdrop" *ngIf="palette.isOpen()" (click)="onBackdropClick()">
+  <div
+    class="palette-panel glass-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Quick navigation"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="palette-search">
+      <app-icon name="search" [size]="17"></app-icon>
+      <input
+        #searchInput
+        type="text"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="palette-listbox"
+        [attr.aria-activedescendant]="'palette-option-' + activeIndex()"
+        placeholder="Jump to a section, project, or action…"
+        autocomplete="off"
+        spellcheck="false"
+        [value]="query()"
+        (input)="onQueryChange($any($event.target).value)"
+      />
+      <kbd>Esc</kbd>
+    </div>
+
+    <ul class="palette-list" id="palette-listbox" role="listbox">
+      <li *ngIf="!filtered().length" class="palette-empty">No matches.</li>
+
+      <ng-container *ngFor="let command of filtered(); let i = index">
+        <li
+          [id]="'palette-option-' + i"
+          role="option"
+          [attr.aria-selected]="i === activeIndex()"
+          class="palette-item"
+          [class.palette-item-active]="i === activeIndex()"
+          (mouseenter)="select(i)"
+          (click)="runCommand(command)"
+        >
+          <span class="palette-item-label">{{ command.label }}</span>
+          <span class="palette-item-hint">{{ command.hint }}</span>
+        </li>
+      </ng-container>
+    </ul>
+
+    <div class="palette-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+      <span><kbd>Enter</kbd> Select</span>
+      <span><kbd>Ctrl</kbd><kbd>K</kbd> Toggle</span>
+    </div>
+  </div>
+</div>

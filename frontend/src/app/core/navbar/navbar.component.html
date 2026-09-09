@@ -24,6 +24,16 @@
     <div class="navbar-actions">
       <button
         type="button"
+        class="navbar-search-toggle"
+        (click)="commandPalette.open()"
+        aria-label="Open quick navigation (Ctrl+K)"
+        title="Quick navigation (Ctrl+K)"
+      >
+        <app-icon name="search" [size]="16"></app-icon>
+      </button>
+
+      <button
+        type="button"
         class="navbar-theme-toggle"
         (click)="theme.toggle()"
         aria-label="Toggle light / dark theme"

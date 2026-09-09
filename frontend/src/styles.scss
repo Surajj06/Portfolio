@@ -332,6 +332,18 @@ body.custom-cursor-active [contenteditable='true'] {
   box-shadow: 0 26px 60px rgba(0, 0, 0, 0.38);
 }
 
+/* Cursor-reactive spotlight — see shared/spotlight/spotlight.directive.ts.
+   Inert (opacity stays 0) on panels that don't carry [appSpotlight]. */
+.glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: var(--spotlight-opacity, 0);
+  background: radial-gradient(360px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(255, 255, 255, 0.07), transparent 68%);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
 /* Reveal directive states */
 .reveal {
   opacity: 0;

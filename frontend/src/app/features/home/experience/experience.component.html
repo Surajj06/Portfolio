@@ -8,7 +8,7 @@
       <li *ngFor="let entry of data.experience" class="experience-entry" appReveal>
         <div class="experience-marker" aria-hidden="true"></div>
 
-        <div class="experience-card glass-panel">
+        <div class="experience-card glass-panel" appSpotlight>
           <div class="experience-head">
             <div>
               <h3 class="experience-role">{{ entry.role }}</h3>

@@ -158,7 +158,8 @@
     color: var(--text-primary);
   }
 
-  &-theme-toggle {
+  &-theme-toggle,
+  &-search-toggle {
     display: flex;
     align-items: center;
     justify-content: center;

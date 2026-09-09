@@ -6,6 +6,7 @@ import { SectionHeadingComponent } from '../../../shared/section-heading/section
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { IconComponent } from '../../../shared/icons/icon.component';
 import { MagneticDirective } from '../../../shared/magnetic/magnetic.directive';
+import { SpotlightDirective } from '../../../shared/spotlight/spotlight.directive';
 import { PortfolioDataService } from '../../../services/portfolio-data.service';
 import { ContactService } from '../../../services/contact.service';
 
@@ -14,7 +15,7 @@ type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SectionHeadingComponent, RevealDirective, IconComponent, MagneticDirective],
+  imports: [CommonModule, ReactiveFormsModule, SectionHeadingComponent, RevealDirective, IconComponent, MagneticDirective, SpotlightDirective],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })

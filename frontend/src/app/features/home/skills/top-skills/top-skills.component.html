@@ -1,0 +1,19 @@
+<div class="top-skills glass-panel" appSpotlight *ngIf="topSkills.length">
+  <h4 class="top-skills-title">Most shipped with</h4>
+  <p class="top-skills-subtitle">Ranked by how many listed projects actually use each technology.</p>
+
+  <ul class="top-skills-list">
+    <li
+      *ngFor="let skill of topSkills; let i = index"
+      class="top-skills-row"
+      appReveal
+      [revealDelay]="i * 60"
+    >
+      <span class="top-skills-name">{{ skill.name }}</span>
+      <span class="top-skills-track">
+        <span class="top-skills-fill" [style.--bar-pct.%]="skill.pct"></span>
+      </span>
+      <span class="top-skills-count">{{ skill.projectCount }}</span>
+    </li>
+  </ul>
+</div>

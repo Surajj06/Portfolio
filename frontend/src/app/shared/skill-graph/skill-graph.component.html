@@ -1,5 +1,5 @@
 <div class="skill-graph">
-  <div class="skill-cluster glass-panel" *ngFor="let category of categories">
+  <div class="skill-cluster glass-panel" appSpotlight *ngFor="let category of categories">
     <div class="skill-cluster-header">
       <span class="skill-cluster-icon"><app-icon [name]="category.icon" [size]="20"></app-icon></span>
       <div>
