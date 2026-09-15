@@ -17,7 +17,7 @@ export class PortfolioDataService {
     email: 'surajjha462002@gmail.com',
     phone: '+91 9867751859',
     github: 'https://github.com/Surajj06',
-    linkedin: 'https://www.linkedin.com/in/suraj-jha-638991225/',
+    linkedin: 'https://www.linkedin.com/in/ai-surajjha/',
     instagram: 'https://www.instagram.com/_surajj06/' as string | null,
     photoUrl: '/assets/profile.webp' as string | null,
     resumePath: '/assets/resume.pdf',
