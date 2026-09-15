@@ -1,5 +1,5 @@
-import { Component, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../icons/icon.component';
 import { SmoothScrollService } from '../../services/smooth-scroll.service';
 
@@ -35,15 +35,21 @@ export class BackToTopComponent implements OnInit, OnDestroy {
     }
   };
 
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   constructor(private readonly smoothScroll: SmoothScrollService, private readonly zone: NgZone) {}
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     // Runs on every scroll frame — only re-enters the zone when the visible
     // state actually flips, since that's the only case that needs a re-render.
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
+
     window.removeEventListener('scroll', this.onScroll);
   }
 

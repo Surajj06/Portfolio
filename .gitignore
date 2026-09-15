@@ -4,6 +4,7 @@ node_modules/
 # Angular build output / cache
 frontend/dist/
 frontend/.angular/
+frontend/out-tsc/
 
 # .NET build output
 backend/PortfolioApi/bin/

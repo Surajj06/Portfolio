@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './core/navbar/navbar.component';
 import { FooterComponent } from './core/footer/footer.component';
@@ -24,12 +25,17 @@ import { GsapService } from './services/gsap.service';
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   constructor(
     private readonly smoothScroll: SmoothScrollService,
     private readonly gsapService: GsapService
   ) {}
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     // Without this, the browser's own scroll restoration re-applies your
     // last scroll offset on every hard reload (e.g. a dev-server live
     // reload while scrolled mid-page) instead of starting fresh at the top.

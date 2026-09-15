@@ -1,5 +1,5 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
@@ -49,6 +49,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   };
 
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   constructor(
     readonly data: PortfolioDataService,
     readonly theme: ThemeService,
@@ -68,6 +71,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
 
     // This component (declared directly in AppComponent's template) finishes
@@ -132,7 +137,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('scroll', this.onScroll);
+    if (this.isBrowser) {
+      window.removeEventListener('scroll', this.onScroll);
+    }
     this.observer?.disconnect();
     this.navigationSubscription?.unsubscribe();
   }

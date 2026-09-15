@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, PLATFORM_ID, ViewChild, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 /**
  * Thin fixed progress bar tracking scroll depth through the whole page.
@@ -25,13 +25,20 @@ export class ScrollProgressComponent implements AfterViewInit, OnDestroy {
     this.barRef.nativeElement.style.transform = `scaleX(${progress})`;
   };
 
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   constructor(private readonly zone: NgZone) {}
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
+
     window.removeEventListener('scroll', this.onScroll);
   }
 }

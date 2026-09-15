@@ -17,7 +17,11 @@ export class ThemeService {
   readonly theme = signal<Theme>('dark');
 
   constructor() {
+    // `document` doesn't exist under SSR at all (platform-server never puts
+    // it on the global scope), so this effect is a no-op server-side and
+    // only ever applies the attribute in the browser.
     effect(() => {
+      if (typeof document === 'undefined') return;
       document.documentElement.setAttribute('data-theme', this.theme());
     });
   }

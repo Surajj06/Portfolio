@@ -1,5 +1,5 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { Component, ElementRef, PLATFORM_ID, ViewChild, inject } from '@angular/core';
+import { CommonModule, NgOptimizedImage, isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../../../shared/icons/icon.component';
 import { RotatingWordsComponent } from '../../../shared/rotating-words/rotating-words.component';
 import { MagneticDirective } from '../../../shared/magnetic/magnetic.directive';
@@ -33,6 +33,11 @@ export class HeroComponent {
   private frame?: number;
 
   constructor(readonly data: PortfolioDataService) {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) {
+      this.parallaxEnabled = false;
+      this.particlesEnabled = false;
+      return;
+    }
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
     this.parallaxEnabled = !prefersReducedMotion && !!isFinePointer;

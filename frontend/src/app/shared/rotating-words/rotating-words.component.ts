@@ -1,5 +1,5 @@
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, Input, OnDestroy, OnInit, PLATFORM_ID, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import gsap from 'gsap';
 
 /**
@@ -47,15 +47,25 @@ export class RotatingWordsComponent implements OnInit, OnDestroy {
   private index = 0;
   private timer?: ReturnType<typeof setInterval>;
 
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   ngOnInit(): void {
     if (!this.words.length) return;
     const container = this.wordRef.nativeElement;
 
-    if (this.mode === 'mask') {
+    // `buildChars` uses bare `document.createElement` calls, which throw
+    // under SSR (platform-server never defines a global `document`) — mask
+    // mode falls back to plain text server-side, same as crossfade mode.
+    if (this.mode === 'mask' && this.isBrowser) {
       this.buildChars(this.words[0], container);
     } else {
       container.textContent = this.words[0];
     }
+
+    // No `window`/rotation timer on the server — the first word (built
+    // above) plus the visually-hidden full list is all prerendered HTML
+    // needs; a live setInterval would also outlive this render/destroy pass.
+    if (!this.isBrowser) return;
 
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion || this.words.length < 2) return;
@@ -89,7 +99,11 @@ export class RotatingWordsComponent implements OnInit, OnDestroy {
   // clipped text silently renders invisible. Keeping `.char` (animated) and
   // `.char-fill` (gradient) as separate elements sidesteps that.
   private buildChars(word: string, container: HTMLElement): HTMLElement[] {
-    container.replaceChildren();
+    // `replaceChildren` isn't implemented by platform-server's DOM shim —
+    // this manual clear works in both environments.
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
     const chars: HTMLElement[] = [];
     const words = word.split(' ');
 

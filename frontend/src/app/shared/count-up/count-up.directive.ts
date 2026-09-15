@@ -1,4 +1,5 @@
-import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /**
  * Animates the host element's text from 0 up to a target number when it
@@ -18,6 +19,9 @@ export class CountUpDirective implements OnInit, OnDestroy {
   private observer?: IntersectionObserver;
   private raf?: number;
 
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
 
   ngOnInit(): void {
@@ -27,6 +31,14 @@ export class CountUpDirective implements OnInit, OnDestroy {
 
     if (!Number.isFinite(target)) {
       this.el.nativeElement.textContent = this.value;
+      return;
+    }
+
+    // On the server there's no scroll/IntersectionObserver to animate
+    // against — render the final value directly so prerendered HTML shows
+    // the real number instead of "0".
+    if (!this.isBrowser) {
+      this.el.nativeElement.textContent = `${prefix}${target.toLocaleString('en-IN')}${suffix}`;
       return;
     }
 

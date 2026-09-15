@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/suraj-jha-portfolio",
+  "buildCommand": "npm run build && npm run prerender",
+  "outputDirectory": "dist/suraj-jha-portfolio/browser",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]

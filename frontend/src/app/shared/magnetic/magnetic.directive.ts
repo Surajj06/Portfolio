@@ -1,4 +1,5 @@
-import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, PLATFORM_ID, Renderer2, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /**
  * Makes a button/link drift slightly toward the cursor while hovered, then
@@ -41,6 +42,10 @@ export class MagneticDirective implements OnInit, OnDestroy {
     private readonly renderer: Renderer2,
     private readonly zone: NgZone
   ) {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) {
+      this.enabled = false;
+      return;
+    }
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
     this.enabled = !prefersReducedMotion && !!isFinePointer;

@@ -1,4 +1,5 @@
-import { Directive, ElementRef, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, Input, OnDestroy, OnInit, PLATFORM_ID, Renderer2, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /**
  * Lightweight scroll-reveal directive backed by IntersectionObserver.
@@ -21,13 +22,22 @@ export class RevealDirective implements OnInit, OnDestroy {
 
   private observer?: IntersectionObserver;
 
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   constructor(private readonly el: ElementRef<HTMLElement>, private readonly renderer: Renderer2) {}
 
   ngOnInit(): void {
+    this.renderer.addClass(this.el.nativeElement, 'reveal');
+
+    // No scroll/IntersectionObserver on the server — render content visible
+    // outright so prerendered HTML never ships hidden (opacity: 0) copy.
+    if (!this.isBrowser) {
+      this.renderer.addClass(this.el.nativeElement, 'reveal-visible');
+      return;
+    }
+
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const supportsObserver = typeof IntersectionObserver !== 'undefined';
-
-    this.renderer.addClass(this.el.nativeElement, 'reveal');
 
     if (prefersReducedMotion || !supportsObserver) {
       this.renderer.addClass(this.el.nativeElement, 'reveal-visible');

@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -36,6 +36,9 @@ export class SkillGraphComponent implements AfterViewInit, OnDestroy {
   usedIn: Project[] = [];
 
   private scrollTrigger?: ScrollTrigger;
+
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   constructor(
     private readonly data: PortfolioDataService,
@@ -90,6 +93,8 @@ export class SkillGraphComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 

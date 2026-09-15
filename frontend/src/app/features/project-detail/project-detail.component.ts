@@ -5,6 +5,7 @@ import { IconComponent } from '../../shared/icons/icon.component';
 import { RevealDirective } from '../../shared/reveal/reveal.directive';
 import { WorkflowDiagramComponent } from '../../shared/workflow-diagram/workflow-diagram.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
+import { SeoService } from '../../services/seo.service';
 import { Project } from '../../models/project.model';
 
 interface CaseStudyRow {
@@ -24,14 +25,19 @@ export class ProjectDetailComponent implements OnInit {
   project?: Project;
   rows: CaseStudyRow[] = [];
 
-  constructor(private readonly route: ActivatedRoute, readonly data: PortfolioDataService) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly seo: SeoService,
+    readonly data: PortfolioDataService
+  ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.project = id ? this.data.getProjectById(id) : undefined;
 
     if (this.project) {
-      const cs = this.project.caseStudy;
+      const project = this.project;
+      const cs = project.caseStudy;
       this.rows = [
         { index: '01', heading: 'Problem', body: cs.problem },
         { index: '02', heading: 'Why it was difficult', body: cs.whyItWasDifficult },
@@ -44,6 +50,25 @@ export class ProjectDetailComponent implements OnInit {
         { index: '09', heading: 'Results', body: cs.results },
         { index: '10', heading: 'Future improvements', body: cs.futureImprovements }
       ];
+
+      this.seo.update({
+        title: `${project.title} — Suraj Jha | AI Engineer`,
+        description: project.summary,
+        path: `projects/${project.id}`,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          name: project.title,
+          description: project.description,
+          url: `https://www.aisurajjha.in/projects/${project.id}`,
+          keywords: project.concepts.join(', '),
+          creator: {
+            '@type': 'Person',
+            name: 'Suraj Jha',
+            url: 'https://www.aisurajjha.in/'
+          }
+        }
+      });
     }
   }
 }

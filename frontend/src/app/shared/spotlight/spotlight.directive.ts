@@ -1,4 +1,5 @@
-import { Directive, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /**
  * Cursor-reactive spotlight for glass-panel surfaces (cards, form panels) —
@@ -33,6 +34,10 @@ export class SpotlightDirective implements OnInit, OnDestroy {
   };
 
   constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) {
+      this.enabled = false;
+      return;
+    }
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
     this.enabled = !prefersReducedMotion && !!isFinePointer;

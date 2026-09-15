@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SectionHeadingComponent } from '../../../shared/section-heading/section-heading.component';
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { SystemsNetworkComponent } from './systems-network.component';
@@ -40,7 +40,8 @@ export class SystemsComponent {
   ];
 
   constructor() {
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+    const prefersReducedMotion = isBrowser && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     this.networkEnabled = !prefersReducedMotion;
   }
 }

@@ -1,5 +1,5 @@
-import { Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 export type CursorState = 'default' | 'interactive' | 'project' | 'link' | 'drag' | 'text';
 
@@ -81,9 +81,14 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
     });
   };
 
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
     this.enabled = !prefersReducedMotion && !!isFinePointer;
@@ -159,6 +164,8 @@ export class CustomCursorComponent implements OnInit, OnDestroy {
   };
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
+
     if (this.raf) cancelAnimationFrame(this.raf);
     if (this.enabled) {
       window.removeEventListener('mousemove', this.onMouseMove);
