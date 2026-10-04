@@ -1,7 +1,8 @@
 # Suraj Jha — AI Engineer Portfolio
 
-A premium, dark-first personal portfolio: Angular 17 (standalone components,
-TypeScript, SCSS) frontend, deployed as a single Vercel project.
+A fast, Gen-Z-flavoured personal portfolio: Angular 17 (standalone components,
+signals, TypeScript, SCSS), prerendered to static HTML at build time and
+deployed as a single Vercel project.
 
 ```
 suraj-portfolio/
@@ -18,16 +19,23 @@ part of the deployed site.
 
 ## Quick start
 
+Needs Node.js 20+ (22 or 24 are fine).
+
 **Frontend** (from `frontend`):
 ```bash
 npm install
-npm start
+npm start          # dev server on http://localhost:4201
+npm run build      # production build + prerender of every route (≈15s)
 ```
-This talks to `http://localhost:5000/api` in dev
+The dev server talks to `http://localhost:5000/api`
 (`frontend/src/environments/environment.development.ts`) — the local ASP.NET
 backend below, if you want to run one. Production
-(`frontend/src/environments/environment.ts`) instead points at the
-same-origin `/api` — the Vercel function — and needs no separate backend URL.
+(`frontend/src/environments/environment.ts`) points at the same-origin `/api`
+— the Vercel function — and needs no separate backend URL.
+
+To check the real production output locally, serve
+`frontend/dist/suraj-jha-portfolio/browser` with any static server that falls
+back to `index.html` for unknown paths.
 
 **Local ASP.NET backend** (optional, from `backend/PortfolioApi`):
 ```bash
@@ -38,9 +46,9 @@ dotnet run
 ## Deploying (Vercel)
 
 1. Import this repo into Vercel with **Root Directory set to `frontend`**.
-   `frontend/vercel.json` already has the build command, output directory,
-   and the SPA rewrite (`/projects/:id` etc. need to resolve to
-   `index.html` on refresh — everything except `/api/*` is rewritten there).
+   `frontend/vercel.json` already has the build command (`npm run build`,
+   which also prerenders), the output directory, the SPA rewrite, and
+   long-lived caching for the hashed JS/CSS/font files.
 2. Set these environment variables on the Vercel project (Settings →
    Environment Variables) — used by `frontend/api/contact.ts`:
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` (`"true"`/`"false"`)
@@ -51,25 +59,51 @@ dotnet run
    Until these are set, the function logs submissions instead of emailing
    them (so nothing is silently lost, but nothing arrives in your inbox
    either) — same fallback behavior the ASP.NET version had.
-3. Deploy. That's it — one project, one domain, frontend and contact form
-   both live.
+3. Push to `main`. That's it — one project, one domain, frontend and contact
+   form both live.
 
-## Before you deploy
+## Editing content
 
-1. Edit `frontend/src/app/services/portfolio-data.service.ts` — every
-   `// TODO:` marks a placeholder (GitHub/LinkedIn URLs, email, experience,
-   project results, case-study details) that needs your real information.
-2. Drop your real PDF at `frontend/src/assets/resume.pdf`.
-3. Update the canonical/OG URLs in `frontend/src/index.html` and the
-   `sitemap.xml` / `robots.txt` if the domain isn't `surajjha.dev`.
+- **All copy lives in** `frontend/src/app/services/portfolio-data.service.ts`
+  (profile, about, experience, projects + case studies, tech stack). The
+  per-project highlight numbers (`PROJECT_META`, at the top of that file) are
+  quoted from each case study — keep them in step with it.
+- `profile.location` / `timezone` feed the live-clock tiles — edit if the
+  default (India / IST) isn't right.
+- **Adding a project:** add it to `baseProjects`, give it an entry in
+  `PROJECT_META`, add a cover-art case in
+  `frontend/src/app/shared/project-art/`, and add its route to
+  `frontend/routes.txt` (prerender) and `frontend/src/sitemap.xml`.
+- Résumé: replace `frontend/src/assets/resume.pdf`.
+- Canonical/OG URLs live in `frontend/src/index.html`, `sitemap.xml` and
+  `robots.txt`.
+
+## How it stays fast
+
+- **Prerendered**: every route ships as real HTML, so content paints before
+  any JavaScript runs; Angular then hydrates it.
+- **Light initial JS (~126 KB transferred)**. GSAP (ScrollTrigger, SplitText,
+  Flip, ScrambleText) and Motion are code-split and only fetched once the page
+  is idle — never on the server, in lite mode, or under reduced motion.
+- **Animations stay on the compositor** (`transform`/`opacity`, individual
+  `translate`/`rotate`/`scale` properties); ambient loops pause when off-screen;
+  scroll work is one shared passive listener that never reads layout.
+- **Adaptive "lite" mode** (`PerfGuardService`): weak devices (or ones that
+  measurably can't hold frame rate) drop decorative effects automatically.
+  Force it with `?lite=1`, or force the full experience with `?lite=0`.
+- Fonts (Bricolage Grotesque variable, Instrument Serif Italic) are
+  self-hosted via `@fontsource` — no third-party requests.
+- Everything respects `prefers-reduced-motion`, and the page works with
+  JavaScript disabled (content is plain HTML).
 
 ## Design system
 
-Near-black base (`#07080c`) with a single violet→blue accent gradient used
-deliberately (nodes, the active flow line, hover states) rather than
-scattered throughout. Display type is Space Grotesk, body is Inter. The
-node-and-connection motif from the hero's system diagram carries through the
-architecture section, the experience timeline, and the case-study index
-markers, so it reads as one considered idea rather than decoration repeated
-per section. All diagrams are inline SVG/CSS — no stock imagery, no
-generated illustrations, no icon-font dependency.
+Near-black canvas (`#09090a`), warm off-white ink that echoes the portrait's
+cream backdrop, and one acid-lime accent used on purpose. Light theme flips
+the accent to ink and uses lime as a highlighter. Tokens live in
+`frontend/src/styles/_tokens.scss`; shared primitives (buttons, chips, cards,
+type roles) in `_ui.scss`; motion keyframes and scroll-reveal states in
+`_motion.scss`. Display type mixes a chunky grotesque with an editorial serif
+italic for one or two accent words per heading. Project covers are original
+inline-SVG illustrations (the codebases are private, so there are no
+screenshots) coloured by a per-project accent.
