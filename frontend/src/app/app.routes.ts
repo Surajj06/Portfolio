@@ -9,9 +9,10 @@ export const routes: Routes = [
   },
   {
     path: 'projects/:id',
+    // No static `title` here: SeoService sets a per-project title, and a route title
+    // would override it as soon as navigation ends.
     loadComponent: () =>
-      import('./features/project-detail/project-detail.component').then((m) => m.ProjectDetailComponent),
-    title: 'Project — Suraj Jha'
+      import('./features/project-detail/project-detail.component').then((m) => m.ProjectDetailComponent)
   },
   { path: '**', redirectTo: '' }
 ];

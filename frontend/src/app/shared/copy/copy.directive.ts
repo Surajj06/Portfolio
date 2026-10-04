@@ -35,7 +35,7 @@ export class CopyDirective {
     } catch {
       return;
     }
-    if (this.device.coarsePointer) navigator.vibrate?.(10);
+    this.device.haptic(10);
     this.toast.show(this.copyMessage);
     host.classList.add('is-copied');
     setTimeout(() => host.classList.remove('is-copied'), 1600);

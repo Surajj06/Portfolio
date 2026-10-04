@@ -50,6 +50,14 @@ export class DeviceService {
     this.lowEnd = (nav.hardwareConcurrency ?? 8) <= 2 || (nav.deviceMemory ?? 8) <= 2;
   }
 
+  /** Tiny haptic tick on touch devices — only inside a real user gesture (browsers block it otherwise). */
+  haptic(ms = 8): void {
+    if (!this.isBrowser || !this.coarsePointer) return;
+    const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation;
+    if (activation && !activation.isActive) return;
+    navigator.vibrate?.(ms);
+  }
+
   /** Whether purely decorative, continuously-running motion is allowed. */
   get ambientMotion(): boolean {
     return this.isBrowser && !this.reducedMotion;

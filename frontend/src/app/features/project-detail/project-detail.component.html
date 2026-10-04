@@ -45,7 +45,6 @@
           style="--d: 3"
           [id]="p.id"
           [accent]="p.accent"
-          [style.view-transition-name]="'art-' + p.id"
         />
       </div>
 
@@ -111,14 +110,14 @@
     @if (adjacent(); as adj) {
       <nav class="pager container" aria-label="More case studies">
         <a class="pager__item card" [routerLink]="['/projects', adj.prev.id]" data-cursor="view">
-          <app-project-art class="pager__art" [id]="adj.prev.id" [accent]="adj.prev.accent" [style.view-transition-name]="'art-' + adj.prev.id" />
+          <app-project-art class="pager__art" [id]="adj.prev.id" [accent]="adj.prev.accent" />
           <span class="pager__text">
             <span class="pager__dir"><app-icon name="arrow-right" class="flip" [size]="14" /> Previous</span>
             <strong>{{ adj.prev.title }}</strong>
           </span>
         </a>
         <a class="pager__item pager__item--next card" [routerLink]="['/projects', adj.next.id]" data-cursor="view">
-          <app-project-art class="pager__art" [id]="adj.next.id" [accent]="adj.next.accent" [style.view-transition-name]="'art-' + adj.next.id" />
+          <app-project-art class="pager__art" [id]="adj.next.id" [accent]="adj.next.accent" />
           <span class="pager__text">
             <span class="pager__dir">Next <app-icon name="arrow-right" [size]="14" /></span>
             <strong>{{ adj.next.title }}</strong>

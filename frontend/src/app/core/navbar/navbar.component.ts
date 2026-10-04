@@ -74,7 +74,7 @@ export class NavbarComponent {
   go(id: string, event: Event): void {
     event.preventDefault();
     this.closeMenu();
-    if (this.device.coarsePointer) navigator.vibrate?.(8);
+    this.device.haptic(8);
 
     const onHome = this.router.url.split(/[?#]/)[0] === '/';
     if (!onHome) {
