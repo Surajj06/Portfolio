@@ -1,4 +1,182 @@
 .skills {
-  position: relative;
-  overflow: hidden;
+  padding-top: clamp(40px, 6vw, 96px);
+}
+
+.cats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.cat {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  padding: clamp(22px, 2.6vw, 34px);
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border-radius: 16px;
+    background: var(--surface-3);
+    color: var(--accent-text);
+  }
+  &__name {
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+  }
+  &__sub {
+    margin-top: 4px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--text-3);
+  }
+  &__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+:root[data-theme='light'] .cat__icon {
+  color: var(--text);
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px; // comfortable touch target
+  padding: 0 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  font-size: 0.92rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.35s var(--ease-out);
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--text-3);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+  &.is-used {
+    color: var(--text);
+  }
+  &.is-active {
+    background: var(--cta-bg);
+    color: var(--cta-ink);
+    border-color: transparent;
+  }
+
+  &__n {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: var(--lime);
+    color: var(--lime-ink);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  &.is-active &__n {
+    background: var(--lime-ink);
+    color: var(--lime);
+  }
+}
+:root[data-theme='light'] .tool__n {
+  background: var(--text);
+  color: var(--bg);
+}
+:root[data-theme='light'] .tool.is-active .tool__n {
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+// ---- "used in" drawer (height via grid-rows, never `height`) ----
+.cat__used {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: -20px; // cancels the card gap while closed
+  transition:
+    grid-template-rows 0.55s var(--ease-out),
+    margin-top 0.55s var(--ease-out);
+
+  &.is-open {
+    grid-template-rows: 1fr;
+    margin-top: 0;
+  }
+  &-in {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.used__title {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+  line-height: 1.5;
+
+  strong {
+    color: var(--text);
+  }
+}
+.used__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--accent-line);
+    border-radius: var(--r-pill);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+
+    &:hover {
+      background: var(--cta-bg);
+      color: var(--cta-ink);
+      border-color: transparent;
+    }
+  }
+}
+
+@media (min-width: 720px) {
+  .cats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rank {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1100px) {
+  .cats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

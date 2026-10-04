@@ -1,54 +1,52 @@
 .stats {
-  position: relative;
-  padding: 36px 0;
-  border-bottom: 1px solid var(--border);
+  padding-block: clamp(48px, 7vw, 92px) clamp(8px, 2vw, 24px);
 }
 
-.stats-grid {
+.grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 48px) 0;
 }
 
 .stat {
-  text-align: center;
+  position: relative;
+  padding: 0 clamp(14px, 2.4vw, 32px);
+  border-left: 1px solid var(--line-2);
 
-  &-value {
-    font-family: var(--font-display);
-    font-size: clamp(30px, 3.4vw, 42px);
-    font-weight: 700;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-variant-numeric: tabular-nums;
-
-    &-pop {
-      background: var(--accent-pop-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
-  }
-
-  &-label {
-    margin-top: 8px;
-    font-size: 13.5px;
-    color: var(--text-muted);
-    line-height: 1.5;
-    max-width: 24ch;
-    margin-inline: auto;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 3px;
+    height: 36px;
+    background: var(--lime);
   }
 }
-
-@media (max-width: 860px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    row-gap: 40px;
-  }
+:root[data-theme='light'] .stat::before {
+  background: var(--text);
 }
 
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+.num {
+  font-size: clamp(2.3rem, 6.6vw, 4.3rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  max-width: 22ch;
+  margin-top: 14px;
+  font-size: clamp(0.88rem, 1.2vw, 1rem);
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+@media (min-width: 900px) {
+  .grid {
+    // The first figure ("20,000+") is the widest — give it a bit more room.
+    grid-template-columns: 1.4fr 1fr 1fr 0.9fr;
   }
 }

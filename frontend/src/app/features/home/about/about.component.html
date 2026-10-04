@@ -1,15 +1,105 @@
-<section id="about" class="section about">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
+<section id="about" class="section about" aria-labelledby="about-title">
+  <div class="container">
+    <app-section-heading kicker="About" headingId="about-title">
+      AI that actually <em>works</em> in production.
+    </app-section-heading>
 
-  <div class="container about-grid">
-    <app-section-heading eyebrow="Who I Am" title="About Me"></app-section-heading>
+    <div class="bento">
+      <!-- Intro -->
+      <article class="card tile t-intro" appReveal>
+        <p class="lede">{{ data.about.summary }}</p>
+        <ul class="focus" aria-label="Focus areas">
+          @for (area of data.about.focusAreas; track area) {
+            <li class="chip chip--solid">{{ area }}</li>
+          }
+        </ul>
+      </article>
 
-    <div class="about-body" appReveal [revealDelay]="80">
-      <p class="about-summary">{{ data.about.summary }}</p>
+      <!-- Right now -->
+      <article class="card tile t-now" appReveal [revealDelay]="1">
+        <p class="eyebrow"><span class="dot"></span>Right now</p>
+        <h3 class="tile-title">{{ data.profile.status }}</h3>
+        <p class="tile-text">{{ nowText }}</p>
+      </article>
 
-      <ul class="about-focus">
-        <li *ngFor="let area of data.about.focusAreas">{{ area }}</li>
-      </ul>
+      <!-- Local time -->
+      <article class="card tile t-time" appReveal [revealDelay]="2">
+        <p class="eyebrow"><app-icon name="pin" [size]="15" />{{ data.profile.location }}</p>
+        <p class="clock">
+          <app-clock [timeZone]="data.profile.timezone" /><span class="tz">{{ data.profile.timezoneLabel }}</span>
+        </p>
+        <p class="tile-text">Local time — a good moment to say hi.</p>
+      </article>
+
+      <!-- Pipeline teaser -->
+      <article class="card tile t-pipe" appReveal [revealDelay]="1">
+        <p class="eyebrow"><app-icon name="wave" [size]="15" />How a call flows</p>
+        <div class="mini" aria-hidden="true">
+          <div class="mini__line"><span class="mini__pulse"></span></div>
+          <ul class="mini__nodes">
+            @for (node of pipeNodes; track node.label) {
+              <li>
+                <span class="mini__dot"><app-icon [name]="node.icon" [size]="18" /></span>
+                <span class="mini__label">{{ node.label }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+        <p class="tile-text">
+          The real-time voice pipeline behind 20,000+ calls a day.
+          <a class="more" routerLink="/" fragment="systems">
+            See how it works <app-icon name="arrow-right" [size]="15" />
+          </a>
+        </p>
+      </article>
+
+      <!-- Links -->
+      <article class="card tile t-links" appReveal [revealDelay]="2">
+        <p class="eyebrow"><app-icon name="link" [size]="15" />Find me</p>
+        <ul class="links">
+          <li>
+            <a [href]="data.profile.github" target="_blank" rel="noopener noreferrer">
+              <app-icon name="github" [size]="20" /> GitHub
+              <app-icon class="out" name="arrow-up-right" [size]="15" />
+            </a>
+          </li>
+          <li>
+            <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer">
+              <app-icon name="linkedin" [size]="20" /> LinkedIn
+              <app-icon class="out" name="arrow-up-right" [size]="15" />
+            </a>
+          </li>
+          @if (data.profile.instagram) {
+            <li>
+              <a [href]="data.profile.instagram" target="_blank" rel="noopener noreferrer">
+                <app-icon name="instagram" [size]="20" /> Instagram
+                <app-icon class="out" name="arrow-up-right" [size]="15" />
+              </a>
+            </li>
+          }
+          <li>
+            <a [href]="'mailto:' + data.profile.email">
+              <app-icon name="mail" [size]="20" /> Email
+              <app-icon class="out" name="arrow-up-right" [size]="15" />
+            </a>
+          </li>
+          <li class="wide">
+            <a class="resume" [href]="data.profile.resumePath" download>
+              <app-icon name="file-text" [size]="20" /> Download résumé
+              <app-icon class="out" name="download" [size]="16" />
+            </a>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Stack ticker -->
+      <article class="card tile t-stack" appReveal [revealDelay]="1">
+        <p class="eyebrow"><app-icon name="cpu" [size]="15" />Daily drivers</p>
+        <div class="rows">
+          <app-marquee variant="chips" [items]="stackTop" [duration]="70" />
+          <app-marquee variant="chips" [items]="stackBottom" [duration]="80" [reverse]="true" />
+        </div>
+      </article>
     </div>
   </div>
 </section>

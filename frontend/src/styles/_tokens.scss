@@ -1,0 +1,119 @@
+/* ==========================================================================
+   Design tokens
+   Near-black canvas, warm off-white ink (it echoes the cream backdrop of the
+   portrait), one acid-lime accent used on purpose, and a small supporting
+   palette that only shows up in project art, tags and stickers.
+   ========================================================================== */
+
+/* Metric-matched fallbacks so the swap to the web fonts doesn't shove layout
+   around (keeps CLS ~0 while Bricolage / Instrument Serif load). */
+@font-face {
+  font-family: 'Bricolage Fallback';
+  src: local('Arial');
+  size-adjust: 104%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Serif Fallback';
+  src: local('Georgia');
+  size-adjust: 94%;
+  ascent-override: 96%;
+  descent-override: 28%;
+  line-gap-override: 0%;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #09090a;
+  --bg-2: #0e0e10;
+  --surface: #141416;
+  --surface-2: #1a1a1d;
+  --surface-3: #232327;
+  --glass: rgba(20, 20, 22, 0.72);
+  --line: rgba(244, 243, 238, 0.09);
+  --line-2: rgba(244, 243, 238, 0.18);
+
+  /* Ink */
+  --text: #f4f3ee;
+  --text-2: #bdbcb4;
+  --text-3: #8f8e86;
+
+  /* Accent */
+  --lime: #d6ff3f;
+  --lime-deep: #b6e11f;
+  --lime-ink: #0a0a0b;
+  --violet: #a193ff;
+  --coral: #ff7a59;
+  --sky: #6fd3ff;
+  --pink: #ff8fd1;
+  --amber: #ffc857;
+  --mint: #5ef2c0;
+
+  --accent: var(--lime);
+  --accent-text: var(--lime); /* accent-coloured text/strokes */
+  --accent-soft: rgba(214, 255, 63, 0.1);
+  --accent-line: rgba(214, 255, 63, 0.38);
+  --cta-bg: var(--lime);
+  --cta-ink: var(--lime-ink);
+
+  /* Type */
+  // Self-hosted via @fontsource (see angular.json "styles") — same-origin, no third-party request.
+  --font-sans: 'Bricolage Grotesque Variable', 'Bricolage Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Instrument Serif', 'Serif Fallback', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Shape */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Layout */
+  --gutter: clamp(20px, 4.4vw, 56px);
+  --max: 1240px;
+  --section-y: clamp(84px, 11vw, 160px);
+  --nav-h: 72px;
+  --dock-h: 68px;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f4f2ea;
+  --bg-2: #ebe8dc;
+  --surface: #ffffff;
+  --surface-2: #f8f6ef;
+  --surface-3: #eeebe0;
+  --glass: rgba(255, 255, 255, 0.76);
+  --line: rgba(10, 10, 11, 0.1);
+  --line-2: rgba(10, 10, 11, 0.2);
+
+  --text: #0e0e10;
+  --text-2: #44443f;
+  --text-3: #6a6961;
+
+  /* Lime can't be text on cream, so accent *text* turns ink-dark and lime
+     becomes a highlighter-marker behind it (.hl). Buttons flip to ink. */
+  --accent-text: #0e0e10;
+  --accent-soft: rgba(182, 225, 31, 0.28);
+  --accent-line: rgba(10, 10, 11, 0.4);
+  --cta-bg: #0e0e10;
+  --cta-ink: #f4f2ea;
+}
+
+/* Low-power mode (set by PerfGuardService on struggling devices, or via
+   ?lite=1): solid surfaces instead of glass, no ambient motion. */
+:root[data-lite] {
+  --glass: var(--surface);
+}

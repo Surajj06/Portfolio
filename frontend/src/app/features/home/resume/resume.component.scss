@@ -1,25 +1,91 @@
+:host {
+  display: block;
+}
+
+.section {
+  padding-block: clamp(40px, 6vw, 96px);
+}
+
 .resume-card {
-  // Visual surface comes from .glass-panel (applied in the template) — it
-  // needs to be fully opaque, not the previous near-transparent gradient,
-  // or the section's circuit-backdrop shows straight through it.
-  border-radius: var(--radius-lg);
-  padding: 40px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
   align-items: center;
-  gap: 32px;
-  flex-wrap: wrap;
+  gap: clamp(32px, 5vw, 72px);
+  padding: clamp(28px, 4.4vw, 64px);
+  border-radius: var(--r-xl);
+  background:
+    radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--lime) 12%, transparent), transparent 60%),
+    var(--surface);
+
+  &__title {
+    margin: 16px 0 14px;
+    font-size: clamp(2rem, 4.6vw, 3.8rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+  }
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
 }
 
-.resume-summary {
-  color: var(--text-secondary);
-  max-width: 56ch;
-  font-size: 15.5px;
-  line-height: 1.65;
+// A stylised paper stack — decorative, drawn with plain boxes.
+.paper {
+  position: relative;
+  width: min(220px, 56%);
+  aspect-ratio: 3 / 4;
+  margin-inline: auto;
+  transition: transform 0.7s var(--ease-out);
+
+  &__sheet {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 18px;
+    border-radius: 14px;
+    background: #f4f3ee;
+    box-shadow: 0 24px 50px -22px rgba(0, 0, 0, 0.7);
+    transform: rotate(-4deg);
+
+    &--back {
+      background: var(--lime);
+      transform: rotate(5deg) translate3d(10px, 6px, 0);
+    }
+  }
+  &__name {
+    width: 56%;
+    height: 14px;
+    border-radius: 3px;
+    background: #0a0a0b;
+  }
+  &__line {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(10, 10, 11, 0.2);
+
+    &--short {
+      width: 48%;
+    }
+    &--mid {
+      width: 72%;
+    }
+  }
+  &__block {
+    height: 44px;
+    margin-top: 6px;
+    border-radius: 8px;
+    background: rgba(10, 10, 11, 0.1);
+  }
+}
+.resume-card:hover .paper {
+  transform: rotate(-3deg) translate3d(0, -6px, 0);
 }
 
-.resume-actions {
-  display: flex;
-  gap: 14px;
-  flex-shrink: 0;
+@media (min-width: 820px) {
+  .resume-card {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  }
 }

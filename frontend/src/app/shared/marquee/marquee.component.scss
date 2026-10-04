@@ -1,42 +1,103 @@
-.marquee {
-  position: relative;
-  overflow: hidden;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 0;
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+:host {
+  display: block;
+  overflow: clip;
 }
 
-.marquee-track {
+.marquee {
+  --fg: var(--text);
+  --size: clamp(2.1rem, 5.4vw, 4.4rem);
+  overflow: hidden;
+  // Soft fade at both edges so items slide in/out instead of being cut.
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.track {
   display: flex;
   width: max-content;
-  animation: marquee-scroll 34s linear infinite;
+  animation: marquee var(--dur, 48s) linear infinite;
+  will-change: transform;
 }
 
-.marquee-item {
-  display: inline-flex;
+.group {
+  display: flex;
+  flex: none;
   align-items: center;
-  gap: 28px;
-  padding: 0 28px;
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  // Scroll-velocity skew (see MarqueeComponent). A shear depends only on the
+  // vertical position, so both copies stay perfectly continuous at the seam.
+  transform: skewX(var(--skew, 0deg));
+}
+
+li {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: clamp(18px, 2.6vw, 36px);
+  padding-right: clamp(18px, 2.6vw, 36px);
+  font-size: var(--size);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
   white-space: nowrap;
+  color: var(--fg);
+
+  // (Filled-but-dim rather than stroked: variable fonts show stray inner
+  // contours when stroked.)
+  &.is-outline .text {
+    color: color-mix(in srgb, var(--fg) 38%, transparent);
+  }
 }
 
-.marquee-dot {
-  font-size: 5px;
-  color: var(--accent-violet);
+.star {
+  width: 0.5em;
+  height: 0.5em;
+  flex: none;
+  fill: var(--lime);
 }
 
-@keyframes marquee-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+// Pause while off-screen or hovered — a ticker nobody can see shouldn't tick.
+.marquee:hover .track,
+:host(.is-off) .track {
+  animation-play-state: paused;
+}
+
+.is-reverse .track {
+  animation-name: marquee-rev;
+}
+
+// Solid accent band
+.is-lime {
+  --fg: var(--lime-ink);
+  --size: clamp(1.5rem, 3.4vw, 2.5rem);
+  background: var(--lime);
+  mask-image: none;
+  -webkit-mask-image: none;
+  padding: 0.55em 0;
+
+  .star {
+    fill: var(--lime-ink);
+  }
+}
+
+// Small tags (used inside bento tiles)
+.is-chips {
+  --size: 0.78rem;
+
+  li {
+    padding: 0.55em 1.05em;
+    margin-right: 8px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-pill);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-2);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
-  .marquee { overflow-x: auto; }
+  .track {
+    animation: none;
+  }
 }

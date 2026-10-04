@@ -1,44 +1,75 @@
-<section id="projects" class="section projects">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
-
+<section id="projects" class="section projects" aria-labelledby="projects-title">
   <div class="container">
     <app-section-heading
-      eyebrow="Selected Work"
-      title="Projects"
-      lede="Selected systems, spanning voice AI, LLM orchestration, data-matching engines, and conversational interfaces."
-    ></app-section-heading>
+      kicker="Selected work"
+      headingId="projects-title"
+      lede="Seven systems — from production voice AI to data engines. Every one comes with a full case study: the problem, the architecture, the trade-offs."
+    >
+      Things I’ve <em>built</em>.
+    </app-section-heading>
 
-    <div class="projects-list">
-      <a
-        *ngFor="let project of data.projects; let i = index"
-        [routerLink]="['/projects', project.id]"
-        class="project-card glass-panel"
-        data-cursor="project"
-        appReveal
-        [revealDelay]="(i % 4) * 90"
-        appTilt
-        [tiltMax]="2"
-        appSpotlight
-      >
-        <span class="project-card-corner project-card-corner-tl" aria-hidden="true"></span>
-        <span class="project-card-corner project-card-corner-br" aria-hidden="true"></span>
+    <div class="filters" role="group" aria-label="Filter projects by type" appReveal="fade">
+      @for (filter of filters; track filter) {
+        <button
+          type="button"
+          class="filter"
+          [class.is-active]="active() === filter"
+          [attr.aria-pressed]="active() === filter"
+          (click)="setFilter(filter)"
+        >
+          {{ filter }}<span class="filter__n">{{ countFor(filter) }}</span>
+        </button>
+      }
+    </div>
 
-        <div class="project-card-index">NO. {{ project.index }}</div>
+    <div #grid class="grid">
+      @for (p of data.projects; track p.id; let i = $index) {
+        <article
+          class="p-card card"
+          [class.is-feature]="i === 0 && active() === 'All'"
+          [class.is-hidden]="!matches(p)"
+          data-cursor="view"
+          appReveal
+          [revealDelay]="i % 2"
+        >
+          <a class="p-card__link" [routerLink]="['/projects', p.id]" [attr.aria-label]="'Read the case study: ' + p.title"></a>
 
-        <div class="project-card-body">
-          <h3 class="project-card-title">{{ project.title }}</h3>
-          <p class="project-card-summary">{{ project.summary }}</p>
+          <app-project-art
+            class="p-card__art"
+            [id]="p.id"
+            [accent]="p.accent"
+            [style.view-transition-name]="'art-' + p.id"
+          />
 
-          <div class="project-card-tags">
-            <span *ngFor="let concept of project.concepts | slice:0:5">{{ concept }}</span>
+          <div class="p-card__body">
+            <p class="p-card__meta">
+              <span class="mono">{{ p.index }}</span>
+              <span class="chip chip--solid">{{ p.categories[0] }}</span>
+            </p>
+            <h3 class="p-card__title">{{ p.title }}</h3>
+            <p class="p-card__sum">{{ p.summary }}</p>
+
+            <ul class="p-card__stats">
+              @for (h of p.highlights.slice(0, i === 0 ? 4 : 2); track h.label) {
+                <li>
+                  <strong>{{ h.value }}</strong>
+                  <span>{{ h.label }}</span>
+                </li>
+              }
+            </ul>
+
+            <ul class="p-card__tags">
+              @for (c of p.concepts.slice(0, 4); track c) {
+                <li class="chip">{{ c }}</li>
+              }
+            </ul>
+
+            <span class="p-card__cta">
+              Read the case study <app-icon name="arrow-up-right" class="cta-icon" [size]="18" />
+            </span>
           </div>
-        </div>
-
-        <div class="project-card-cta">
-          Inspect Spec
-          <app-icon name="arrow-right" [size]="16"></app-icon>
-        </div>
-      </a>
+        </article>
+      }
     </div>
   </div>
 </section>

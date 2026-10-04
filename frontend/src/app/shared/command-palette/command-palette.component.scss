@@ -1,129 +1,173 @@
-.palette-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 12vh 16px 0;
-  background: rgba(4, 5, 8, 0.6);
-  backdrop-filter: blur(4px);
-  animation: palette-fade-in 0.15s ease;
+.palette {
+  width: min(640px, calc(100vw - 24px));
+  margin: 12vh auto auto;
+  color: var(--text);
+
+  &[open] {
+    animation: palette-in 0.32s var(--ease-out) both;
+  }
+  &::backdrop {
+    background: rgba(4, 4, 5, 0.66);
+  }
 }
 
-@keyframes palette-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.palette-panel {
-  width: 100%;
-  max-width: 560px;
-  max-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  border-radius: var(--radius-lg);
+.panel {
   overflow: hidden;
-  animation: palette-rise-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.8);
 }
 
-@keyframes palette-rise-in {
-  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.palette-search {
+.search {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
-  flex-shrink: 0;
+  gap: 12px;
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
 
   input {
     flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    font-size: 15px;
-    color: var(--text-primary);
-    font-family: var(--font-body);
+    min-width: 0;
+    height: 62px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 1.05rem;
+    color: var(--text);
 
-    &::placeholder { color: var(--text-muted); }
-  }
-
-  kbd {
-    font-family: var(--font-display);
-    font-size: 11px;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 2px 6px;
+    &::placeholder {
+      color: var(--text-3);
+    }
   }
 }
 
-.palette-list {
+.esc,
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  color: var(--text-3);
+}
+kbd + kbd {
+  margin-left: 4px;
+}
+
+.list {
+  max-height: min(52vh, 420px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px;
 }
 
-.palette-empty {
-  padding: 24px 12px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 13.5px;
+.group {
+  padding: 14px 12px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
 
-.palette-item {
+.item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
+  gap: 14px;
+  padding: 11px 12px;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
   cursor: pointer;
-  color: var(--text-secondary);
-}
+  scroll-margin-block: 8px;
 
-.palette-item-active {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
+  .label {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hint {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+    max-width: 38%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.palette-item-label {
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  &.is-active {
+    background: var(--cta-bg);
+    color: var(--cta-ink);
 
-.palette-item-hint {
-  flex-shrink: 0;
-  font-size: 11.5px;
-  color: var(--text-muted);
-}
-
-.palette-footer {
-  display: flex;
-  gap: 16px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--border);
-  font-size: 11.5px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-
-  kbd {
-    font-family: var(--font-display);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    margin-right: 2px;
+    .label,
+    .hint {
+      color: var(--cta-ink);
+    }
   }
 }
 
-@media (max-width: 620px) {
-  .palette-backdrop { padding-top: 6vh; }
-  .palette-footer span:last-child { display: none; }
+.empty {
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--text-3);
+}
+
+.foot {
+  display: flex;
+  gap: 18px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// Phones: a bottom sheet is far easier to reach and type into than a floating box.
+@media (max-width: 640px) {
+  .palette {
+    width: 100%;
+    margin: auto 0 0;
+
+    &[open] {
+      animation: sheet-in 0.38s var(--ease-out) both;
+    }
+  }
+  .panel {
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .list {
+    max-height: 46vh;
+  }
+  .foot {
+    display: none;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: none;
+  }
 }

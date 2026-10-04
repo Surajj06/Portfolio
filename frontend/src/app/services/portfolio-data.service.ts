@@ -1,7 +1,99 @@
 import { Injectable } from '@angular/core';
-import { Project } from '../models/project.model';
+import { Project, ProjectBase, ProjectMeta } from '../models/project.model';
 import { ExperienceEntry } from '../models/experience.model';
 import { TechCategory } from '../models/tech.model';
+import { IconName } from '../shared/icons/icon.component';
+
+/**
+ * Presentation metadata for each project: filter group, art colour, and the
+ * headline facts shown on cards. Every figure below is lifted straight from
+ * that project's own case-study text further down — nothing is invented. If
+ * you change a case study, keep these in step with it.
+ */
+const PROJECT_META: Record<string, ProjectMeta> = {
+  'ai-voice-calling-platform': {
+    categories: ['AI / ML'],
+    accent: 'lime',
+    highlights: [
+      { value: '20,000+', label: 'outbound calls a day' },
+      { value: '<1s', label: 'turn latency' },
+      { value: '~80%', label: 'of turns answered in under 50ms' },
+      { value: '6', label: 'LLM providers with auto-failover' }
+    ]
+  },
+  'vehicle-catalogue-matching-engine': {
+    categories: ['Data'],
+    accent: 'violet',
+    highlights: [
+      { value: '15+', label: 'insurance partners on one codebase' },
+      { value: 'Days → mins', label: 'per-partner reconciliation' },
+      { value: '~10,000×', label: 'fewer comparisons via grouping' }
+    ]
+  },
+  'conversational-quote-assistant': {
+    categories: ['Backend & Full-stack'],
+    accent: 'sky',
+    highlights: [
+      { value: '0', label: 'backend changes needed' },
+      { value: 'Chat', label: 'replaces a multi-field form' }
+    ]
+  },
+  'whatsapp-document-verification-bot': {
+    categories: ['AI / ML'],
+    accent: 'coral',
+    highlights: [
+      { value: '0', label: 'document content sent to external LLMs' },
+      { value: 'Encrypted', label: 'files and sensitive fields at rest' }
+    ]
+  },
+  'agent-gamification-platform': {
+    categories: ['Backend & Full-stack'],
+    accent: 'pink',
+    highlights: [
+      { value: 'Live', label: 'leaderboard over SignalR' },
+      { value: '3', label: 'roles: agent, admin, master' }
+    ]
+  },
+  'stock-intelligence-engine': {
+    categories: ['AI / ML', 'Data'],
+    accent: 'amber',
+    highlights: [
+      { value: '11', label: 'news feeds merged and deduped' },
+      { value: '$0', label: 'data cost — free sources only' }
+    ]
+  },
+  'api-health-monitor': {
+    categories: ['Backend & Full-stack'],
+    accent: 'mint',
+    highlights: [
+      { value: '74+', label: 'partner APIs checked concurrently' },
+      { value: '3', label: 'alert channels: email, Slack, Teams' }
+    ]
+  }
+};
+
+export interface NavItem {
+  label: string;
+  id: string;
+  icon: IconName;
+}
+
+export interface PipelineStep {
+  id: string;
+  title: string;
+  icon: IconName;
+  detail: string;
+}
+
+export type CallRole = 'agent' | 'caller' | 'system';
+
+export interface CallLine {
+  role: CallRole;
+  text: string;
+  /** Pipeline step (index into `pipeline`) that is "active" while this line plays. */
+  step: number;
+  tag?: string;
+}
 
 /**
  * Single source of truth for editable portfolio content. Nothing here is
@@ -22,10 +114,118 @@ export class PortfolioDataService {
     photoUrl: '/assets/profile.webp' as string | null,
     resumePath: '/assets/resume.pdf',
     status: 'Building with AI + .NET',
+    // Shown on the About "local time" tile — edit if this isn't right.
+    location: 'India',
+    timezone: 'Asia/Kolkata',
+    timezoneLabel: 'IST',
     // Rotating hero identity line — each one maps directly to a techStack
     // category or the experience entry below, not an invented title.
     heroIdentities: ['AI Engineer', 'Voice AI Builder', 'LLM Systems Engineer', 'Automation Builder']
   };
+
+  /** Section navigation. `dock: true` items appear in the mobile bottom dock. */
+  readonly nav: (NavItem & { dock?: boolean; desktop?: boolean })[] = [
+    { label: 'Home', id: 'top', icon: 'home', dock: true },
+    { label: 'About', id: 'about', icon: 'user', dock: true, desktop: true },
+    { label: 'Experience', id: 'experience', icon: 'briefcase', desktop: true },
+    { label: 'Work', id: 'projects', icon: 'grid', dock: true, desktop: true },
+    { label: 'Skills', id: 'skills', icon: 'cpu', dock: true, desktop: true },
+    { label: 'Systems', id: 'systems', icon: 'layers', desktop: true },
+    { label: 'Contact', id: 'contact', icon: 'send', dock: true, desktop: true }
+  ];
+
+  /** Big-number strip under the hero — each figure is quoted from a case study. */
+  readonly stats = [
+    { value: '20,000+', label: 'Outbound calls a day handled by the voice platform' },
+    { value: '74+', label: 'Partner APIs monitored in real time' },
+    { value: '15+', label: 'Insurance partners integrated in the matching engine' },
+    { value: '7', label: 'Systems built, each with a full case study' }
+  ];
+
+  /** Curated ticker content — a high-signal slice of the full stack below. */
+  readonly marqueeItems = [
+    'Generative AI', 'LLM Orchestration', 'RAG', 'Agentic AI', 'Real-Time Voice AI',
+    'Python', 'FastAPI', 'C# / .NET', 'Angular', 'PostgreSQL', 'Redis', 'Docker',
+    'OpenAI', 'Anthropic Claude', 'Google Gemini', 'MCP', 'n8n', 'Prometheus + Grafana'
+  ];
+
+  /**
+   * How a call moves through the voice platform (project 01). Each detail is
+   * paraphrased from that case study's architecture / approach / solution text.
+   */
+  readonly pipeline: PipelineStep[] = [
+    {
+      id: 'connect',
+      title: 'Call connects',
+      icon: 'phone',
+      detail:
+        'Twilio streams the call audio in. A short greeting is pre-synthesized and played the instant the call connects, so the caller never hears dead air while the rest of the pipeline warms up behind it.'
+    },
+    {
+      id: 'clean',
+      title: 'Noise suppression + VAD',
+      icon: 'wave',
+      detail:
+        'Silero VAD detects when the caller is actually speaking and DeepFilterNet strips background noise from the phone line, so everything downstream works from clean speech.'
+    },
+    {
+      id: 'stt',
+      title: 'Speech-to-text',
+      icon: 'mic',
+      detail:
+        'Streaming speech-to-text converts the caller’s audio into text in real time and hands it to the conversation layer.'
+    },
+    {
+      id: 'brain',
+      title: 'State machine / LLM + RAG',
+      icon: 'brain',
+      detail:
+        'A deterministic state machine resolves roughly 80% of turns in under 50 ms — no LLM involved. Only genuinely off-script utterances escalate to the LLM, backed by a per-bot RAG pipeline over PostgreSQL.'
+    },
+    {
+      id: 'tts',
+      title: 'Text-to-speech',
+      icon: 'sparkles',
+      detail:
+        'The reply is synthesized and streamed back to the caller. A custom phonetics module covering 500+ names keeps Indian names pronounced correctly across regional languages.'
+    },
+    {
+      id: 'live',
+      title: 'Live dashboard update',
+      icon: 'layers',
+      detail:
+        'The multi-tenant control-plane dashboard (Angular + .NET) gets live updates pushed to the browser in real time. It only ever talks to the voice engine — never to telephony or AI providers directly.'
+    }
+  ];
+
+  /** Shown under the pipeline: the resilience story behind every stage. */
+  readonly pipelineNote =
+    'Every external provider sits behind an async circuit breaker, so a struggling STT, TTS or LLM provider degrades gracefully — failing over automatically — instead of taking calls down.';
+
+  /** Facts for the Systems tiles (all from the voice platform case study). */
+  readonly systemFacts = [
+    { value: '<1s', label: 'turn latency' },
+    { value: '~80%', label: 'turns on the <50ms fast path' },
+    { value: '6', label: 'LLM providers, auto-failover' },
+    { value: '500+', label: 'names in the phonetics module' }
+  ];
+
+  /**
+   * ILLUSTRATIVE conversation for the Systems demo card — written to show the
+   * pipeline stages in motion. It is not a recording of a real call and the
+   * UI labels it as such.
+   */
+  readonly callScript: CallLine[] = [
+    { role: 'system', text: 'Call connected', step: 0, tag: 'Twilio' },
+    { role: 'agent', text: 'Hello! I’m calling about your vehicle insurance renewal. Is this a good time?', step: 4, tag: 'TTS' },
+    { role: 'caller', text: 'Yes, go ahead.', step: 2, tag: 'STT' },
+    { role: 'system', text: 'On-script — answered by the state machine', step: 3, tag: 'Fast path' },
+    { role: 'agent', text: 'Great. Your renewal quote is ready. Would you like me to walk you through it?', step: 4, tag: 'TTS' },
+    { role: 'caller', text: 'Why did the premium change from last year?', step: 2, tag: 'STT' },
+    { role: 'system', text: 'Off-script — escalated to LLM + RAG', step: 3, tag: 'LLM + RAG' },
+    { role: 'agent', text: 'Good question. Let me explain what changed on your policy this year.', step: 4, tag: 'TTS' },
+    { role: 'system', text: 'Dashboard updated live', step: 5, tag: 'Live' }
+  ];
 
   readonly about = {
     summary:
@@ -98,7 +298,7 @@ export class PortfolioDataService {
 
   // githubUrl/liveUrl are null across the board — these are employer-owned
   // private codebases, not open-source repos with public links.
-  readonly projects: Project[] = [
+  private readonly baseProjects: ProjectBase[] = [
     {
       id: 'ai-voice-calling-platform',
       index: '01',
@@ -352,6 +552,9 @@ export class PortfolioDataService {
       }
     }
   ];
+
+  /** Authored content merged with its presentation metadata (see PROJECT_META). */
+  readonly projects: Project[] = this.baseProjects.map((project) => ({ ...project, ...PROJECT_META[project.id] }));
 
   readonly techStack: TechCategory[] = [
     { name: 'AI / ML', subtitle: 'Building intelligent systems for real-world impact', icon: 'brain', items: ['Generative AI', 'LLMs', 'RAG', 'NLP', 'Machine Learning', 'Deep Learning', 'Agentic AI', 'Real-Time Voice AI'] },

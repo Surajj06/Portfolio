@@ -1,178 +1,123 @@
-import { Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, ViewChild, afterNextRender, effect, inject } from '@angular/core';
+import { PerfGuardService } from '../../services/perf-guard.service';
 
-export type CursorState = 'default' | 'interactive' | 'project' | 'link' | 'drag' | 'text';
-
-const STATE_LABELS: Partial<Record<CursorState, string>> = {
-  project: 'VIEW PROJECT',
-  link: 'OPEN',
-  drag: 'DRAG'
-};
-
-// Text-editable fields need the native I-beam + blinking caret to stay
-// legible — the replacement dot/ring would otherwise sit right on top of
-// whatever's being typed (see the 'text' state below and its cursor:text
-// exemption from `body.custom-cursor-active` in styles.scss).
-const TEXT_INPUT_TYPES = new Set([
-  'text', 'email', 'password', 'search', 'tel', 'url', 'number',
-  'date', 'datetime-local', 'month', 'week', 'time'
-]);
-
-function isTextEntry(el: Element): boolean {
-  if ((el as HTMLElement).isContentEditable) return true;
-  if (el.tagName === 'TEXTAREA') return true;
-  if (el.tagName === 'INPUT') {
-    return TEXT_INPUT_TYPES.has((el as HTMLInputElement).type || 'text');
-  }
-  return false;
-}
+const INTERACTIVE = '[data-cursor], a[href], button, summary, [role="button"], label, input, textarea, select';
+const TEXT_FIELD = 'input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), textarea';
 
 /**
- * Replaces the native cursor on desktop with a trailing dot + expanding ring.
- * Any element can opt into a labelled state via `[data-cursor="project" |
- * "link" | "drag"]`; plain `a`/`button`/form controls get a generic
- * "interactive" scale-up with no label. Absent on touch/coarse pointers and
- * under prefers-reduced-motion — the native cursor is never hidden unless
- * this component is actually drawing its replacement (see the
- * `body.custom-cursor-active` rule in styles.scss).
+ * Desktop-only cursor: a precise dot plus a trailing ring that grows over
+ * links and turns into a labelled pill over elements marked
+ * `data-cursor="view"` (project cards).
+ *
+ * Built to cost almost nothing: one `transform` write per element per frame,
+ * only while the pointer is actually moving — the rAF loop stops itself as
+ * soon as the ring catches up. Created lazily (see app.component.html) and
+ * only on fine-pointer devices without reduced motion; torn down if the page
+ * drops into lite mode.
  */
 @Component({
   selector: 'app-custom-cursor',
   standalone: true,
-  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './custom-cursor.component.html',
   styleUrl: './custom-cursor.component.scss'
 })
-export class CustomCursorComponent implements OnInit, OnDestroy {
-  @HostBinding('attr.data-state') state: CursorState = 'default';
-  label = '';
+export class CustomCursorComponent {
+  @ViewChild('dot', { static: true }) private readonly dotRef!: ElementRef<HTMLElement>;
+  @ViewChild('follow', { static: true }) private readonly followRef!: ElementRef<HTMLElement>;
+  @ViewChild('tag', { static: true }) private readonly tagRef!: ElementRef<HTMLElement>;
 
-  private enabled = false;
-  private targetX = 0;
-  private targetY = 0;
-  private dotX = 0;
-  private dotY = 0;
-  private glowX = 0;
-  private glowY = 0;
-  private raf?: number;
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly zone = inject(NgZone);
+  private readonly perf = inject(PerfGuardService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly onMouseMove = (event: MouseEvent): void => {
-    this.targetX = event.clientX;
-    this.targetY = event.clientY;
-    this.el.nativeElement.style.setProperty('--cursor-opacity', '1');
-  };
+  private tx = 0;
+  private ty = 0;
+  private fx = 0;
+  private fy = 0;
+  private raf = 0;
+  private seen = false;
+  private state = '';
+  private cleanup?: () => void;
 
-  private readonly onWindowLeave = (): void => {
-    this.el.nativeElement.style.setProperty('--cursor-opacity', '0');
-  };
-
-  private readonly onMouseOver = (event: MouseEvent): void => {
-    this.applyState(event.target as HTMLElement | null);
-  };
-
-  // A click often swaps the DOM under the pointer (SPA route navigation,
-  // *ngIf toggles) without the mouse physically moving — mouseover/mouseout
-  // only fire on boundary crossings, so the label (e.g. "VIEW PROJECT")
-  // would otherwise stay stuck until the next real mouse movement. Re-hit-test
-  // the same screen point once the click's DOM update has settled.
-  private readonly onClick = (): void => {
-    requestAnimationFrame(() => {
-      this.applyState(document.elementFromPoint(this.targetX, this.targetY) as HTMLElement | null);
+  constructor() {
+    afterNextRender(() => this.zone.runOutsideAngular(() => this.init()));
+    effect(() => {
+      if (this.perf.lite()) this.cleanup?.();
     });
-  };
-
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly isBrowser = isPlatformBrowser(this.platformId);
-
-  constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
-
-  ngOnInit(): void {
-    if (!this.isBrowser) return;
-
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
-    this.enabled = !prefersReducedMotion && !!isFinePointer;
-
-    if (!this.enabled) {
-      this.el.nativeElement.style.display = 'none';
-      return;
-    }
-
-    document.body.classList.add('custom-cursor-active');
-
-    // Mouse tracking and the render loop mutate CSS custom properties
-    // directly and run at pointer/frame rate — none of that needs Angular's
-    // change detection, so it all runs outside the zone. `applyState` is the
-    // one path that touches template-bound state (`state`/`label`), so it
-    // explicitly re-enters the zone, but only when it actually changes.
-    this.zone.runOutsideAngular(() => {
-      window.addEventListener('mousemove', this.onMouseMove);
-      window.addEventListener('mouseleave', this.onWindowLeave);
-      window.addEventListener('mouseover', this.onMouseOver);
-      window.addEventListener('click', this.onClick);
-      this.loop();
-    });
+    this.destroyRef.onDestroy(() => this.cleanup?.());
   }
 
-  private applyState(target: HTMLElement | null): void {
-    const explicit = target?.closest?.('[data-cursor]') as HTMLElement | null;
+  private init(): void {
+    const host = this.host.nativeElement;
+    const dot = this.dotRef.nativeElement;
+    const follow = this.followRef.nativeElement;
+    const tag = this.tagRef.nativeElement;
 
-    if (explicit) {
-      const kind = explicit.dataset['cursor'] as CursorState;
-      this.zone.run(() => {
-        this.state = kind;
-        this.label = STATE_LABELS[kind] ?? '';
-      });
-      return;
-    }
+    const tick = () => {
+      this.fx += (this.tx - this.fx) * 0.2;
+      this.fy += (this.ty - this.fy) * 0.2;
+      follow.style.transform = `translate3d(${this.fx.toFixed(1)}px, ${this.fy.toFixed(1)}px, 0)`;
+      // Keep animating only until the ring has caught up with the pointer.
+      this.raf = Math.abs(this.tx - this.fx) + Math.abs(this.ty - this.fy) > 0.3 ? requestAnimationFrame(tick) : 0;
+    };
 
-    const textEntry = target?.closest?.('input, textarea, [contenteditable]');
-    if (textEntry && isTextEntry(textEntry)) {
-      this.zone.run(() => {
-        this.state = 'text';
-        this.label = '';
-      });
-      return;
-    }
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      this.tx = e.clientX;
+      this.ty = e.clientY;
+      if (!this.seen) {
+        this.seen = true;
+        this.fx = this.tx;
+        this.fy = this.ty;
+        host.classList.add('is-visible');
+      }
+      dot.style.transform = `translate3d(${this.tx}px, ${this.ty}px, 0)`;
+      if (!this.raf) this.raf = requestAnimationFrame(tick);
+    };
 
-    const interactive = target?.closest?.('a, button, input, select, [role="button"]');
-    const nextState: CursorState = interactive ? 'interactive' : 'default';
-    if (nextState === this.state && !this.label) return;
-    this.zone.run(() => {
-      this.state = nextState;
-      this.label = '';
-    });
-  }
+    const setState = (next: string, label = '') => {
+      if (next === this.state) return;
+      if (this.state) host.classList.remove(`is-${this.state}`);
+      this.state = next;
+      if (next) host.classList.add(`is-${next}`);
+      if (next === 'view') tag.textContent = label || 'View';
+    };
 
-  private loop = (): void => {
-    // Dot tracks tightly, the ambient glow trails a bit looser for an
-    // ambient feel — both raised from their original factors since the CSS
-    // used to double up a `transition: transform` on top of this same lerp,
-    // which made the whole cursor read as noticeably laggy.
-    this.dotX += (this.targetX - this.dotX) * 0.55;
-    this.dotY += (this.targetY - this.dotY) * 0.55;
-    this.glowX += (this.targetX - this.glowX) * 0.2;
-    this.glowY += (this.targetY - this.glowY) * 0.2;
+    const onOver = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const target = (e.target as Element | null)?.closest?.<HTMLElement>(INTERACTIVE);
+      if (!target) return setState('');
+      if (target.matches(TEXT_FIELD)) return setState('text');
+      if (target.dataset['cursor'] === 'view') return setState('view', target.dataset['cursorLabel']);
+      setState('link');
+    };
 
-    const host = this.el.nativeElement;
-    host.style.setProperty('--cursor-x', `${this.dotX}px`);
-    host.style.setProperty('--cursor-y', `${this.dotY}px`);
-    host.style.setProperty('--glow-x', `${this.glowX}px`);
-    host.style.setProperty('--glow-y', `${this.glowY}px`);
+    const onDown = () => host.classList.add('is-down');
+    const onUp = () => host.classList.remove('is-down');
+    const onLeave = () => host.classList.remove('is-visible');
+    const onEnter = () => this.seen && host.classList.add('is-visible');
 
-    this.raf = requestAnimationFrame(this.loop);
-  };
+    document.body.classList.add('cursor-on');
+    document.addEventListener('pointermove', onMove, { passive: true });
+    document.addEventListener('pointerover', onOver, { passive: true });
+    document.addEventListener('pointerdown', onDown, { passive: true });
+    document.addEventListener('pointerup', onUp, { passive: true });
+    document.documentElement.addEventListener('mouseleave', onLeave);
+    document.documentElement.addEventListener('mouseenter', onEnter);
 
-  ngOnDestroy(): void {
-    if (!this.isBrowser) return;
-
-    if (this.raf) cancelAnimationFrame(this.raf);
-    if (this.enabled) {
-      window.removeEventListener('mousemove', this.onMouseMove);
-      window.removeEventListener('mouseleave', this.onWindowLeave);
-      window.removeEventListener('mouseover', this.onMouseOver);
-      window.removeEventListener('click', this.onClick);
-    }
-    document.body.classList.remove('custom-cursor-active');
+    this.cleanup = () => {
+      cancelAnimationFrame(this.raf);
+      document.body.classList.remove('cursor-on');
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerover', onOver);
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('pointerup', onUp);
+      document.documentElement.removeEventListener('mouseleave', onLeave);
+      document.documentElement.removeEventListener('mouseenter', onEnter);
+      host.classList.remove('is-visible');
+      this.cleanup = undefined;
+    };
   }
 }

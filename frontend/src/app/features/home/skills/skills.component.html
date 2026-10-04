@@ -1,14 +1,79 @@
-<section id="skills" class="section skills">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
-
+<section id="skills" class="section skills" aria-labelledby="skills-title">
   <div class="container">
     <app-section-heading
-      eyebrow="Toolkit"
-      title="AI Engineering Stack"
-      lede="The tools and disciplines I work across — from model behavior to the infrastructure around it. Select any node to see where it's actually been used."
-    ></app-section-heading>
+      kicker="Toolkit"
+      headingId="skills-title"
+      lede="The tools and disciplines I work across — from model behavior to the infrastructure around it. Tap any tool to see where I’ve actually shipped it."
+    >
+      The <em>stack</em> behind the work.
+    </app-section-heading>
 
-    <app-skill-graph appReveal></app-skill-graph>
-    <app-top-skills></app-top-skills>
+    <div class="cats">
+      @for (cat of data.techStack; track cat.name; let i = $index) {
+        <article class="cat card" appReveal [revealDelay]="i % 3">
+          <header class="cat__head">
+            <span class="cat__icon"><app-icon [name]="cat.icon" [size]="22" /></span>
+            <div>
+              <h3 class="cat__name">{{ cat.name }}</h3>
+              <p class="cat__sub">{{ cat.subtitle }}</p>
+            </div>
+          </header>
+
+          <ul class="cat__items">
+            @for (item of cat.items; track item) {
+              <li>
+                <button
+                  type="button"
+                  class="tool"
+                  [class.is-active]="isActive(cat, item)"
+                  [class.is-used]="usage(item).length > 0"
+                  [attr.aria-pressed]="isActive(cat, item)"
+                  (click)="select(cat, item)"
+                >
+                  {{ item }}
+                  @if (usage(item).length) {
+                    <span class="tool__n" aria-hidden="true">{{ usage(item).length }}</span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+
+          <!-- Expands inside the card that was tapped, so the answer is right under the finger -->
+          <div class="cat__used" [class.is-open]="isOpenCategory(cat)" [attr.inert]="isOpenCategory(cat) ? null : ''">
+            <div class="cat__used-in">
+              @if (selected(); as s) {
+                @if (isOpenCategory(cat)) {
+                  @if (usage(s.item).length) {
+                    <p class="used__title">
+                      <strong>{{ s.item }}</strong> — shipped in {{ usage(s.item).length }}
+                      {{ usage(s.item).length === 1 ? 'project' : 'projects' }}
+                    </p>
+                    <ul class="used__list">
+                      @for (p of usage(s.item); track p.id) {
+                        <li>
+                          <a [routerLink]="['/projects', p.id]">
+                            {{ p.title }} <app-icon name="arrow-up-right" [size]="15" />
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="used__title">
+                      <strong>{{ s.item }}</strong> is part of my wider toolkit — not tied to one of the case
+                      studies below.
+                    </p>
+                  }
+                }
+              }
+            </div>
+          </div>
+        </article>
+      }
+
+      <article class="cat card rank" appReveal [revealDelay]="1">
+        <app-top-skills />
+      </article>
+    </div>
   </div>
 </section>

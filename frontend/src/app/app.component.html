@@ -1,10 +1,20 @@
-<a class="skip-link" href="#top">Skip to content</a>
-<app-custom-cursor></app-custom-cursor>
-<app-scroll-progress></app-scroll-progress>
-<app-command-palette></app-command-palette>
-<app-navbar></app-navbar>
-<main>
-  <router-outlet></router-outlet>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<app-scroll-progress />
+<app-navbar />
+
+<main id="main" tabindex="-1">
+  <router-outlet />
 </main>
-<app-footer></app-footer>
-<app-back-to-top></app-back-to-top>
+
+<app-footer />
+<app-toast />
+
+<!-- Lazy extras. `@defer` blocks render nothing on the server and only load
+     their code when wanted, so they add zero weight to first paint. -->
+@defer (when cursorReady(); prefetch on idle) {
+  <app-custom-cursor />
+}
+@defer (when palette.wanted(); prefetch on idle) {
+  <app-command-palette />
+}

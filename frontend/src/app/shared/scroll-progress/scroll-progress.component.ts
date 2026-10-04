@@ -1,44 +1,48 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, PLATFORM_ID, ViewChild, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, afterNextRender, inject } from '@angular/core';
+import { ScrollService } from '../../services/scroll.service';
 
 /**
- * Thin fixed progress bar tracking scroll depth through the whole page.
- * Sits above the navbar (z-index higher) so it's always visible while
- * scrolling. Purely decorative — updates the DOM directly on every scroll
- * frame outside Angular's zone, since routing this through a signal/template
- * binding would trigger a full change-detection pass on every pixel scrolled.
+ * Thin reading-progress bar. Where the browser supports scroll-driven CSS
+ * animations it runs with no JavaScript at all; elsewhere it falls back to the
+ * shared ScrollService, using a cached max-scroll value (refreshed by a
+ * ResizeObserver) so no layout is read while scrolling.
  */
 @Component({
   selector: 'app-scroll-progress',
   standalone: true,
-  imports: [CommonModule],
-  template: `<div #bar class="scroll-progress" aria-hidden="true"></div>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<div #bar class="bar" aria-hidden="true"></div>`,
   styleUrl: './scroll-progress.component.scss'
 })
-export class ScrollProgressComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('bar', { static: true }) barRef!: ElementRef<HTMLElement>;
+export class ScrollProgressComponent {
+  @ViewChild('bar', { static: true }) private readonly barRef!: ElementRef<HTMLElement>;
 
-  private readonly onScroll = (): void => {
-    const doc = document.documentElement;
-    const scrollable = doc.scrollHeight - doc.clientHeight;
-    const progress = scrollable > 0 ? Math.min(doc.scrollTop / scrollable, 1) : 0;
-    this.barRef.nativeElement.style.transform = `scaleX(${progress})`;
-  };
+  private readonly scroll = inject(ScrollService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  constructor() {
+    afterNextRender(() => {
+      const bar = this.barRef.nativeElement;
 
-  constructor(private readonly zone: NgZone) {}
+      if (typeof CSS !== 'undefined' && CSS.supports('animation-timeline: scroll()')) {
+        bar.classList.add('native');
+        return;
+      }
 
-  ngAfterViewInit(): void {
-    if (!this.isBrowser) return;
+      let max = 1;
+      const measure = () => (max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight));
+      measure();
+      const resizeObserver = new ResizeObserver(measure);
+      resizeObserver.observe(document.body);
 
-    this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
-  }
+      const unsubscribe = this.scroll.subscribe(({ y }) => {
+        bar.style.transform = `scaleX(${Math.min(1, y / max)})`;
+      });
 
-  ngOnDestroy(): void {
-    if (!this.isBrowser) return;
-
-    window.removeEventListener('scroll', this.onScroll);
+      this.destroyRef.onDestroy(() => {
+        resizeObserver.disconnect();
+        unsubscribe();
+      });
+    });
   }
 }

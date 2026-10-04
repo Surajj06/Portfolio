@@ -1,21 +1,31 @@
-<section id="resume" class="section resume">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
-
+<section id="resume" class="section resume" aria-labelledby="resume-title">
   <div class="container">
-    <app-section-heading eyebrow="Download" title="Resume"></app-section-heading>
+    <div class="resume-card card" appReveal>
+      <div class="paper" aria-hidden="true">
+        <span class="paper__sheet paper__sheet--back"></span>
+        <span class="paper__sheet">
+          <i class="paper__name"></i>
+          <i class="paper__line"></i>
+          <i class="paper__line paper__line--short"></i>
+          <i class="paper__block"></i>
+          <i class="paper__line"></i>
+          <i class="paper__line paper__line--mid"></i>
+          <i class="paper__line paper__line--short"></i>
+        </span>
+      </div>
 
-    <div class="resume-card glass-panel" appReveal appSpotlight>
-      <p class="resume-summary">{{ data.about.summary }}</p>
-
-      <div class="resume-actions">
-        <a [href]="data.profile.resumePath" download class="btn btn-primary" appMagnetic>
-          Download Resume
-          <app-icon name="download" [size]="16"></app-icon>
-        </a>
-        <a [href]="data.profile.resumePath" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-          View Resume
-          <app-icon name="external" [size]="16"></app-icon>
-        </a>
+      <div class="resume-card__copy">
+        <p class="kicker">Résumé</p>
+        <h2 id="resume-title" class="resume-card__title">Prefer the <em>short version</em>?</h2>
+        <p class="lede">Two pages: experience, the systems I’ve shipped, and the stack — ready to forward.</p>
+        <div class="resume-card__actions">
+          <a class="btn btn--primary" [href]="data.profile.resumePath" download appMagnetic>
+            Download PDF <app-icon name="download" [size]="18" />
+          </a>
+          <a class="btn btn--ghost" [href]="data.profile.resumePath" target="_blank" rel="noopener noreferrer">
+            View online <app-icon name="external" [size]="18" />
+          </a>
+        </div>
       </div>
     </div>
   </div>

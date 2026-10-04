@@ -1,4 +1,7 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, NgZone, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { DeviceService } from './device.service';
+import { PerfGuardService } from './perf-guard.service';
 
 export type Theme = 'dark' | 'light';
 
@@ -9,35 +12,52 @@ declare global {
   }
 }
 
+const THEME_COLOR: Record<Theme, string> = { dark: '#09090a', light: '#f4f2ea' };
+
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  // Every fresh page load always starts dark, regardless of system
-  // preference or any previously toggled choice — the toggle can still
-  // switch to light for the current session, but it isn't persisted.
+  // Every fresh page load starts dark regardless of system preference or any
+  // earlier toggle — the toggle switches the current session only (a product
+  // decision carried over from the previous version).
   readonly theme = signal<Theme>('dark');
 
-  constructor() {
-    // `document` doesn't exist under SSR at all (platform-server never puts
-    // it on the global scope), so this effect is a no-op server-side and
-    // only ever applies the attribute in the browser.
-    effect(() => {
-      if (typeof document === 'undefined') return;
-      document.documentElement.setAttribute('data-theme', this.theme());
-    });
-  }
+  private readonly doc = inject(DOCUMENT);
+  private readonly zone = inject(NgZone);
+  private readonly device = inject(DeviceService);
+  private readonly perf = inject(PerfGuardService);
 
-  toggle(): void {
-    const next = this.theme() === 'dark' ? 'light' : 'dark';
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  /**
+   * Flips the theme. When the browser supports View Transitions the new theme
+   * is revealed as an expanding circle from `origin` (usually the toggle).
+   */
+  toggle(origin?: { x: number; y: number }): void {
+    const next: Theme = this.theme() === 'dark' ? 'light' : 'dark';
+    const apply = () =>
+      this.zone.run(() => {
+        this.theme.set(next);
+        const root = this.doc.documentElement;
+        root.setAttribute('data-theme', next);
+        this.doc.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[next]);
+      });
 
-    // View Transitions gives a free crossfade between the old and new theme
-    // screenshots — this is a single synchronous attribute flip with nothing
-    // async inside it, unlike router navigation, so it settles immediately
-    // rather than waiting on anything.
-    if (!prefersReducedMotion && document.startViewTransition) {
-      document.startViewTransition(() => this.theme.set(next));
-    } else {
-      this.theme.set(next);
+    const startTransition = this.doc.startViewTransition?.bind(this.doc);
+    if (!startTransition || this.device.reducedMotion || this.perf.lite()) {
+      apply();
+      return;
     }
+
+    const x = origin?.x ?? window.innerWidth - 48;
+    const y = origin?.y ?? 40;
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+    const transition = startTransition(apply);
+    transition.ready
+      .then(() =>
+        this.doc.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 650, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }
+        )
+      )
+      .catch(() => undefined);
   }
 }

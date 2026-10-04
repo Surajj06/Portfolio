@@ -1,7 +1,5 @@
-<div class="cursor-glow" aria-hidden="true"></div>
-<div class="cursor-ring" aria-hidden="true">
-  <div class="cursor-ring-shape">
-    <span class="cursor-label" *ngIf="label">{{ label }}</span>
-  </div>
+<div #dot class="dot" aria-hidden="true"></div>
+<div #follow class="follow" aria-hidden="true">
+  <span class="ring"></span>
+  <span #tag class="tag"></span>
 </div>
-<div class="cursor-dot" aria-hidden="true"></div>

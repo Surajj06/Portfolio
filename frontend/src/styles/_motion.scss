@@ -1,0 +1,212 @@
+/* ==========================================================================
+   Motion — everything here animates transform/opacity only (compositor
+   work, never layout or paint), so it stays smooth even on weak phones.
+   ========================================================================== */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 44px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Masked line reveal: the child slides up out of an overflow:hidden parent */
+@keyframes mask-up {
+  from {
+    transform: translate3d(0, 108%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* NOTE: pop/float use the individual `scale` / `translate` properties (not
+   `transform` with var()/calc()) so they stay on the compositor. An element's
+   static tilt lives in the separate `rotate` property. Measured: the old
+   var()-in-transform version repainted every frame and kept ~15% of a CPU core
+   busy at idle. */
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 0.82;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  75%,
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -4%, 0) scale(1.08);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-rev {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Entrance helper for above-the-fold content: pure CSS, so it plays on the
+   first paint of the prerendered HTML — no JS needed to start it. */
+.rise {
+  animation: rise 0.95s var(--ease-out) both;
+  animation-delay: calc(var(--d, 0) * 85ms + 60ms);
+}
+
+/* ---------- Scroll reveal ----------
+   The `js` class is added by an inline script in index.html, so without JS
+   (or before it runs) everything is simply visible. RevealService adds `.in`
+   once as elements approach the viewport. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 34px, 0);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 80ms);
+}
+html.js [data-reveal='fade'] {
+  transform: none;
+}
+html.js [data-reveal='scale'] {
+  transform: scale(0.94) translate3d(0, 20px, 0);
+}
+html.js [data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Kinetic headings (appSplit) ----------
+   Baseline: fade/rise in like any [data-reveal]. Once GSAP has pre-split the
+   heading (`.is-split`) the host itself is simply shown and the *lines*
+   animate inside their masks. SplitText advises against text-wrap: balance. */
+[data-split] {
+  text-wrap: wrap;
+}
+html.js [data-split]:not(.is-split) {
+  opacity: 0;
+  transform: translate3d(0, 34px, 0);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out);
+}
+html.js [data-split].in,
+html.js [data-split].is-split {
+  opacity: 1;
+  transform: none;
+}
+html.js [data-split].is-split {
+  transition: none;
+}
+// Masks clip overflow, so give descenders (g, p, y) and the serif accent room.
+.split-line-mask,
+.split-word-mask {
+  padding: 0.08em 0.04em 0.16em;
+  margin: -0.08em -0.04em -0.16em;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-split] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Route transitions (View Transitions API) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+::view-transition-group(*) {
+  animation-duration: 0.55s;
+  animation-timing-function: var(--ease-out);
+}
+
+/* ---------- Theme switch: circular reveal via View Transitions ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}

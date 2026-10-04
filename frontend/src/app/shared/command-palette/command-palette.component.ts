@@ -1,188 +1,185 @@
-import { Component, ElementRef, HostListener, Signal, ViewChild, computed, effect, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconComponent } from '../icons/icon.component';
+import { IconComponent, IconName } from '../icons/icon.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
+import { ToastService } from '../../services/toast.service';
 import { CommandPaletteService } from './command-palette.service';
 
 interface PaletteCommand {
   id: string;
   label: string;
   hint: string;
+  icon: IconName;
   group: 'Sections' | 'Projects' | 'Actions';
   run: () => void;
 }
 
 /**
- * Ctrl/Cmd+K quick-jump overlay — search across page sections, projects, and
- * a couple of common actions (theme toggle, resume). Mounted once at the app
- * root (see app.component.html). Keyboard events are low-frequency, so
- * unlike the mousemove/scroll listeners elsewhere, there's no need to run
- * this outside Angular's zone.
+ * Ctrl/Cmd+K quick-jump: sections, projects and a few actions. Built on a
+ * native <dialog> (modal) so focus trapping, Escape-to-close and inert
+ * background come from the platform. On phones it's a bottom sheet.
  */
 @Component({
   selector: 'app-command-palette',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   templateUrl: './command-palette.component.html',
   styleUrl: './command-palette.component.scss'
 })
 export class CommandPaletteComponent {
-  @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('dialog', { static: true }) private readonly dialogRef!: ElementRef<HTMLDialogElement>;
+  @ViewChild('search', { static: true }) private readonly searchRef!: ElementRef<HTMLInputElement>;
+
+  readonly palette = inject(CommandPaletteService);
+  private readonly router = inject(Router);
+  private readonly data = inject(PortfolioDataService);
+  private readonly theme = inject(ThemeService);
+  private readonly toast = inject(ToastService);
 
   readonly query = signal('');
-  readonly activeIndex = signal(0);
+  readonly active = signal(0);
 
-  private readonly sectionCommands: PaletteCommand[];
-  private readonly projectCommands: PaletteCommand[];
-  private readonly allCommands: Signal<PaletteCommand[]>;
-  readonly filtered: Signal<PaletteCommand[]>;
-
-  constructor(
-    readonly palette: CommandPaletteService,
-    private readonly router: Router,
-    private readonly data: PortfolioDataService,
-    private readonly theme: ThemeService
-  ) {
-    const sections: Array<{ label: string; fragment: string }> = [
-      { label: 'Home', fragment: 'top' },
-      { label: 'About', fragment: 'about' },
-      { label: 'Experience', fragment: 'experience' },
-      { label: 'Projects', fragment: 'projects' },
-      { label: 'Skills', fragment: 'skills' },
-      { label: 'Systems', fragment: 'systems' },
-      { label: 'Contact', fragment: 'contact' }
-    ];
-
-    this.sectionCommands = sections.map((section) => ({
-      id: `section-${section.fragment}`,
-      label: section.label,
+  private readonly commands = computed<PaletteCommand[]>(() => {
+    const sections = this.data.nav.map<PaletteCommand>((item) => ({
+      id: `s-${item.id}`,
+      label: item.label === 'Work' ? 'Projects' : item.label,
       hint: 'Section',
+      icon: item.icon,
       group: 'Sections',
-      run: () => this.router.navigate(['/'], { fragment: section.fragment })
+      run: () => this.router.navigate(['/'], { fragment: item.id })
     }));
 
-    this.projectCommands = this.data.projects.map((project) => ({
-      id: `project-${project.id}`,
+    const projects = this.data.projects.map<PaletteCommand>((project) => ({
+      id: `p-${project.id}`,
       label: project.title,
-      hint: 'Project',
+      hint: `Case study ${project.index}`,
+      icon: 'arrow-up-right',
       group: 'Projects',
       run: () => this.router.navigate(['/projects', project.id])
     }));
 
-    // Recomputed on every access so the theme-toggle label reflects the
-    // *current* theme, not whatever it was when the palette first mounted.
-    this.allCommands = computed<PaletteCommand[]>(() => {
-      const actionCommands: PaletteCommand[] = [
-        {
-          id: 'action-theme',
-          label: `Switch to ${this.theme.theme() === 'dark' ? 'light' : 'dark'} mode`,
-          hint: 'Toggle theme',
-          group: 'Actions',
-          run: () => this.theme.toggle()
-        },
-        {
-          id: 'action-resume',
-          label: 'Download resume',
-          hint: 'PDF',
-          group: 'Actions',
-          run: () => window.open(this.data.profile.resumePath, '_blank')
-        },
-        {
-          id: 'action-email',
-          label: `Email ${this.data.profile.name}`,
-          hint: this.data.profile.email,
-          group: 'Actions',
-          run: () => (window.location.href = `mailto:${this.data.profile.email}`)
-        }
-      ];
-      return [...this.sectionCommands, ...this.projectCommands, ...actionCommands];
-    });
-
-    this.filtered = computed(() => {
-      const q = this.query().trim().toLowerCase();
-      const all = this.allCommands();
-      if (!q) return all;
-      return all.filter((cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q));
-    });
-
-    // Single source of truth for "just opened" behavior, regardless of
-    // whether it was triggered by Ctrl+K or the navbar's search button.
-    // allowSignalWrites: this effect's only job is resetting other signals
-    // in response to isOpen flipping true — it never reads its own writes,
-    // so there's no risk of the loop this guard normally protects against.
-    effect(
-      () => {
-        if (!this.palette.isOpen()) return;
-        this.query.set('');
-        this.activeIndex.set(0);
-        setTimeout(() => this.searchInputRef?.nativeElement.focus(), 0);
+    const actions: PaletteCommand[] = [
+      {
+        id: 'a-theme',
+        label: `Switch to ${this.theme.theme() === 'dark' ? 'light' : 'dark'} mode`,
+        hint: 'Theme',
+        icon: this.theme.theme() === 'dark' ? 'sun' : 'moon',
+        group: 'Actions',
+        run: () => this.theme.toggle()
       },
-      { allowSignalWrites: true }
-    );
+      {
+        id: 'a-resume',
+        label: 'Download résumé',
+        hint: 'PDF',
+        icon: 'download',
+        group: 'Actions',
+        run: () => window.open(this.data.profile.resumePath, '_blank', 'noopener')
+      },
+      {
+        id: 'a-copy',
+        label: 'Copy email address',
+        hint: this.data.profile.email,
+        icon: 'copy',
+        group: 'Actions',
+        run: () => this.copyEmail()
+      },
+      {
+        id: 'a-github',
+        label: 'Open GitHub',
+        hint: 'External',
+        icon: 'github',
+        group: 'Actions',
+        run: () => window.open(this.data.profile.github, '_blank', 'noopener')
+      },
+      {
+        id: 'a-linkedin',
+        label: 'Open LinkedIn',
+        hint: 'External',
+        icon: 'linkedin',
+        group: 'Actions',
+        run: () => window.open(this.data.profile.linkedin, '_blank', 'noopener')
+      }
+    ];
+    return [...sections, ...projects, ...actions];
+  });
+
+  readonly filtered = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    const all = this.commands();
+    return q ? all.filter((c) => `${c.label} ${c.group} ${c.hint}`.toLowerCase().includes(q)) : all;
+  });
+
+  constructor() {
+    // The signal is the source of truth; the dialog just follows it.
+    effect(() => {
+      const dialog = this.dialogRef.nativeElement;
+      if (this.palette.isOpen()) {
+        if (!dialog.open) {
+          this.query.set('');
+          this.active.set(0);
+          dialog.showModal();
+          this.searchRef.nativeElement.focus();
+        }
+      } else if (dialog.open) {
+        dialog.close();
+      }
+    }, { allowSignalWrites: true });
   }
 
-  @HostListener('window:keydown', ['$event'])
-  onGlobalKeydown(event: KeyboardEvent): void {
-    const isOpenShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
-    if (isOpenShortcut) {
-      event.preventDefault();
-      this.palette.toggle();
-      return;
-    }
-
-    if (!this.palette.isOpen()) return;
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.close();
-      return;
-    }
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      this.move(1);
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      this.move(-1);
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      this.runActive();
-    }
-  }
-
-  close(): void {
+  /** Native close (Escape key) → keep the signal in sync. */
+  onNativeClose(): void {
     this.palette.close();
   }
 
-  onQueryChange(value: string): void {
+  /** Clicks on the dialog element itself (outside the panel) are backdrop clicks. */
+  onDialogClick(event: MouseEvent): void {
+    if (event.target === this.dialogRef.nativeElement) this.palette.close();
+  }
+
+  onInput(value: string): void {
     this.query.set(value);
-    this.activeIndex.set(0);
+    this.active.set(0);
   }
 
-  onBackdropClick(): void {
-    this.close();
+  onKeydown(event: KeyboardEvent): void {
+    const count = this.filtered().length;
+    if (event.key === 'ArrowDown' && count) {
+      event.preventDefault();
+      this.active.update((i) => (i + 1) % count);
+      this.scrollActiveIntoView();
+    } else if (event.key === 'ArrowUp' && count) {
+      event.preventDefault();
+      this.active.update((i) => (i - 1 + count) % count);
+      this.scrollActiveIntoView();
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const command = this.filtered()[this.active()];
+      if (command) this.run(command);
+    }
   }
 
-  select(index: number): void {
-    this.activeIndex.set(index);
-  }
-
-  runCommand(command: PaletteCommand): void {
-    this.close();
+  run(command: PaletteCommand): void {
+    this.palette.close();
     command.run();
   }
 
-  private move(delta: number): void {
-    const count = this.filtered().length;
-    if (!count) return;
-    this.activeIndex.update((i) => (i + delta + count) % count);
+  /** First command of each group gets a heading in the list. */
+  showGroup(index: number): boolean {
+    const list = this.filtered();
+    return index === 0 || list[index].group !== list[index - 1].group;
   }
 
-  private runActive(): void {
-    const items = this.filtered();
-    const command = items[this.activeIndex()];
-    if (command) this.runCommand(command);
+  private scrollActiveIntoView(): void {
+    queueMicrotask(() => document.getElementById(`pal-${this.active()}`)?.scrollIntoView({ block: 'nearest' }));
+  }
+
+  private copyEmail(): void {
+    const email = this.data.profile.email;
+    navigator.clipboard?.writeText(email).then(
+      () => this.toast.show('Email copied'),
+      () => (window.location.href = `mailto:${email}`)
+    );
   }
 }

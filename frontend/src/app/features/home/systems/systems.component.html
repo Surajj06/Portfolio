@@ -1,47 +1,85 @@
-<section id="systems" class="section systems">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
-
+<section id="systems" class="section systems" aria-labelledby="systems-title">
   <div class="container">
     <app-section-heading
-      eyebrow="Neural Orchestration"
-      title="The System, Rendered As What It Is"
-      lede="Not a flowchart — a network. Every request moves through layers of orchestration before it reaches a model and back."
-    ></app-section-heading>
+      kicker="Systems"
+      headingId="systems-title"
+      lede="Not a flowchart — the real thing, moving. Watch a call travel through the pipeline behind my voice platform, one stage at a time."
+    >
+      How a voice agent <em>thinks</em> in real time.
+    </app-section-heading>
 
-    <div class="systems-stage" appReveal>
-      @if (networkEnabled) {
-        @defer (on idle) {
-          <app-systems-network></app-systems-network>
-        }
+    <ul class="facts">
+      @for (fact of data.systemFacts; track fact.label; let i = $index) {
+        <li class="card fact" appReveal [revealDelay]="i">
+          <strong>{{ fact.value }}</strong>
+          <span>{{ fact.label }}</span>
+        </li>
       }
+    </ul>
 
-      <div class="systems-panel glass-panel">
-        <p class="systems-panel-title">AI PIPELINE // PRODUCTION</p>
-        <div class="systems-panel-grid">
-          <div class="systems-panel-stat" *ngFor="let stat of stats">
-            <span class="systems-panel-label">{{ stat.label }}</span>
-            <span class="systems-panel-value">{{ stat.value }}</span>
-            <span class="systems-panel-unit">{{ stat.unit }}</span>
-          </div>
-        </div>
-        <p class="systems-panel-hint">Interaction: drag to rotate</p>
-      </div>
+    <div class="stage">
+      <ol class="steps" aria-label="Voice pipeline stages" appReveal>
+        @for (step of data.pipeline; track step.id; let i = $index) {
+          <li class="step" [class.is-active]="active() === i">
+            <button
+              type="button"
+              class="step__btn"
+              (click)="select(i)"
+              [attr.aria-expanded]="active() === i"
+              [attr.aria-controls]="'step-' + step.id"
+            >
+              <span class="step__n">0{{ i + 1 }}</span>
+              <app-icon [name]="step.icon" [size]="20" />
+              <span class="step__t">{{ step.title }}</span>
+              <app-icon name="chevron-down" class="step__chev" [size]="18" />
+            </button>
+            <div class="step__panel" [id]="'step-' + step.id" [attr.inert]="active() === i ? null : ''">
+              <div class="step__panel-in">
+                <p>{{ step.detail }}</p>
+              </div>
+            </div>
+          </li>
+        }
+      </ol>
 
-      <div class="systems-panel systems-live-panel glass-panel">
-        <p class="systems-panel-title">Live Orchestration</p>
-        <div class="systems-live-status">
-          <span>Network Status</span>
-          <span class="systems-live-running"><span class="systems-live-dot-status" aria-hidden="true"></span>Running</span>
+      <div class="phone card" role="group" aria-label="Illustrative live-call simulation" appReveal="scale">
+        <header class="phone__top">
+          <span class="live"><span class="dot"></span>Live call</span>
+          <span class="phone__tag mono">Illustrative</span>
+          <button
+            type="button"
+            class="icon-btn phone__ctl"
+            (click)="toggle()"
+            [attr.aria-label]="playing() ? 'Pause the call demo' : 'Play the call demo'"
+          >
+            <app-icon [name]="playing() ? 'pause' : 'play'" [size]="18" />
+          </button>
+        </header>
+
+        <div class="phone__wave" [attr.data-speaker]="speaker()">
+          <app-waveform [bars]="38" [gap]="0.5" [energy]="energy()" [speed]="1.1" />
         </div>
-        <div class="systems-live-bar" aria-hidden="true"><span></span></div>
-        <div class="systems-live-layer" *ngFor="let layer of liveLayers">
-          <span>
-            <span class="systems-live-dot" [class.is-orange]="layer.orange" aria-hidden="true"></span>
-            {{ layer.name }}
-          </span>
-          <span class="systems-live-state">{{ layer.state }}</span>
-        </div>
+
+        <ul class="chat" aria-hidden="true">
+          @for (line of feed(); track line) {
+            <li class="msg" [attr.data-role]="line.role">
+              @if (line.tag) {
+                <span class="msg__tag">{{ line.tag }}</span>
+              }
+              <p>{{ line.text }}</p>
+            </li>
+          }
+        </ul>
+
+        <p class="phone__note">
+          Illustrative conversation, written to show the stages in motion — not a recording of a real call.
+        </p>
       </div>
     </div>
+
+    <p class="note card" appReveal>
+      <app-icon name="shield" [size]="22" />
+      <span>{{ data.pipelineNote }}</span>
+    </p>
   </div>
 </section>

@@ -6,34 +6,41 @@
     "suraj-jha-portfolio": {
       "projectType": "application",
       "schematics": {
-        "@schematics/angular:component": { "style": "scss", "standalone": true }
+        "@schematics/angular:component": { "style": "scss", "standalone": true, "changeDetection": "OnPush" }
       },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/suraj-jha-portfolio/browser",
+            "outputPath": "dist/suraj-jha-portfolio",
             "index": "src/index.html",
-            "main": "src/main.ts",
+            "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": ["src/favicon.ico", "src/assets", "src/robots.txt", "src/sitemap.xml"],
-            "styles": ["src/styles.scss"],
-            "scripts": [],
-            "budgets": [
-              { "type": "initial", "maximumWarning": "600kb", "maximumError": "1mb" },
-              { "type": "anyComponentStyle", "maximumWarning": "16kb", "maximumError": "32kb" }
-            ]
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              { "glob": "**/*", "input": "src/assets", "output": "assets" },
+              { "glob": "{robots.txt,sitemap.xml,site.webmanifest}", "input": "src", "output": "/" }
+            ],
+            "styles": [
+              "node_modules/@fontsource-variable/bricolage-grotesque/wght.css",
+              "node_modules/@fontsource/instrument-serif/latin-400-italic.css",
+              "src/styles.scss"
+            ],
+            "scripts": []
           },
           "configurations": {
             "production": {
+              "server": "src/main.server.ts",
+              "prerender": { "routesFile": "routes.txt" },
+              "outputHashing": "all",
               "budgets": [
-                { "type": "initial", "maximumWarning": "750kb", "maximumError": "1mb" }
-              ],
-              "outputHashing": "all"
+                { "type": "initial", "maximumWarning": "520kb", "maximumError": "800kb" },
+                { "type": "anyComponentStyle", "maximumWarning": "14kb", "maximumError": "28kb" }
+              ]
             },
             "development": {
               "optimization": false,
@@ -48,79 +55,12 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "port": 4201
-          },
+          "options": { "port": 4201 },
           "configurations": {
             "production": { "buildTarget": "suraj-jha-portfolio:build:production" },
             "development": { "buildTarget": "suraj-jha-portfolio:build:development" }
           },
           "defaultConfiguration": "development"
-        },
-        "server": {
-          "builder": "@angular-devkit/build-angular:server",
-          "options": {
-            "outputPath": "dist/suraj-jha-portfolio/server",
-            "main": "server.ts",
-            "tsConfig": "tsconfig.server.json"
-          },
-          "configurations": {
-            "production": {
-              "outputHashing": "media"
-            },
-            "development": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts"
-                }
-              ],
-              "optimization": false,
-              "sourceMap": true,
-              "extractLicenses": false
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve-ssr": {
-          "builder": "@angular-devkit/build-angular:ssr-dev-server",
-          "configurations": {
-            "development": {
-              "browserTarget": "suraj-jha-portfolio:build:development",
-              "serverTarget": "suraj-jha-portfolio:server:development"
-            },
-            "production": {
-              "browserTarget": "suraj-jha-portfolio:build:production",
-              "serverTarget": "suraj-jha-portfolio:server:production"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "prerender": {
-          "builder": "@angular-devkit/build-angular:prerender",
-          "options": {
-            "routes": [
-              "/",
-              "/projects/ai-voice-calling-platform",
-              "/projects/vehicle-catalogue-matching-engine",
-              "/projects/conversational-quote-assistant",
-              "/projects/whatsapp-document-verification-bot",
-              "/projects/agent-gamification-platform",
-              "/projects/stock-intelligence-engine",
-              "/projects/api-health-monitor"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "suraj-jha-portfolio:build:production",
-              "serverTarget": "suraj-jha-portfolio:server:production"
-            },
-            "development": {
-              "browserTarget": "suraj-jha-portfolio:build:development",
-              "serverTarget": "suraj-jha-portfolio:server:development"
-            }
-          },
-          "defaultConfiguration": "production"
         }
       }
     }

@@ -1,39 +1,75 @@
 <footer class="footer">
-  <div class="container footer-inner">
-    <div class="footer-identity">
-      <p class="footer-name">{{ data.profile.name }}</p>
-      <p class="footer-role">{{ data.profile.role }}</p>
+  <div class="container">
+    <p class="footer__name" aria-hidden="true">Suraj Jha</p>
+
+    <div class="footer__grid">
+      <nav aria-label="Footer">
+        <h2 class="footer__title">Navigate</h2>
+        <ul>
+          @for (link of links; track link.id) {
+            <li>
+              <a routerLink="/" [fragment]="link.id">{{ link.label === 'Work' ? 'Projects' : link.label }}</a>
+            </li>
+          }
+        </ul>
+      </nav>
+
+      <div>
+        <h2 class="footer__title">Elsewhere</h2>
+        <ul>
+          <li>
+            <a [href]="data.profile.github" target="_blank" rel="noopener noreferrer">
+              GitHub <app-icon name="arrow-up-right" [size]="15" />
+            </a>
+          </li>
+          <li>
+            <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer">
+              LinkedIn <app-icon name="arrow-up-right" [size]="15" />
+            </a>
+          </li>
+          @if (data.profile.instagram) {
+            <li>
+              <a [href]="data.profile.instagram" target="_blank" rel="noopener noreferrer">
+                Instagram <app-icon name="arrow-up-right" [size]="15" />
+              </a>
+            </li>
+          }
+          <li>
+            <a [href]="data.profile.resumePath" download>Résumé <app-icon name="download" [size]="15" /></a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer__title">Say hi</h2>
+        <ul>
+          <li>
+            <button type="button" class="footer__copy" [appCopy]="data.profile.email" copyMessage="Email copied">
+              {{ data.profile.email }} <app-icon name="copy" [size]="15" />
+            </button>
+          </li>
+          @if (data.profile.phone) {
+            <li>
+              <a [href]="'tel:' + data.profile.phone">{{ data.profile.phone }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="footer__top">
+        <button type="button" class="footer__totop" (click)="toTop()" aria-label="Back to top">
+          <app-icon name="arrow-up" [size]="22" />
+        </button>
+      </div>
     </div>
 
-    <div class="footer-links">
-      <a [href]="data.profile.github" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-        <app-icon name="github" [size]="18"></app-icon>
-        GitHub
-      </a>
-      <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-        <app-icon name="linkedin" [size]="18"></app-icon>
-        LinkedIn
-      </a>
-      <a *ngIf="data.profile.instagram" [href]="data.profile.instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-        <app-icon name="instagram" [size]="18"></app-icon>
-        Instagram
-      </a>
-      <a [href]="data.profile.resumePath" download aria-label="Resume">
-        <app-icon name="file-text" [size]="18"></app-icon>
-        Resume
-      </a>
-      <a [href]="'mailto:' + data.profile.email" aria-label="Email">
-        <app-icon name="mail" [size]="18"></app-icon>
-        Email
-      </a>
-      <a routerLink="/" fragment="contact" aria-label="Contact">
-        <app-icon name="arrow-right" [size]="18"></app-icon>
-        Contact
-      </a>
-    </div>
-
-    <div class="footer-meta">
-      <p>&copy; {{ year }} {{ data.profile.name }}. All rights reserved.</p>
+    <div class="footer__bar">
+      <p>&copy; {{ year }} {{ data.profile.name }}</p>
+      <p class="footer__time">
+        <app-icon name="pin" [size]="14" /> {{ data.profile.location }} ·
+        <app-clock [timeZone]="data.profile.timezone" /> {{ data.profile.timezoneLabel }}
+      </p>
+      <p class="footer__built">Hand-built with Angular</p>
     </div>
   </div>
 </footer>

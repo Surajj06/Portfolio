@@ -1,89 +1,283 @@
 .contact {
-  position: relative;
-
-  &-grid {
-    display: grid;
-    grid-template-columns: 0.8fr 1.2fr;
-    gap: 56px;
-    align-items: start;
-  }
-
-  &-title {
-    font-size: clamp(30px, 4vw, 44px);
-    max-width: 12ch;
-  }
-
-  &-channels {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 32px;
-
-    a {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      color: var(--text-secondary);
-      transition: color 0.15s ease;
-
-      &:hover { color: var(--text-primary); }
-    }
-  }
+  padding-top: clamp(56px, 8vw, 128px);
 }
 
-.contact-form {
-  // Visual surface comes from .glass-panel (applied in the template). Not
-  // the hover-lift though — a form shouldn't drift while someone's filling
-  // it in, unlike a card meant to invite a click.
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.contact__grid {
+  display: grid;
+  gap: clamp(36px, 5vw, 80px);
+  align-items: start;
+}
 
+.contact__intro {
+  display: grid;
+  gap: clamp(18px, 2.4vw, 28px);
+  justify-items: start;
+}
+
+.contact__title {
+  font-size: clamp(2.6rem, 7vw, 6rem);
+  line-height: 0.95;
+}
+
+// ---- big click-to-copy email ----
+.mail {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 100%;
+  min-height: 72px;
+  padding: 10px 12px 10px 28px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  text-align: left;
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    transform 0.4s var(--ease-out);
+
+  &__text {
+    min-width: 0;
+    font-size: clamp(1.02rem, 3.8vw, 1.6rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+  }
+  &__icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--cta-bg);
+    color: var(--cta-ink);
+  }
+  &__copy,
+  &__done {
+    position: absolute;
+    transition:
+      transform 0.5s var(--ease-spring),
+      opacity 0.25s ease;
+  }
+  &__done {
+    opacity: 0;
+    transform: scale(0.4) rotate(-45deg);
+  }
   &:hover {
+    border-color: var(--text);
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+  &.is-copied &__copy {
+    opacity: 0;
+    transform: scale(0.4) rotate(45deg);
+  }
+  &.is-copied &__done {
+    opacity: 1;
     transform: none;
   }
 }
 
-.field {
+.channels {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
 
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 18px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-pill);
+    font-weight: 550;
+    color: var(--text-2);
+    transition:
+      color 0.25s ease,
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      transform 0.35s var(--ease-out);
+
+    &:hover {
+      color: var(--text);
+      border-color: var(--text);
+      background: var(--surface-2);
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+// ---- form ----
+.form {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  padding: clamp(22px, 3vw, 40px);
+  border-radius: var(--r-xl);
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+
   label {
-    font-size: 13px;
-    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
 
-  input, textarea {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    font-size: 14.5px;
+  input,
+  textarea {
+    width: 100%;
+    min-height: 58px;
+    padding: 14px 18px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.05rem; // 16px+ so iOS never zooms the page on focus
+    line-height: 1.4;
+    transition:
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+
+    &::placeholder {
+      color: var(--text-3);
+    }
+    &:hover {
+      border-color: var(--text-3);
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--accent-text);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    &[aria-invalid='true'] {
+      border-color: var(--coral);
+    }
+  }
+  textarea {
     resize: vertical;
-    transition: border-color 0.15s ease;
+    min-height: 150px;
+  }
 
-    &:focus { border-color: var(--accent-violet); }
+  &__err {
+    font-size: 0.86rem;
+    color: var(--coral);
+  }
+  &__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 1.3em;
+  }
+  .count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-3);
+
+    &.is-over {
+      color: var(--coral);
+    }
+  }
+
+  &--trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+}
+:root[data-theme='light'] .field input:focus,
+:root[data-theme='light'] .field textarea:focus {
+  border-color: var(--text);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.field-honeypot {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
+.status--err {
+  padding: 12px 16px;
+  border: 1px solid var(--coral);
+  border-radius: var(--r-md);
+  font-size: 0.92rem;
+  color: var(--coral);
 }
 
-.field-error { color: #ff8a8a; font-size: 13px; }
-.field-success { color: #7fe0a5; font-size: 13px; }
+// Success overlay replaces the form contents inside the card.
+.sent {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  border-radius: inherit;
+  background: var(--surface);
+  text-align: center;
+  animation: fade 0.5s ease both;
 
-@media (max-width: 860px) {
-  .contact-grid { grid-template-columns: 1fr; }
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: var(--cta-bg);
+    color: var(--cta-ink);
+    animation: pop 0.6s var(--ease-spring) both;
+  }
+  &__title {
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  &__again {
+    min-height: 44px;
+    padding: 0 6px;
+    font-weight: 600;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--line-2);
+
+    &:hover {
+      color: var(--text);
+    }
+  }
+}
+
+@media (min-width: 980px) {
+  .contact__grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
 }

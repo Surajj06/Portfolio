@@ -1,8 +1,23 @@
-<div class="marquee" role="presentation">
-  <div class="marquee-track">
-    <span class="marquee-item" *ngFor="let item of loopItems">
-      {{ item }}
-      <span class="marquee-dot" aria-hidden="true">&#9679;</span>
-    </span>
+<div
+  class="marquee"
+  [class.is-lime]="variant === 'lime'"
+  [class.is-chips]="variant === 'chips'"
+  [class.is-reverse]="reverse"
+  [style.--dur]="duration + 's'"
+  role="presentation"
+>
+  <div class="track">
+    @for (copy of copies; track copy) {
+      <ul class="group" [attr.aria-hidden]="copy === 1 ? 'true' : null">
+        @for (item of items; track item; let i = $index) {
+          <li [class.is-outline]="variant === 'plain' && i % 2 === 1">
+            <span class="text">{{ item }}</span>
+            @if (variant !== 'chips') {
+              <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9L1.5 12l7.9-2.6z" /></svg>
+            }
+          </li>
+        }
+      </ul>
+    }
   </div>
 </div>

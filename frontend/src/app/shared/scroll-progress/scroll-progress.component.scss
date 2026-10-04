@@ -1,16 +1,35 @@
 :host {
   position: fixed;
+  z-index: 120;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 60;
+  height: 3px;
   pointer-events: none;
 }
 
-.scroll-progress {
-  height: 2.5px;
-  width: 100%;
-  transform-origin: left;
-  background: var(--accent-gradient);
-  transition: transform 0.1s linear;
+.bar {
+  height: 100%;
+  background: var(--lime);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+:root[data-theme='light'] .bar {
+  background: var(--text);
+}
+
+// Browsers with scroll-driven animations need zero JavaScript for this.
+@supports (animation-timeline: scroll()) {
+  .bar.native {
+    animation: grow linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+@keyframes grow {
+  to {
+    transform: scaleX(1);
+  }
 }

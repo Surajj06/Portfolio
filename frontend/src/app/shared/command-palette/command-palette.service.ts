@@ -1,12 +1,29 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
-/** Shared open/closed state so both the palette overlay and any trigger
- * button (navbar, etc.) can control it without a parent/child wiring. */
+/**
+ * Open/closed state for the Ctrl/Cmd+K palette. The palette *component* is
+ * lazy-loaded (see app.component.html) and only requested the first time it's
+ * opened, so this tiny service owns the global shortcut and `wanted` flag.
+ */
 @Injectable({ providedIn: 'root' })
 export class CommandPaletteService {
   readonly isOpen = signal(false);
+  /** Flips true on first open — that's what triggers the lazy chunk to load. */
+  readonly wanted = signal(false);
+
+  constructor() {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    window.addEventListener('keydown', (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        this.toggle();
+      }
+    });
+  }
 
   open(): void {
+    this.wanted.set(true);
     this.isOpen.set(true);
   }
 
@@ -15,6 +32,6 @@ export class CommandPaletteService {
   }
 
   toggle(): void {
-    this.isOpen.update((value) => !value);
+    this.isOpen() ? this.close() : this.open();
   }
 }

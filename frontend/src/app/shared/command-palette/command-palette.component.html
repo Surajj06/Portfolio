@@ -1,52 +1,59 @@
-<div class="palette-backdrop" *ngIf="palette.isOpen()" (click)="onBackdropClick()">
-  <div
-    class="palette-panel glass-panel"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Quick navigation"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="palette-search">
-      <app-icon name="search" [size]="17"></app-icon>
+<dialog
+  #dialog
+  class="palette"
+  aria-label="Quick navigation"
+  (close)="onNativeClose()"
+  (click)="onDialogClick($event)"
+>
+  <div class="panel">
+    <div class="search">
+      <app-icon name="search" [size]="18" />
       <input
-        #searchInput
+        #search
         type="text"
         role="combobox"
         aria-expanded="true"
-        aria-controls="palette-listbox"
-        [attr.aria-activedescendant]="'palette-option-' + activeIndex()"
-        placeholder="Jump to a section, project, or action…"
+        aria-controls="pal-list"
+        [attr.aria-activedescendant]="'pal-' + active()"
+        placeholder="Jump to a section, project or action…"
         autocomplete="off"
+        autocapitalize="off"
         spellcheck="false"
+        enterkeyhint="go"
         [value]="query()"
-        (input)="onQueryChange($any($event.target).value)"
+        (input)="onInput($any($event.target).value)"
+        (keydown)="onKeydown($event)"
       />
-      <kbd>Esc</kbd>
+      <button type="button" class="esc" aria-label="Close" (click)="palette.close()">Esc</button>
     </div>
 
-    <ul class="palette-list" id="palette-listbox" role="listbox">
-      <li *ngIf="!filtered().length" class="palette-empty">No matches.</li>
-
-      <ng-container *ngFor="let command of filtered(); let i = index">
+    <ul class="list" id="pal-list" role="listbox">
+      @for (command of filtered(); track command.id; let i = $index) {
+        @if (showGroup(i)) {
+          <li class="group" role="presentation">{{ command.group }}</li>
+        }
         <li
-          [id]="'palette-option-' + i"
+          [id]="'pal-' + i"
           role="option"
-          [attr.aria-selected]="i === activeIndex()"
-          class="palette-item"
-          [class.palette-item-active]="i === activeIndex()"
-          (mouseenter)="select(i)"
-          (click)="runCommand(command)"
+          class="item"
+          [class.is-active]="i === active()"
+          [attr.aria-selected]="i === active()"
+          (pointerenter)="active.set(i)"
+          (click)="run(command)"
         >
-          <span class="palette-item-label">{{ command.label }}</span>
-          <span class="palette-item-hint">{{ command.hint }}</span>
+          <app-icon [name]="command.icon" [size]="17" />
+          <span class="label">{{ command.label }}</span>
+          <span class="hint">{{ command.hint }}</span>
         </li>
-      </ng-container>
+      } @empty {
+        <li class="empty">No matches for “{{ query() }}”.</li>
+      }
     </ul>
 
-    <div class="palette-footer">
-      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
-      <span><kbd>Enter</kbd> Select</span>
-      <span><kbd>Ctrl</kbd><kbd>K</kbd> Toggle</span>
-    </div>
+    <p class="foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> select</span>
+      <span><kbd>Ctrl</kbd><kbd>K</kbd> toggle</span>
+    </p>
   </div>
-</div>
+</dialog>

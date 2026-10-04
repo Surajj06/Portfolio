@@ -1,100 +1,64 @@
-import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DestroyRef, Directive, ElementRef, Input, NgZone, afterNextRender, inject } from '@angular/core';
+import { DeviceService } from '../../services/device.service';
 
 /**
- * Animates the host element's text from 0 up to a target number when it
- * scrolls into view, once. Parses a leading integer out of `appCountUp` and
- * preserves whatever prefix/suffix surrounds it (e.g. "20,000+", "74+").
- * Inert (renders the final value immediately) under prefers-reduced-motion
- * or without IntersectionObserver support.
+ * Counts the host's number up from 0 when it scrolls into view, once. Parses
+ * the digits out of `appCountUp` and keeps whatever surrounds them ("20,000+",
+ * "74+"). The server (and no-JS / reduced-motion visitors) get the real final
+ * value straight from the template; the decision to animate is made from the
+ * IntersectionObserver's first callback, so no layout is read to decide it.
  */
-@Directive({
-  selector: '[appCountUp]',
-  standalone: true
-})
-export class CountUpDirective implements OnInit, OnDestroy {
-  @Input('appCountUp') value = '';
-  @Input() countDuration = 1400;
+@Directive({ selector: '[appCountUp]', standalone: true })
+export class CountUpDirective {
+  @Input({ alias: 'appCountUp', required: true }) value = '';
+  @Input() countDuration = 1600;
 
-  private observer?: IntersectionObserver;
-  private raf?: number;
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly zone = inject(NgZone);
+  private readonly device = inject(DeviceService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  constructor() {
+    afterNextRender(() => {
+      if (this.device.reducedMotion || typeof IntersectionObserver === 'undefined') return;
 
-  constructor(private readonly el: ElementRef<HTMLElement>, private readonly zone: NgZone) {}
+      const digits = this.value.replace(/[^0-9]/g, '');
+      const target = parseInt(digits, 10);
+      if (!Number.isFinite(target) || target < 2) return;
+      const prefix = this.value.match(/^[^0-9]*/)?.[0] ?? '';
+      const suffix = this.value.match(/[^0-9]*$/)?.[0] ?? '';
+      const host = this.el.nativeElement;
+      let raf = 0;
 
-  ngOnInit(): void {
-    const target = parseInt(this.value.replace(/[^0-9]/g, ''), 10);
-    const prefix = this.value.match(/^[^0-9]*/)?.[0] ?? '';
-    const suffix = this.value.match(/[^0-9]*$/)?.[0] ?? '';
+      const run = () => {
+        const start = performance.now();
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / this.countDuration);
+          const eased = 1 - Math.pow(1 - t, 4); // easeOutQuart
+          host.textContent = `${prefix}${Math.round(target * eased).toLocaleString('en-IN')}${suffix}`;
+          if (t < 1) raf = requestAnimationFrame(step);
+        };
+        raf = requestAnimationFrame(step);
+      };
 
-    if (!Number.isFinite(target)) {
-      this.el.nativeElement.textContent = this.value;
-      return;
-    }
-
-    // On the server there's no scroll/IntersectionObserver to animate
-    // against — render the final value directly so prerendered HTML shows
-    // the real number instead of "0".
-    if (!this.isBrowser) {
-      this.el.nativeElement.textContent = `${prefix}${target.toLocaleString('en-IN')}${suffix}`;
-      return;
-    }
-
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const supportsObserver = typeof IntersectionObserver !== 'undefined';
-
-    if (prefersReducedMotion || !supportsObserver) {
-      this.el.nativeElement.textContent = this.value;
-      return;
-    }
-
-    // Same anchor-jump edge case as RevealDirective: if we're already
-    // scrolled past this element when it initializes, it'll never intersect,
-    // so counting up from 0 would leave it stuck at 0 forever.
-    if (this.el.nativeElement.getBoundingClientRect().bottom < 0) {
-      this.el.nativeElement.textContent = this.value;
-      return;
-    }
-
-    this.el.nativeElement.textContent = `${prefix}0${suffix}`;
-
-    this.zone.runOutsideAngular(() => {
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
+      this.zone.runOutsideAngular(() => {
+        const io = new IntersectionObserver(
+          ([entry]) => {
             if (entry.isIntersecting) {
-              this.animate(target, prefix, suffix);
-              this.observer?.unobserve(entry.target);
+              run();
+              io.disconnect();
+            } else {
+              host.textContent = `${prefix}0${suffix}`; // below the fold: arm at zero
             }
-          }
-        },
-        { threshold: 0.4 }
-      );
-      this.observer.observe(this.el.nativeElement);
+          },
+          { threshold: 0.6 }
+        );
+        io.observe(host);
+        this.destroyRef.onDestroy(() => {
+          io.disconnect();
+          cancelAnimationFrame(raf);
+        });
+      });
     });
-  }
-
-  private animate(target: number, prefix: string, suffix: string): void {
-    const start = performance.now();
-    const easeOutQuad = (t: number) => t * (2 - t);
-
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / this.countDuration, 1);
-      const current = Math.round(target * easeOutQuad(progress));
-      this.el.nativeElement.textContent = `${prefix}${current.toLocaleString('en-IN')}${suffix}`;
-
-      if (progress < 1) {
-        this.raf = requestAnimationFrame(step);
-      }
-    };
-
-    this.raf = requestAnimationFrame(step);
-  }
-
-  ngOnDestroy(): void {
-    this.observer?.disconnect();
-    if (this.raf) cancelAnimationFrame(this.raf);
   }
 }

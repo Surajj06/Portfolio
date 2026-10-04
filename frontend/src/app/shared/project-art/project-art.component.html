@@ -1,0 +1,114 @@
+<svg class="art" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+  @switch (id) {
+    @case ('ai-voice-calling-platform') {
+      <!-- concentric call routing + live waveform -->
+      <circle class="ln" cx="352" cy="150" r="118" />
+      <circle class="ln" cx="352" cy="150" r="82" />
+      <circle class="soft" cx="352" cy="150" r="48" />
+      <circle class="a" cx="352" cy="150" r="20" />
+      <circle class="a" cx="352" cy="32" r="6" />
+      <circle class="a" cx="436" cy="232" r="5" />
+      <circle class="a" cx="270" cy="196" r="5" />
+      <g>
+        @for (b of voiceBars; track $index) {
+          <rect class="a bar" [attr.x]="b.x" [attr.y]="150 - b.h / 2" width="7" [attr.height]="b.h" rx="3.5" [style.--i]="$index" />
+        }
+      </g>
+      <rect class="ln" x="28" y="26" width="76" height="28" rx="14" />
+      <circle class="a" cx="46" cy="40" r="4" />
+      <text class="mono" x="58" y="44">LIVE</text>
+    }
+    @case ('vehicle-catalogue-matching-engine') {
+      <!-- two catalogues, matched pairs linked -->
+      @for (row of rows; track row) {
+        <rect class="ink" x="52" [attr.y]="38 + row * 52" width="116" height="30" rx="9" />
+        <rect class="ln-fill" x="64" [attr.y]="48 + row * 52" width="54" height="5" rx="2.5" />
+        <rect class="ln-fill" x="64" [attr.y]="58 + row * 52" width="34" height="5" rx="2.5" />
+        <rect class="ink" x="312" [attr.y]="38 + row * 52" width="116" height="30" rx="9" />
+        <rect class="ln-fill" x="324" [attr.y]="48 + row * 52" width="54" height="5" rx="2.5" />
+        <rect class="ln-fill" x="324" [attr.y]="58 + row * 52" width="34" height="5" rx="2.5" />
+      }
+      <path class="ln dash" d="M168 53 C240 53 240 157 312 157" />
+      <path class="ln dash" d="M168 209 C240 209 240 105 312 105" />
+      <path class="line a-stroke" d="M168 105 C240 105 240 53 312 53" />
+      <path class="line a-stroke" d="M168 157 C240 157 240 209 312 209" />
+      <path class="line a-stroke" d="M168 261 H312" />
+      <circle class="a" cx="428" cy="53" r="9" />
+      <circle class="a" cx="428" cy="209" r="9" />
+      <circle class="a" cx="428" cy="261" r="9" />
+      <path class="tick" d="m423.5 53 3 3 5-6M423.5 209l3 3 5-6M423.5 261l3 3 5-6" />
+    }
+    @case ('conversational-quote-assistant') {
+      <!-- chat thread with a typing indicator -->
+      <circle class="ink" cx="52" cy="62" r="14" />
+      <rect class="ink" x="76" y="38" width="214" height="48" rx="22" />
+      <rect class="ln-fill" x="96" y="55" width="140" height="6" rx="3" />
+      <rect class="ln-fill" x="96" y="68" width="92" height="6" rx="3" />
+      <rect class="a" x="196" y="104" width="236" height="48" rx="22" />
+      <rect class="onacc" x="216" y="121" width="150" height="6" rx="3" />
+      <rect class="onacc" x="216" y="134" width="100" height="6" rx="3" />
+      <circle class="ink" cx="52" cy="198" r="14" />
+      <rect class="ink" x="76" y="172" width="190" height="48" rx="22" />
+      <rect class="ln-fill" x="96" y="189" width="120" height="6" rx="3" />
+      <rect class="ln-fill" x="96" y="202" width="70" height="6" rx="3" />
+      <rect class="soft stroke-a" x="296" y="238" width="136" height="42" rx="21" />
+      <circle class="a dotpulse" cx="336" cy="259" r="6" style="--i: 0" />
+      <circle class="a dotpulse" cx="364" cy="259" r="6" style="--i: 1" />
+      <circle class="a dotpulse" cx="392" cy="259" r="6" style="--i: 2" />
+    }
+    @case ('whatsapp-document-verification-bot') {
+      <!-- scanned ID card, PII masked, shield badge -->
+      <rect class="doc" x="150" y="30" width="182" height="240" rx="18" />
+      <rect class="soft" x="172" y="54" width="52" height="64" rx="10" />
+      <circle class="a" cx="198" cy="76" r="11" />
+      <path class="a-stroke thick" d="M178 108c4-12 36-12 40 0" />
+      <rect class="ln-fill" x="238" y="58" width="76" height="8" rx="4" />
+      <rect class="ln-fill" x="238" y="76" width="56" height="8" rx="4" />
+      <rect class="ln-fill" x="238" y="94" width="68" height="8" rx="4" />
+      <rect class="mask" x="172" y="140" width="140" height="14" rx="5" />
+      <rect class="mask" x="172" y="164" width="104" height="14" rx="5" />
+      <rect class="ln-fill" x="172" y="192" width="124" height="8" rx="4" />
+      <rect class="ln-fill" x="172" y="210" width="86" height="8" rx="4" />
+      <rect class="scan" x="132" y="64" width="218" height="3" rx="1.5" />
+      <circle class="a" cx="340" cy="244" r="32" />
+      <path class="shield" d="M340 226l-15 6v11c0 10 6 17 15 21 9-4 15-11 15-21v-11z" />
+      <path class="tick" d="m333 245 5 5 9-10" />
+    }
+    @case ('agent-gamification-platform') {
+      <!-- live leaderboard -->
+      @for (row of rows; track row) {
+        <circle [class]="row === 0 ? 'a' : 'ink'" cx="64" [attr.cy]="58 + row * 48" r="15" />
+        <text class="rank" [class.on-a]="row === 0" x="64" [attr.y]="63 + row * 48">{{ row + 1 }}</text>
+        <rect [class]="row === 0 ? 'a' : 'soft'" x="92" [attr.y]="44 + row * 48" [attr.width]="rankBars[row]" height="28" rx="14" />
+        <rect [class]="row === 0 ? 'onacc' : 'ln-fill'" x="104" [attr.y]="55 + row * 48" [attr.width]="rankLines[row]" height="6" rx="3" />
+      }
+      <path class="a-stroke thick" d="m414 38 8 12 8-12 4 18h-24z" />
+      <rect class="ln" x="376" y="252" width="62" height="28" rx="14" />
+      <circle class="a dotpulse" cx="394" cy="266" r="4" style="--i: 0" />
+      <text class="mono" x="404" y="270">LIVE</text>
+    }
+    @case ('stock-intelligence-engine') {
+      <!-- price line + volume -->
+      <path class="ln dash" d="M24 70H456M24 130H456M24 190H456" />
+      <path class="soft" d="M30 206 80 186 120 196 170 148 220 162 270 108 320 122 370 70 430 84V230H30Z" />
+      <path class="line a-stroke thick" d="M30 206 80 186 120 196 170 148 220 162 270 108 320 122 370 70 430 84" />
+      <circle class="a" cx="430" cy="84" r="8" />
+      <circle class="ring" cx="430" cy="84" r="16" />
+      @for (v of volume; track $index) {
+        <rect [class]="$index === volume.length - 1 ? 'a' : 'ink'" [attr.x]="44 + $index * 44" [attr.y]="280 - v" width="24" [attr.height]="v" rx="5" />
+      }
+    }
+    @case ('api-health-monitor') {
+      <!-- status grid + heartbeat -->
+      @for (row of gridRows; track row) {
+        @for (col of gridCols; track col) {
+          <circle [class]="'cell cell--' + cell(col, row)" [attr.cx]="56 + col * 52" [attr.cy]="46 + row * 42" r="12" />
+        }
+      }
+      <path class="heart" d="M28 252H132l12-30 16 60 14-44 10 14H452" />
+    }
+    @default {
+      <circle class="a" cx="240" cy="150" r="40" />
+    }
+  }
+</svg>

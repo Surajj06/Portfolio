@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <base href="/" />
   <title>Suraj Jha — AI Engineer</title>
   <meta name="description" content="AI Engineer building intelligent systems, voice AI applications, LLM workflows, automation systems, and production-ready software." />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="canonical" href="https://www.aisurajjha.in/" />
 
   <!-- Open Graph -->
@@ -14,6 +15,8 @@
   <meta property="og:description" content="AI Engineer building intelligent systems, voice AI applications, LLM workflows, automation systems, and production-ready software." />
   <meta property="og:url" content="https://www.aisurajjha.in/" />
   <meta property="og:image" content="https://www.aisurajjha.in/assets/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:site_name" content="Suraj Jha" />
 
   <!-- Twitter / X -->
@@ -22,12 +25,27 @@
   <meta name="twitter:description" content="AI Engineer building intelligent systems, voice AI applications, LLM workflows, automation systems, and production-ready software." />
   <meta name="twitter:image" content="https://www.aisurajjha.in/assets/og-cover.png" />
 
-  <meta name="theme-color" content="#07080c" />
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=2" />
+  <meta name="theme-color" content="#09090a" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=3" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Paint the canvas dark immediately: no white flash before CSS lands -->
+  <style>html{background:#09090a}</style>
+
+  <!-- Fonts are self-hosted (Bricolage Grotesque variable + Instrument Serif
+       Italic, ~63 KB total) and bundled by the build — no third-party request. -->
+
+  <!-- `js` gates the scroll-reveal styles: with no JS everything stays visible.
+       If the app hasn't booted after 9s the gate lifts so nothing stays hidden. -->
+  <script>
+    (function (d) {
+      d.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!window.__booted) d.documentElement.classList.remove('js');
+      }, 9000);
+    })(document);
+  </script>
 
   <!-- Structured data — helps Google understand this as a person/profile page -->
   <script type="application/ld+json">

@@ -1,93 +1,190 @@
 .experience {
-  &-timeline {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 36px;
-    padding-left: 28px;
-    border-left: 1px solid var(--border);
-  }
+  padding-top: clamp(40px, 6vw, 96px);
+}
 
-  &-entry { position: relative; }
+.role {
+  display: grid;
+  gap: clamp(22px, 3vw, 36px);
+  padding: clamp(22px, 3.4vw, 48px);
+  border-radius: var(--r-xl);
+}
 
-  &-marker {
-    position: absolute;
-    left: -34px;
-    top: 6px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--accent-violet);
-  }
+.role__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+}
 
-  &-card {
-    // Visual surface comes from .glass-panel (applied in the template).
-    border-radius: var(--radius-md);
-    padding: 28px;
-  }
+.logo {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  flex: none;
+  border-radius: 20px;
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  transform: rotate(-6deg);
+}
 
-  &-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
+.role__id {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.role__title {
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  letter-spacing: -0.045em;
+}
+.role__company {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.role__when {
+  gap: 0.7em;
+  color: var(--text);
+}
 
-  &-role { font-size: 19px; }
-  &-company { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-  &-duration {
-    font-size: 12.5px;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 5px 12px;
-    white-space: nowrap;
-  }
+.role__lede {
+  max-width: 62ch;
+}
 
-  &-description {
-    margin-top: 16px;
-    color: var(--text-secondary);
-    font-size: 15px;
-    line-height: 1.65;
-  }
+.role__cols {
+  display: grid;
+  gap: clamp(28px, 4vw, 56px);
+}
 
-  &-block {
-    margin-top: 18px;
+.label {
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
 
-    h4 {
-      font-family: var(--font-body);
-      font-size: 12.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 8px;
+// ---- duties ----
+.duties {
+  display: grid;
+  gap: 4px;
+
+  li {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 4px 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+
+    p {
+      color: var(--text-2);
+      line-height: 1.55;
     }
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--accent-text);
+    padding-top: 4px;
+  }
+}
+:root[data-theme='light'] .duties .num {
+  color: var(--text-3);
+}
 
-    ul { display: flex; flex-direction: column; gap: 5px; }
-    li { font-size: 14px; color: var(--text-secondary); padding-left: 14px; position: relative; }
-    li::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 9px;
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: var(--accent-blue);
+// Smooth height reveal without animating `height` itself.
+.extra {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.6s var(--ease-out);
+
+  &.is-open {
+    grid-template-rows: 1fr;
+  }
+  &__in {
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0 4px;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--line-2);
+  transition: border-color 0.25s ease;
+
+  &:hover {
+    border-color: var(--lime);
+  }
+  &__icon {
+    transition: transform 0.4s var(--ease-out);
+  }
+  &[aria-expanded='true'] &__icon {
+    transform: rotate(180deg);
+  }
+}
+
+// ---- side column ----
+.contrib {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 30px;
+
+  li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    color: var(--text);
+    line-height: 1.5;
+
+    app-icon {
+      margin-top: 3px;
+      color: var(--accent-text);
     }
   }
+}
+:root[data-theme='light'] .contrib li app-icon {
+  color: var(--text);
+}
 
-  &-tech {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 20px;
+.tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
-    span {
-      font-size: 12px;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 5px 10px;
-    }
+// ---- what's next ----
+.next {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding-top: 0;
+
+  &__line {
+    width: 0;
+    height: clamp(40px, 6vw, 72px);
+    border-left: 2px dashed var(--line-2);
+  }
+}
+
+@media (min-width: 980px) {
+  .role__cols {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   }
 }

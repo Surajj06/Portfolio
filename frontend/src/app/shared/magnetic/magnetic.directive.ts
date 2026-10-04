@@ -1,69 +1,65 @@
-import { Directive, ElementRef, Input, NgZone, OnDestroy, OnInit, PLATFORM_ID, Renderer2, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DestroyRef, Directive, ElementRef, Input, NgZone, afterNextRender, inject } from '@angular/core';
+import { DeviceService } from '../../services/device.service';
+import { PerfGuardService } from '../../services/perf-guard.service';
 
 /**
- * Makes a button/link drift slightly toward the cursor while hovered, then
- * spring back on leave — a small, tasteful "magnetic" nudge for primary
- * calls to action. Desktop fine-pointer only; inert under
- * prefers-reduced-motion. Listens outside Angular's zone since it only ever
- * mutates styles directly, never anything change-detection needs to know about.
+ * Buttons drift slightly toward the pointer and spring back on leave. Uses
+ * the standalone CSS `translate` property so it never fights a button's own
+ * `transform` (hover lift, press-scale). Fine-pointer devices only; the rect
+ * is measured once on enter, not on every move.
  */
-@Directive({
-  selector: '[appMagnetic]',
-  standalone: true
-})
-export class MagneticDirective implements OnInit, OnDestroy {
-  @Input() magneticStrength = 0.35;
+@Directive({ selector: '[appMagnetic]', standalone: true })
+export class MagneticDirective {
+  @Input() magneticStrength = 0.28;
 
-  private readonly enabled: boolean;
-  private frame?: number;
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly zone = inject(NgZone);
+  private readonly device = inject(DeviceService);
+  private readonly perf = inject(PerfGuardService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly onMouseMove = (event: MouseEvent): void => {
-    if (this.frame) cancelAnimationFrame(this.frame);
+  constructor() {
+    afterNextRender(() => {
+      if (!this.device.finePointer || this.device.reducedMotion) return;
+      const el = this.el.nativeElement;
+      let rect: DOMRect | undefined;
+      let raf = 0;
+      let x = 0;
+      let y = 0;
 
-    this.frame = requestAnimationFrame(() => {
-      const rect = this.el.nativeElement.getBoundingClientRect();
-      const relX = event.clientX - (rect.left + rect.width / 2);
-      const relY = event.clientY - (rect.top + rect.height / 2);
-      this.renderer.setStyle(
-        this.el.nativeElement,
-        'transform',
-        `translate(${relX * this.magneticStrength}px, ${relY * this.magneticStrength}px)`
-      );
+      const apply = () => {
+        raf = 0;
+        el.style.translate = `${x}px ${y}px`;
+      };
+      const onEnter = () => {
+        rect = el.getBoundingClientRect();
+        el.style.transition = 'translate 0.12s linear';
+      };
+      const onMove = (e: PointerEvent) => {
+        if (!rect || this.perf.lite()) return;
+        x = (e.clientX - (rect.left + rect.width / 2)) * this.magneticStrength;
+        y = (e.clientY - (rect.top + rect.height / 2)) * this.magneticStrength;
+        if (!raf) raf = requestAnimationFrame(apply);
+      };
+      const onLeave = () => {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        rect = undefined;
+        el.style.transition = 'translate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        el.style.translate = '0px 0px';
+      };
+
+      this.zone.runOutsideAngular(() => {
+        el.addEventListener('pointerenter', onEnter, { passive: true });
+        el.addEventListener('pointermove', onMove, { passive: true });
+        el.addEventListener('pointerleave', onLeave, { passive: true });
+      });
+      this.destroyRef.onDestroy(() => {
+        cancelAnimationFrame(raf);
+        el.removeEventListener('pointerenter', onEnter);
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerleave', onLeave);
+      });
     });
-  };
-
-  private readonly onMouseLeave = (): void => {
-    this.renderer.setStyle(this.el.nativeElement, 'transform', 'translate(0, 0)');
-  };
-
-  constructor(
-    private readonly el: ElementRef<HTMLElement>,
-    private readonly renderer: Renderer2,
-    private readonly zone: NgZone
-  ) {
-    if (!isPlatformBrowser(inject(PLATFORM_ID))) {
-      this.enabled = false;
-      return;
-    }
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const isFinePointer = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
-    this.enabled = !prefersReducedMotion && !!isFinePointer;
-  }
-
-  ngOnInit(): void {
-    if (!this.enabled) return;
-    this.zone.runOutsideAngular(() => {
-      this.el.nativeElement.addEventListener('mousemove', this.onMouseMove);
-      this.el.nativeElement.addEventListener('mouseleave', this.onMouseLeave);
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.frame) cancelAnimationFrame(this.frame);
-    if (this.enabled) {
-      this.el.nativeElement.removeEventListener('mousemove', this.onMouseMove);
-      this.el.nativeElement.removeEventListener('mouseleave', this.onMouseLeave);
-    }
   }
 }

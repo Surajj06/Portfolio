@@ -1,43 +1,83 @@
-<section id="experience" class="section experience">
-  <div class="circuit-backdrop" aria-hidden="true"></div>
-
+<section id="experience" class="section experience" aria-labelledby="exp-title">
   <div class="container">
-    <app-section-heading eyebrow="Career" title="Experience"></app-section-heading>
+    <app-section-heading kicker="Experience" headingId="exp-title">
+      Where I’ve been <em>shipping</em>.
+    </app-section-heading>
 
-    <ol class="experience-timeline">
-      <li *ngFor="let entry of data.experience" class="experience-entry" appReveal>
-        <div class="experience-marker" aria-hidden="true"></div>
-
-        <div class="experience-card glass-panel" appSpotlight>
-          <div class="experience-head">
-            <div>
-              <h3 class="experience-role">{{ entry.role }}</h3>
-              <p class="experience-company">{{ entry.company }}</p>
+    <div class="timeline">
+      @for (entry of data.experience; track entry.company) {
+        <article class="role card" appReveal>
+          <header class="role__head">
+            <span class="logo" aria-hidden="true">{{ initial(entry.company) }}</span>
+            <div class="role__id">
+              <h3 class="role__title">{{ entry.role }}</h3>
+              <p class="role__company">{{ entry.company }}</p>
             </div>
-            <span class="experience-duration">{{ entry.duration }}</span>
-          </div>
+            <p class="chip role__when"><span class="dot"></span>{{ entry.duration }}</p>
+          </header>
 
-          <p class="experience-description">{{ entry.description }}</p>
+          <p class="lede role__lede">{{ entry.description }}</p>
 
-          <div class="experience-block" *ngIf="entry.responsibilities.length">
-            <h4>Responsibilities</h4>
-            <ul>
-              <li *ngFor="let item of entry.responsibilities">{{ item }}</li>
-            </ul>
-          </div>
+          <div class="role__cols">
+            <div class="role__main">
+              <h4 class="label">What I did</h4>
 
-          <div class="experience-block" *ngIf="entry.contributions.length">
-            <h4>Key contributions</h4>
-            <ul>
-              <li *ngFor="let item of entry.contributions">{{ item }}</li>
-            </ul>
-          </div>
+              <ol class="duties">
+                @for (item of entry.responsibilities.slice(0, preview); track $index) {
+                  <li>
+                    <span class="num">0{{ $index + 1 }}</span>
+                    <p>{{ item }}</p>
+                  </li>
+                }
+              </ol>
 
-          <div class="experience-tech">
-            <span *ngFor="let tech of entry.technologies">{{ tech }}</span>
+              <!-- The rest stays in the DOM (SEO) but is collapsed + inert until opened -->
+              <div class="extra" [class.is-open]="expanded()" [attr.inert]="expanded() ? null : ''">
+                <div class="extra__in">
+                  <ol class="duties" [attr.start]="preview + 1">
+                    @for (item of entry.responsibilities.slice(preview); track $index) {
+                      <li>
+                        <span class="num">0{{ preview + $index + 1 }}</span>
+                        <p>{{ item }}</p>
+                      </li>
+                    }
+                  </ol>
+                </div>
+              </div>
+
+              @if (entry.responsibilities.length > preview) {
+                <button type="button" class="more" (click)="toggle()" [attr.aria-expanded]="expanded()">
+                  {{ expanded() ? 'Show less' : 'Show all ' + entry.responsibilities.length }}
+                  <app-icon name="chevron-down" [size]="16" class="more__icon" />
+                </button>
+              }
+            </div>
+
+            <aside class="role__side">
+              <h4 class="label">Key contributions</h4>
+              <ul class="contrib">
+                @for (item of entry.contributions; track $index) {
+                  <li><app-icon name="zap" [size]="16" />{{ item }}</li>
+                }
+              </ul>
+
+              <h4 class="label">Built with</h4>
+              <ul class="tech">
+                @for (tech of entry.technologies; track tech) {
+                  <li class="chip">{{ tech }}</li>
+                }
+              </ul>
+            </aside>
           </div>
+        </article>
+
+        <div class="next" appReveal>
+          <span class="next__line" aria-hidden="true"></span>
+          <a class="btn btn--primary" routerLink="/" fragment="contact" appMagnetic>
+            What’s next? Let’s talk <app-icon name="arrow-up-right" class="icon-nudge-up" [size]="18" />
+          </a>
         </div>
-      </li>
-    </ol>
+      }
+    </div>
   </div>
 </section>

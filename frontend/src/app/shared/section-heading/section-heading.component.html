@@ -1,5 +1,7 @@
-<div class="heading" [class.heading-center]="align === 'center'" appReveal>
-  <span *ngIf="eyebrow" class="heading-eyebrow">{{ eyebrow }}</span>
-  <h2 class="heading-title">{{ title }}</h2>
-  <p *ngIf="lede" class="heading-lede">{{ lede }}</p>
-</div>
+<header class="head sec-head">
+  <p class="kicker" appReveal="fade">{{ kicker }}</p>
+  <h2 class="h2" appSplit [id]="headingId ?? null"><ng-content /></h2>
+  @if (lede) {
+    <p class="lede" appReveal [revealDelay]="2">{{ lede }}</p>
+  }
+</header>

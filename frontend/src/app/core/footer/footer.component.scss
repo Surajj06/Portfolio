@@ -1,52 +1,114 @@
 .footer {
-  border-top: 1px solid var(--border);
-  padding: 56px 0 40px;
+  position: relative;
+  padding-top: clamp(48px, 7vw, 96px);
+  border-top: 1px solid var(--line);
+  overflow: clip;
 
-  &-inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 32px;
-    justify-content: space-between;
-    align-items: flex-start;
+  &__name {
+    margin: 0 0 clamp(28px, 4vw, 56px) -0.04em;
+    font-size: clamp(4.4rem, 19.5vw, 17rem);
+    font-weight: 800;
+    line-height: 0.78;
+    letter-spacing: -0.065em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    // A filled ghost, not -webkit-text-stroke: variable fonts have overlapping
+    // contours that show up as stray inner lines when stroked.
+    color: color-mix(in srgb, var(--text) 7%, transparent);
+    user-select: none;
   }
 
-  &-name {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 15px;
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 24px;
+    padding-bottom: clamp(32px, 5vw, 64px);
   }
 
-  &-role {
-    color: var(--text-muted);
-    font-size: 13.5px;
-    margin-top: 4px;
+  &__title {
+    margin-bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
 
-  &-links {
-    display: flex;
-    gap: 22px;
+  ul {
+    display: grid;
+    gap: 8px;
+  }
 
-    a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--text-secondary);
-      transition: color 0.15s ease;
+  a,
+  &__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-2);
+    text-align: left;
+    overflow-wrap: anywhere;
+    transition: color 0.25s ease, transform 0.35s var(--ease-out);
 
-      &:hover { color: var(--text-primary); }
+    &:hover {
+      color: var(--text);
+      transform: translateX(4px);
     }
   }
 
-  &-meta {
-    text-align: right;
-    color: var(--text-muted);
-    font-size: 12.5px;
-    line-height: 1.8;
+  &__top {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+
+  &__totop {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border: 1px solid var(--line-2);
+    border-radius: 50%;
+    color: var(--text);
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease,
+      transform 0.5s var(--ease-spring);
+
+    &:hover {
+      background: var(--cta-bg);
+      color: var(--cta-ink);
+      border-color: transparent;
+      transform: translateY(-6px);
+    }
+  }
+
+  &__bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px 24px;
+    padding: 22px 0 28px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--text-3);
+  }
+
+  &__time {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 }
 
-@media (max-width: 640px) {
-  .footer-inner { flex-direction: column; }
-  .footer-meta { text-align: left; }
+@media (min-width: 820px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr 1.4fr auto;
+  }
 }
