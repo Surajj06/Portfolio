@@ -399,6 +399,42 @@ const clip = (text: string, max: number) => {
   return `${(stop > max * 0.5 ? cut.slice(0, stop + 1) : cut.replace(/\s+\S*$/, '')).trim()}…`;
 };
 
+// Broad "tell me about…" questions get a tidy overview instead of two arbitrary chunks.
+// (Only applied when the question is plainly about Suraj / this site — see ANCHOR —
+// so "who built the pyramids?" never gets a portfolio overview.)
+const ANCHOR = /\b(he|his|him|himself|suraj|you|your|yours|portfolio|site|website)\b/i;
+const PROJECTS_INTENT = /\b(projects?|built|build|made|created|portfolio|case stud(y|ies)|work(ed)? on|work|systems?|apps?)\b/i;
+const SKILLS_INTENT = /\b(skills?|tech(nolog\w*)?|stack|tools?|languages?|frameworks?|proficien\w*|expertise|good at)\b/i;
+const EXPERIENCE_INTENT = /\b(experience|career|employer|company|job|jobs|role|position|worked|working|work history)\b(?!\s+(with|in)\b)/i;
+const ABOUT_INTENT = /\b(who|about|introduce|yourself|himself|background|summary|what (does|do|is) (he|suraj|his))\b/i;
+
+/** Words that name one particular project or technology — then a targeted answer beats an overview. */
+const SPECIFIC_WORDS = new Set<string>([
+  ...BASE_PROJECTS.flatMap((p) => tokenize(p.title)).filter((t) => !['ai', 'platform', 'engine', 'bot', 'assistant'].includes(t)),
+  ...TECH_STACK.flatMap((c) => c.items).flatMap((i) => tokenize(i)),
+  ...BASE_PROJECTS.flatMap((p) => p.techStack).flatMap((i) => tokenize(i))
+]);
+
+function projectsOverview(): string {
+  const rows = BASE_PROJECTS.map((p) => `- **${p.title}** — ${p.summary} [Case study](/projects/${p.id})`);
+  return `Suraj has built ${BASE_PROJECTS.length} systems, each with a full case study:\n\n${rows.join('\n')}\n\nAsk me about any of them for the details.`;
+}
+
+function skillsOverview(): string {
+  const rows = TECH_STACK.map((c) => `- **${c.name}** — ${c.items.slice(0, 8).join(', ')}`);
+  return `Here's Suraj's toolkit, by area:\n\n${rows.join('\n')}\n\nAsk about a specific tool and I'll tell you where he's used it.`;
+}
+
+function experienceOverview(): string {
+  const job = EXPERIENCE[0];
+  const rows = job.responsibilities.slice(0, 4).map((r) => `- ${clip(r, 190)}`);
+  return `**${job.role} at ${job.company}** (${job.duration}). ${job.description}\n\n${rows.join('\n')}`;
+}
+
+function aboutOverview(): string {
+  return `${ABOUT.summary}\n\nFocus areas: ${ABOUT.focusAreas.slice(0, 8).join(', ')}.`;
+}
+
 /**
  * What the assistant says when no language-model key is configured (or the model
  * is unreachable): a direct, extractive answer built from the same retrieved
@@ -419,6 +455,12 @@ export function offlineAnswer(question: string, found: Retrieval): string {
       ? `For roles, freelance work or collaborations, reach Suraj directly:`
       : `Here's how to reach Suraj:`;
     return `${lead}\n\n${contact.text}`;
+  }
+  if (ANCHOR.test(question) && !tokenize(question).some((t) => SPECIFIC_WORDS.has(t))) {
+    if (EXPERIENCE_INTENT.test(question)) return experienceOverview();
+    if (PROJECTS_INTENT.test(question)) return projectsOverview();
+    if (SKILLS_INTENT.test(question)) return skillsOverview();
+    if (ABOUT_INTENT.test(question)) return aboutOverview();
   }
   const best = ask.filter((c) => c.kind !== 'faq' || found.topScore > 0).slice(0, 2);
   if (!best.length || found.topScore === 0 || found.coverage < 0.5) {

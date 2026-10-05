@@ -98,6 +98,13 @@ politely refuses unrelated questions); it just isn't as conversational. If the
 model is ever unreachable it falls back to the same mode, so visitors never hit a
 dead end.
 
+**Troubleshooting:** the first event of the `/api/chat` stream reports `mode`
+(`model` or `retrieval`). If a key is set but replies still look like quick
+answers, the model call failed and the stream carries a coarse `reason`:
+`auth` (key rejected), `model` (unknown model name — set `CHAT_MODEL`),
+`rate-limit`, `provider` (their outage), `key-format`, `timeout` or `network`.
+The Vercel function log has the (redacted) detail.
+
 **Safety & cost:** same-origin only (a foreign `Origin` gets a 403), message
 length/turn caps, a per-IP rate limit (10/minute, 60/hour — best-effort, per
 instance), a capped reply length, no tools, and reply text is rendered through a

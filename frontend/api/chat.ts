@@ -12,7 +12,7 @@ import { buildSystemPrompt, offlineAnswer, relatedLinks, retrieve } from './_rag
  * Which model? Whichever key is configured in the Vercel dashboard (never in code):
  *   ANTHROPIC_API_KEY                      → Claude (default model: claude-haiku-4-5-20251001)
  *   OPENAI_API_KEY                         → OpenAI-compatible chat API (default: gpt-4o-mini)
- *   GEMINI_API_KEY / GROQ_API_KEY          → via their OpenAI-compatible endpoints
+ *   GEMINI_API_KEY / GROQ_API_KEY          → via their OpenAI-compatible endpoints (Groq default: llama-3.3-70b-versatile)
  *   CHAT_MODEL        (optional)           → override the model name
  *   OPENAI_BASE_URL / ANTHROPIC_BASE_URL   → point at another compatible host
  *   CHAT_ALLOWED_ORIGINS (optional, CSV)   → extra allowed browser origins
@@ -118,21 +118,45 @@ function parseMessages(body: unknown): ChatMessage[] | null {
 
 function resolveProvider(): Provider | null {
   const env = process.env;
+  // Keys are trimmed: a stray space or newline from copy-paste makes the Authorization header invalid.
+  const key = (name: string) => env[name]?.trim() || undefined;
   const model = env['CHAT_MODEL']?.trim();
-  const trim = (u: string) => u.replace(/\/+$/, '');
-  if (env['ANTHROPIC_API_KEY']) {
-    return { kind: 'anthropic', key: env['ANTHROPIC_API_KEY'], base: trim(env['ANTHROPIC_BASE_URL'] || 'https://api.anthropic.com'), model: model || 'claude-haiku-4-5-20251001' };
+  const trim = (u: string) => u.trim().replace(/\/+$/, '');
+  if (key('ANTHROPIC_API_KEY')) {
+    return { kind: 'anthropic', key: key('ANTHROPIC_API_KEY')!, base: trim(env['ANTHROPIC_BASE_URL'] || 'https://api.anthropic.com'), model: model || 'claude-haiku-4-5-20251001' };
   }
-  if (env['OPENAI_API_KEY']) {
-    return { kind: 'openai', key: env['OPENAI_API_KEY'], base: trim(env['OPENAI_BASE_URL'] || 'https://api.openai.com/v1'), model: model || 'gpt-4o-mini' };
+  if (key('OPENAI_API_KEY')) {
+    return { kind: 'openai', key: key('OPENAI_API_KEY')!, base: trim(env['OPENAI_BASE_URL'] || 'https://api.openai.com/v1'), model: model || 'gpt-4o-mini' };
   }
-  if (env['GEMINI_API_KEY']) {
-    return { kind: 'openai', key: env['GEMINI_API_KEY'], base: trim(env['OPENAI_BASE_URL'] || 'https://generativelanguage.googleapis.com/v1beta/openai'), model: model || 'gemini-2.5-flash' };
+  if (key('GEMINI_API_KEY')) {
+    return { kind: 'openai', key: key('GEMINI_API_KEY')!, base: trim(env['OPENAI_BASE_URL'] || 'https://generativelanguage.googleapis.com/v1beta/openai'), model: model || 'gemini-2.5-flash' };
   }
-  if (env['GROQ_API_KEY']) {
-    return { kind: 'openai', key: env['GROQ_API_KEY'], base: trim(env['OPENAI_BASE_URL'] || 'https://api.groq.com/openai/v1'), model: model || 'llama-3.1-8b-instant' };
+  if (key('GROQ_API_KEY')) {
+    return { kind: 'openai', key: key('GROQ_API_KEY')!, base: trim(env['OPENAI_BASE_URL'] || 'https://api.groq.com/openai/v1'), model: model || 'llama-3.3-70b-versatile' };
   }
   return null;
+}
+
+/** Strips anything that looks like a credential before it can reach a log line. */
+function redact(text: string): string {
+  return text.replace(/Bearer\s+\S+/gi, 'Bearer [redacted]').replace(/\b(gsk_|sk-|AIza)[A-Za-z0-9_-]+/g, '[redacted]');
+}
+
+/** A coarse, safe-to-share reason the model wasn't used (no secrets, no upstream text). */
+function failureReason(err: unknown): string {
+  if (err instanceof UpstreamError) {
+    if (err.status === 401 || err.status === 403) return 'auth';
+    if (err.status === 404) return 'model';
+    if (err.status === 400) return /model/i.test(err.detail) ? 'model' : 'request';
+    if (err.status === 429) return 'rate-limit';
+    if (err.status >= 500) return 'provider';
+    return 'upstream';
+  }
+  if (err instanceof Error) {
+    if (err.name === 'AbortError') return 'timeout';
+    if (/invalid header|invalid character/i.test(err.message)) return 'key-format';
+  }
+  return 'network';
 }
 
 /** Yields the `data:` payload of each server-sent event in a streaming response. */
@@ -274,11 +298,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       } catch (err) {
         // Never leak upstream details to visitors; keep them in the function logs.
-        const info = err instanceof UpstreamError ? `${err.status} ${err.detail}` : err instanceof Error ? err.message : String(err);
-        console.error('Chat model call failed:', info);
+        const info = err instanceof UpstreamError ? `${err.status} ${err.detail}` : err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        console.error('Chat model call failed:', redact(info));
         if (!produced) {
           mode = 'retrieval';
-          send({ type: 'meta', mode, related: relatedLinks(found.chunks) });
+          send({ type: 'meta', mode, reason: failureReason(err), related: relatedLinks(found.chunks) });
         }
       }
     }
