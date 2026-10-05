@@ -74,8 +74,8 @@
     </ul>
 
     <div class="sheet__actions">
-      <a class="btn btn--primary" [href]="data.profile.resumePath" download>
-        Résumé <app-icon name="download" [size]="18" />
+      <a class="btn btn--primary" [href]="data.profile.resumePath" [attr.download]="data.profile.resumeFileName">
+        Resume <app-icon name="download" [size]="18" />
       </a>
       <button type="button" class="btn btn--ghost" (click)="closeMenu(); palette.open()">
         <app-icon name="search" [size]="18" /> Search

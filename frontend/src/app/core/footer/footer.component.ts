@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { SectionLinkDirective } from '../../shared/section-link/section-link.directive';
 import { IconComponent } from '../../shared/icons/icon.component';
 import { ClockComponent } from '../../shared/clock/clock.component';
 import { CopyDirective } from '../../shared/copy/copy.directive';
@@ -10,7 +10,7 @@ import { DeviceService } from '../../services/device.service';
   selector: 'app-footer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent, ClockComponent, CopyDirective],
+  imports: [SectionLinkDirective, IconComponent, ClockComponent, CopyDirective],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })

@@ -1,0 +1,169 @@
+<!-- One camera, one shared world: every project draws its own props into it.
+     Units are em (1em ≈ 10 design px on a 48 × 30 stage) so the scene scales
+     with its container. `.bx` = box (top/front/right faces), `.bb` = billboard
+     that always faces the camera. -->
+<div class="stage" aria-hidden="true">
+  <div class="fit">
+    <div class="cam">
+      <div class="tilt">
+        <div class="world" [class.front]="view === 'front'">
+          @switch (id) {
+            <!-- ============ 01 · Voice: signal tower, live equaliser, provider orbit ============ -->
+            @case ('ai-voice-calling-platform') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 13.5"></i>
+              <i class="ripple" style="--i: 0"></i>
+              <i class="ripple" style="--i: 1"></i>
+              <i class="ripple" style="--i: 2"></i>
+              <b class="bx n" style="--x: -2.8; --y: -2.8; --w: 5.6; --d: 5.6; --h: 1.4"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <b class="bx a" style="--x: -1.5; --y: -1.5; --w: 3; --d: 3; --h: 3.8"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <i class="beam" style="--r: 0deg"></i>
+              <i class="beam" style="--r: 90deg"></i>
+              @for (b of voiceBars; track b.i) {
+                <b class="bx a eq" style="--w: 1.3; --d: 1.3" [style.--x]="b.x" [style.--y]="b.y" [style.--h]="b.h" [style.--i]="b.i"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              <div class="orbit">
+                @for (n of voiceNodes; track n.label) {
+                  <div class="slot" [style.--x]="n.x" [style.--y]="n.y">
+                    <div class="counter">
+                      <div class="bb" style="--x: 0; --y: 0; --z: 2"><div class="bb__in"><span class="pill pill--a">{{ n.label }}</span></div></div>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="bb" style="--x: -13; --y: -3; --z: 9"><div class="bb__in float"><span class="hud"><strong>20,000+</strong><small>calls a day</small></span></div></div>
+              <div class="bb" style="--x: 6; --y: -12; --z: 8"><div class="bb__in float f2"><span class="pill"><i class="live"></i>LIVE</span></div></div>
+            }
+
+            <!-- ============ 02 · Matching: records fall through normalise → gates → score ============ -->
+            @case ('vehicle-catalogue-matching-engine') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 12.5"></i>
+              <i class="slab" style="--z: 1; --k: 0"></i>
+              <i class="slab" style="--z: 4.4; --k: 1"></i>
+              <i class="slab" style="--z: 7.8; --k: 2"></i>
+              <i class="slab" style="--z: 11.2; --k: 3"></i>
+              <i class="sweep"></i>
+              @for (p of matchPackets; track p.i) {
+                <b class="bx pkt" [class.a]="!p.no" [class.bad]="p.no" [class.no]="p.no" style="--w: 1.3; --d: 1.3; --h: 1.3" [style.--x]="p.x" [style.--y]="p.y" [style.--i]="p.i"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              <div class="bb" style="--x: -14; --y: 7; --z: 1.6"><div class="bb__in"><span class="pill">Normalise</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 5"><div class="bb__in"><span class="pill">Group by make</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 8.4"><div class="bb__in"><span class="pill pill--bad">Rule gates</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 11.8"><div class="bb__in"><span class="pill pill--a">Fuzzy score</span></div></div>
+              <div class="bb" style="--x: 12; --y: -9; --z: 5"><div class="bb__in float"><span class="hud"><strong>15+</strong><small>partners</small></span></div></div>
+            }
+
+            <!-- ============ 03 · Quote assistant: a chat thread in depth ============ -->
+            @case ('conversational-quote-assistant') {
+              <i class="glow"></i>
+              <div class="phone">
+                <i class="phone__notch"></i>
+                <div class="msgs">
+                  <p class="msg msg--bot" style="--k: 0"><i style="--w: 78%"></i><i style="--w: 52%"></i></p>
+                  <p class="msg msg--me" style="--k: 1"><i style="--w: 64%"></i></p>
+                  <p class="msg msg--bot" style="--k: 2"><i style="--w: 84%"></i><i style="--w: 70%"></i><i style="--w: 40%"></i></p>
+                  <p class="msg msg--me" style="--k: 3"><i style="--w: 74%"></i><i style="--w: 46%"></i></p>
+                  <p class="typing"><i></i><i></i><i></i></p>
+                </div>
+              </div>
+              <div class="sat float" style="--x: -21; --y: -9; --z: 9"><span class="pill pill--a">Eligible partners</span></div>
+              <div class="sat float f2" style="--x: 8.5; --y: -4; --z: 12"><span class="hud"><strong>0</strong><small>backend changes</small></span></div>
+              <div class="sat float f3" style="--x: -22; --y: 7; --z: -2"><span class="pill">Step 3 of 5</span></div>
+              <div class="sat float f2" style="--x: 9; --y: 8; --z: 5"><span class="pill pill--a">Quote ready ✓</span></div>
+            }
+
+            <!-- ============ 04 · Document bot: an ID card being read, masked and locked ============ -->
+            @case ('whatsapp-document-verification-bot') {
+              <i class="glow"></i>
+              <div class="idcard">
+                <div class="idcard__photo"><i></i></div>
+                <div class="idcard__lines"><i style="--w: 100%"></i><i style="--w: 74%"></i><i style="--w: 88%"></i></div>
+                <div class="idcard__mask"><i style="--w: 100%"></i><i style="--w: 72%"></i></div>
+                <div class="idcard__foot"><i style="--w: 86%"></i><i style="--w: 58%"></i></div>
+                <div class="scanwrap"><i class="scanbar"></i></div>
+              </div>
+              <div class="sat float" style="--x: 8.5; --y: 7; --z: 8">
+                <span class="badge"><svg viewBox="0 0 24 24"><path d="M12 2.5 4.5 5.6v5.7c0 4.6 3.2 8.4 7.5 10.2 4.3-1.8 7.5-5.6 7.5-10.2V5.6z" /><path class="tick" d="m8.6 12.2 2.4 2.4 4.4-4.9" /></svg><i class="badge__ping"></i></span>
+              </div>
+              <div class="sat float f2" style="--x: -21; --y: -9; --z: 8"><span class="pill pill--a">OCR + validate</span></div>
+              <div class="sat float f3" style="--x: -22; --y: 7; --z: 3"><span class="pill">PII masked</span></div>
+              <div class="sat float f2" style="--x: 9; --y: -9; --z: 4"><span class="pill pill--bad">Encrypted at rest</span></div>
+            }
+
+            <!-- ============ 05 · Leaderboard: a podium whose ranks keep changing ============ -->
+            @case ('agent-gamification-platform') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 14"></i>
+              @for (b of boardBars; track b.i) {
+                <b class="bx board" [class.a]="b.i === 2" [class.n]="b.i !== 2" style="--w: 4; --d: 4; --y: -2" [style.--x]="b.x - 2" [style.--h]="b.h" [style.--i]="b.i" [attr.data-i]="b.i"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              @for (c of confetti; track c.i) {
+                <i class="conf" [style.--x]="c.x" [style.--y]="c.y" [style.--i]="c.i"></i>
+              }
+              <div class="bb" style="--x: 0; --y: -2; --z: 14.6"><div class="bb__in float"><span class="badge badge--crown"><svg viewBox="0 0 24 24"><path d="m3.5 18.5 1.6-10 4.6 4.2L12 6l2.3 6.7 4.6-4.2 1.6 10z" /></svg></span></div></div>
+              <div class="bb" style="--x: 12; --y: 9; --z: 1"><div class="bb__in float f2"><span class="pill pill--a"><i class="live"></i>LIVE</span></div></div>
+              <div class="bb pop" style="--x: -8; --y: -2; --z: 11.5; --d: 0s"><div class="bb__in"><span class="pill pill--a">+250</span></div></div>
+              <div class="bb pop" style="--x: 6; --y: -2; --z: 10; --d: -1.6s"><div class="bb__in"><span class="pill">+80</span></div></div>
+              <div class="bb pop" style="--x: 11; --y: -2; --z: 7; --d: -3.1s"><div class="bb__in"><span class="pill pill--a">+120</span></div></div>
+            }
+
+            <!-- ============ 06 · Stock engine: candles, volume and a scanning plane ============ -->
+            @case ('stock-intelligence-engine') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 14"></i>
+              <i class="wall"></i>
+              @for (c of candles; track c.i) {
+                <div class="lift" [style.--x]="c.x" [style.--z]="c.lo" [style.--i]="c.i">
+                  <i class="wick" [class.up]="c.up" [style.--h]="c.wick"></i>
+                  <b class="bx candle" [class.up]="c.up" [class.dn]="!c.up" [class.live]="c.i === 6" style="--x: -0.4; --y: -0.4; --w: 1.6; --d: 1.6" [style.--z]="c.bodyLift" [style.--h]="c.body"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+                </div>
+              }
+              @for (v of volume; track v.i) {
+                <b class="bx n vol" [class.a]="v.i === 6" style="--y: 6.4; --w: 1.6; --d: 1.6" [style.--x]="v.x - 0.4" [style.--h]="v.h"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              <i class="ping" style="--x: 13; --y: 0.4; --pc: var(--art)"></i>
+              <i class="ping" style="--x: 13; --y: 0.4; --pc: var(--art); --d: -1.2s"></i>
+              <div class="bb" style="--x: -15; --y: -6; --z: 10"><div class="bb__in"><span class="pill">RSI-14</span></div></div>
+              <div class="bb" style="--x: -15; --y: -6; --z: 6.8"><div class="bb__in"><span class="pill">50 / 200 DMA</span></div></div>
+              <div class="bb" style="--x: 15; --y: 4; --z: 7"><div class="bb__in float"><span class="hud"><strong>11</strong><small>news feeds</small></span></div></div>
+              <div class="bb" style="--x: -15; --y: -6; --z: 3.6"><div class="bb__in float f2"><span class="pill pill--a">AI summary</span></div></div>
+            }
+
+            <!-- ============ 07 · API monitor: status grid, radar sweep, a failing node ============ -->
+            @case ('api-health-monitor') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 14"></i>
+              @for (t of tiles; track t.n) {
+                <i class="tile" [class.warn]="t.state === 'warn'" [class.bad]="t.state === 'bad'" [style.--x]="t.x" [style.--y]="t.y" [style.--i]="t.n"></i>
+              }
+              <b class="bx warn" style="--w: 2.8; --d: 2.8; --h: 2.2; --x: -6.8; --y: 0.2"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <b class="bx warn" style="--w: 2.8; --d: 2.8; --h: 1.6; --x: 6.8; --y: 3.6"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <b class="bx bad down" style="--w: 2.8; --d: 2.8; --h: 3.2; --x: 3.4; --y: -3.4"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <i class="ping" style="--x: 4.8; --y: -2"></i>
+              <i class="ping" style="--x: 4.8; --y: -2; --d: -1.2s"></i>
+              <i class="radar"></i>
+              <div class="bb" style="--x: -13; --y: -9; --z: 7"><div class="bb__in float"><span class="hud"><strong>74+</strong><small>APIs checked</small></span></div></div>
+              <div class="bb" style="--x: 6; --y: -5; --z: 6.2"><div class="bb__in float f2"><span class="pill pill--bad">DOWN</span></div></div>
+              <div class="bb" style="--x: 13; --y: 3; --z: 4.2"><div class="bb__in float f3"><span class="pill pill--warn">SLOW</span></div></div>
+              <div class="bb" style="--x: 2; --y: 13.5; --z: 0.5"><div class="bb__in">
+                <span class="beat"><svg viewBox="0 0 720 40" preserveAspectRatio="none"><path [attr.d]="beatPath" /></svg></span>
+              </div></div>
+            }
+
+            <!-- Any project without a bespoke scene: a quiet orbit around an accent block. -->
+            @default {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 12"></i>
+              <i class="ripple" style="--i: 0"></i>
+              <i class="ripple" style="--i: 1"></i>
+              <b class="bx a" style="--x: -3; --y: -3; --w: 6; --d: 6; --h: 5"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <i class="beam" style="--r: 0deg"></i>
+              <i class="beam" style="--r: 90deg"></i>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

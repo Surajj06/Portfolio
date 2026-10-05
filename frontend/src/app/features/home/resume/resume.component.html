@@ -15,11 +15,11 @@
       </div>
 
       <div class="resume-card__copy">
-        <p class="kicker">Résumé</p>
+        <p class="kicker">Resume</p>
         <h2 id="resume-title" class="resume-card__title">Prefer the <em>short version</em>?</h2>
         <p class="lede">Two pages: experience, the systems I’ve shipped, and the stack — ready to forward.</p>
         <div class="resume-card__actions">
-          <a class="btn btn--primary" [href]="data.profile.resumePath" download appMagnetic>
+          <a class="btn btn--primary" [href]="data.profile.resumePath" [attr.download]="data.profile.resumeFileName" appMagnetic>
             Download PDF <app-icon name="download" [size]="18" />
           </a>
           <a class="btn btn--ghost" [href]="data.profile.resumePath" target="_blank" rel="noopener noreferrer">

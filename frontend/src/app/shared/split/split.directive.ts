@@ -68,6 +68,13 @@ export class SplitDirective {
 
   private split(kit: GsapKit, host: HTMLElement): void {
     const unit = this.mode;
+    // Plays once, when the heading's top crosses ~90% of the viewport height.
+    // (A plain IntersectionObserver — GSAP's ScrollTrigger runs a permanent
+    // requestAnimationFrame loop, which is not worth it for this.)
+    let played = false;
+    let tween: { play(): unknown; progress(value: number): unknown } | undefined;
+    let io: IntersectionObserver | undefined;
+
     kit.SplitText.create(host, {
       type: unit,
       mask: unit,
@@ -79,13 +86,29 @@ export class SplitDirective {
         const targets = unit === 'words' ? self.words : self.lines;
         kit.gsap.set(targets, { yPercent: 118 });
         host.classList.add('is-split'); // host becomes visible; the lines are still masked
-        return kit.gsap.to(targets, {
+        const next = kit.gsap.to(targets, {
           yPercent: 0,
           duration: 1.1,
           ease: 'power4.out',
           stagger: unit === 'words' ? 0.05 : 0.09,
-          scrollTrigger: { trigger: host, start: 'top 90%', once: true }
+          paused: true
         });
+        tween = next;
+        if (played) {
+          next.progress(1); // a re-split after the reveal must not replay it
+        } else if (!io) {
+          io = new IntersectionObserver(
+            ([entry]) => {
+              if (!entry.isIntersecting) return;
+              played = true;
+              io?.disconnect();
+              tween?.play();
+            },
+            { rootMargin: '0px 0px -10% 0px' }
+          );
+          io.observe(host);
+        }
+        return next;
       }
     });
   }

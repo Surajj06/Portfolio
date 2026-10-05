@@ -47,7 +47,7 @@
         </div>
         <p class="tile-text">
           The real-time voice pipeline behind 20,000+ calls a day.
-          <a class="more" routerLink="/" fragment="systems">
+          <a class="more" appSection="systems">
             See how it works <app-icon name="arrow-right" [size]="15" />
           </a>
         </p>
@@ -84,8 +84,8 @@
             </a>
           </li>
           <li class="wide">
-            <a class="resume" [href]="data.profile.resumePath" download>
-              <app-icon name="file-text" [size]="20" /> Download résumé
+            <a class="resume" [href]="data.profile.resumePath" [attr.download]="data.profile.resumeFileName">
+              <app-icon name="file-text" [size]="20" /> Download resume
               <app-icon class="out" name="download" [size]="16" />
             </a>
           </li>

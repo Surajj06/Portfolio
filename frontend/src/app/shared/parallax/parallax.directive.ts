@@ -24,22 +24,43 @@ export class ParallaxDirective {
   constructor() {
     afterNextRender(() => {
       this.motion.motion().then((m) => {
-        if (!m || !m.supportsScrollTimeline()) return;
+        if (!m || !m.supportsScrollTimeline() || typeof IntersectionObserver === 'undefined') return;
         const host = this.el.nativeElement;
         const section = host.closest<HTMLElement>('section') ?? host.parentElement;
         if (!section) return;
 
-        const stop = this.motion.run(() => {
-          const keyframes: Record<string, string[] | number[]> = {
-            transform: ['translateY(0px)', `translateY(${this.distance}px)`]
-          };
-          if (this.parallaxFade) keyframes['opacity'] = [1, 0.25];
-          return m.scroll(m.animate(host, keyframes, { ease: 'linear' }), {
-            target: section,
-            offset: ['start start', 'end start']
+        // A scroll-linked animation keeps the browser producing frames for as long
+        // as it exists — even while the section is thousands of pixels away. So it
+        // only lives while the section is near the viewport.
+        let release: (() => void) | undefined;
+        const engage = () => {
+          if (release) return;
+          release = this.motion.run(() => {
+            const keyframes: Record<string, string[] | number[]> = {
+              transform: ['translateY(0px)', `translateY(${this.distance}px)`]
+            };
+            if (this.parallaxFade) keyframes['opacity'] = [1, 0.25];
+            const animation = m.animate(host, keyframes, { ease: 'linear' });
+            const stop = m.scroll(animation, { target: section, offset: ['start start', 'end start'] });
+            return () => {
+              stop();
+              animation.cancel();
+            };
+          });
+        };
+        const disengage = () => {
+          release?.();
+          release = undefined;
+        };
+
+        this.motion.run(() => {
+          const io = new IntersectionObserver(([entry]) => (entry.isIntersecting ? engage() : disengage()), { rootMargin: '30% 0px' });
+          io.observe(section);
+          this.destroyRef.onDestroy(() => {
+            io.disconnect();
+            disengage();
           });
         });
-        this.destroyRef.onDestroy(() => stop());
       });
     });
   }

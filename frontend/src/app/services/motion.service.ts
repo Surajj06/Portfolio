@@ -5,7 +5,6 @@ import { PerfGuardService } from './perf-guard.service';
 /** The GSAP pieces this site uses, registered once. */
 export interface GsapKit {
   gsap: typeof import('gsap').gsap;
-  ScrollTrigger: typeof import('gsap/ScrollTrigger').ScrollTrigger;
   SplitText: typeof import('gsap/SplitText').SplitText;
   Flip: typeof import('gsap/Flip').Flip;
   ScrambleTextPlugin: typeof import('gsap/ScrambleTextPlugin').ScrambleTextPlugin;
@@ -19,9 +18,9 @@ export type MotionKit = typeof import('motion');
  * - **Motion** (`motion`, the library formerly known as Framer Motion): small,
  *   WAAPI-based — used for scroll-linked effects (runs on the compositor via
  *   native ScrollTimeline where supported) and springs.
- * - **GSAP** (+ SplitText, ScrollTrigger, Flip, ScrambleText — all free since
- *   3.13): used where CSS can't — kinetic text, layout (FLIP) transitions,
- *   velocity-reactive marquee, scramble.
+ * - **GSAP** (+ SplitText, Flip, ScrambleText — all free since 3.13): used where
+ *   CSS can't — kinetic text, layout (FLIP) transitions, scramble. (Not
+ *   ScrollTrigger: it keeps a requestAnimationFrame loop alive forever.)
  *
  * Both are code-split and only fetched after the page has loaded and gone
  * idle, so they add nothing to first paint. They resolve to `null` where
@@ -54,18 +53,19 @@ export class MotionService {
     if (!this.allowed) return Promise.resolve(null);
     return (this.gsapKit ??= this.afterLoadAndIdle().then(() =>
       this.run(async () => {
-        const [{ gsap }, { ScrollTrigger }, { SplitText }, { Flip }, { ScrambleTextPlugin }] = await Promise.all([
+        const [{ gsap }, { SplitText }, { Flip }, { ScrambleTextPlugin }] = await Promise.all([
           import('gsap'),
-          import('gsap/ScrollTrigger'),
           import('gsap/SplitText'),
           import('gsap/Flip'),
           import('gsap/ScrambleTextPlugin')
         ]);
-        gsap.registerPlugin(ScrollTrigger, SplitText, Flip, ScrambleTextPlugin);
+        gsap.registerPlugin(SplitText, Flip, ScrambleTextPlugin);
         gsap.defaults({ ease: 'power3.out', duration: 0.8 });
-        // Don't re-measure everything every time a phone's URL bar slides away.
-        ScrollTrigger.config({ ignoreMobileResize: true });
-        return { gsap, ScrollTrigger, SplitText, Flip, ScrambleTextPlugin };
+        // GSAP's ticker keeps requesting frames until it has been idle for this many
+        // ticks (default 120 ≈ 2s at 60fps, far longer on a slow phone). It wakes up
+        // again by itself the moment something is animated.
+        gsap.config({ autoSleep: 30 });
+        return { gsap, SplitText, Flip, ScrambleTextPlugin };
       })
     ));
   }

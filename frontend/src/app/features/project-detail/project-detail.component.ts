@@ -4,7 +4,9 @@ import { IconComponent } from '../../shared/icons/icon.component';
 import { RevealDirective } from '../../shared/reveal/reveal.directive';
 import { SplitDirective } from '../../shared/split/split.directive';
 import { MagneticDirective } from '../../shared/magnetic/magnetic.directive';
+import { SectionLinkDirective } from '../../shared/section-link/section-link.directive';
 import { ProjectArtComponent } from '../../shared/project-art/project-art.component';
+import { ProjectVisualComponent } from '../../shared/project-scene/project-visual.component';
 import { WorkflowDiagramComponent } from '../../shared/workflow-diagram/workflow-diagram.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { SeoService } from '../../services/seo.service';
@@ -22,7 +24,7 @@ interface CaseStudyRow {
   selector: 'app-project-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, IconComponent, RevealDirective, SplitDirective, MagneticDirective, ProjectArtComponent, WorkflowDiagramComponent],
+  imports: [RouterLink, SectionLinkDirective, IconComponent, RevealDirective, SplitDirective, MagneticDirective, ProjectArtComponent, ProjectVisualComponent, WorkflowDiagramComponent],
   templateUrl: './project-detail.component.html',
   styleUrl: './project-detail.component.scss'
 })

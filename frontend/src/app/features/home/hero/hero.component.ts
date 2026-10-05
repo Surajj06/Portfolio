@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, afterNextRender, inject } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/icons/icon.component';
 import { RotatingWordsComponent } from '../../../shared/rotating-words/rotating-words.component';
 import { WaveformComponent } from '../../../shared/waveform/waveform.component';
 import { MagneticDirective } from '../../../shared/magnetic/magnetic.directive';
 import { TiltDirective } from '../../../shared/tilt/tilt.directive';
 import { ParallaxDirective } from '../../../shared/parallax/parallax.directive';
+import { SectionLinkDirective } from '../../../shared/section-link/section-link.directive';
 import { PortfolioDataService } from '../../../services/portfolio-data.service';
 
 @Component({
@@ -15,7 +15,7 @@ import { PortfolioDataService } from '../../../services/portfolio-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgOptimizedImage,
-    RouterLink,
+    SectionLinkDirective,
     IconComponent,
     RotatingWordsComponent,
     WaveformComponent,

@@ -15,7 +15,9 @@
 .list {
   display: flex;
   flex-direction: column;
-  transform: translate3d(0, calc(var(--i, 0) * -1.2em), 0);
+  // Position is written from TS as a literal transform (a var()/calc() here would
+  // keep the slide off the compositor).
+  transform: translate3d(0, 0, 0);
   transition: transform 0.65s var(--ease-out);
 }
 

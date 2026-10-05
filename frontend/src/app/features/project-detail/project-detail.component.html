@@ -4,7 +4,7 @@
       <div class="case-hero__bg" aria-hidden="true"></div>
       <div class="container case-hero__grid">
         <div class="case-hero__copy">
-          <a class="back rise" routerLink="/" fragment="projects">
+          <a class="back rise" appSection="projects">
             <app-icon name="arrow-right" class="back__icon" [size]="16" />
             <span>All projects</span>
           </a>
@@ -40,7 +40,7 @@
           </div>
         </div>
 
-        <app-project-art
+        <app-project-visual
           class="case-hero__art rise"
           style="--d: 3"
           [id]="p.id"
@@ -128,7 +128,7 @@
 
     <section class="cta container" appReveal>
       <p class="cta__text">Want something like this <em>built</em>?</p>
-      <a class="btn btn--primary" routerLink="/" fragment="contact" appMagnetic>
+      <a class="btn btn--primary" appSection="contact" appMagnetic>
         Let’s talk <app-icon name="arrow-up-right" class="icon-nudge-up" [size]="18" />
       </a>
     </section>
@@ -137,6 +137,6 @@
   <section class="section missing container">
     <h1 class="h2">That project <em>couldn’t</em> be found.</h1>
     <p class="lede">It may have moved — head back and pick another.</p>
-    <a class="btn btn--primary" routerLink="/" fragment="projects">Back to projects</a>
+    <a class="btn btn--primary" appSection="projects">Back to projects</a>
   </section>
 }

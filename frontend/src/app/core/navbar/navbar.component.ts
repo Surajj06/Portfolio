@@ -5,6 +5,7 @@ import { ScrambleDirective } from '../../shared/scramble/scramble.directive';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
 import { ScrollService } from '../../services/scroll.service';
+import { SectionScrollService } from '../../services/section-scroll.service';
 import { DeviceService } from '../../services/device.service';
 import { CommandPaletteService } from '../../shared/command-palette/command-palette.service';
 
@@ -37,6 +38,7 @@ export class NavbarComponent {
   private readonly router = inject(Router);
   private readonly zone = inject(NgZone);
   private readonly scroll = inject(ScrollService);
+  private readonly sections = inject(SectionScrollService);
   private readonly device = inject(DeviceService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -70,25 +72,12 @@ export class NavbarComponent {
     });
   }
 
-  /** In-page section navigation: smooth scroll on the home page, router elsewhere. */
+  /** In-page section navigation (see SectionScrollService). */
   go(id: string, event: Event): void {
     event.preventDefault();
     this.closeMenu();
     this.device.haptic(8);
-
-    const onHome = this.router.url.split(/[?#]/)[0] === '/';
-    if (!onHome) {
-      this.router.navigate(['/'], { fragment: id === 'top' ? undefined : id });
-      return;
-    }
-
-    const behavior: ScrollBehavior = this.device.reducedMotion ? 'auto' : 'smooth';
-    if (id === 'top') {
-      window.scrollTo({ top: 0, behavior });
-    } else {
-      document.getElementById(id)?.scrollIntoView({ behavior, block: 'start' });
-    }
-    history.replaceState(history.state, '', id === 'top' ? '/' : `/#${id}`);
+    this.sections.go(id);
   }
 
   openMenu(): void {

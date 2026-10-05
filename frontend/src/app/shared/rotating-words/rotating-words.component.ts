@@ -7,8 +7,9 @@ import { DeviceService } from '../../services/device.service';
  * screen-reader text lists them all once, and under reduced motion it simply
  * rests on the first word.
  *
- * Cost: one interval timer and one CSS-variable write per swap — the slide
- * itself is a CSS transform transition.
+ * Cost: one interval timer and one inline-transform write per swap — the slide
+ * itself is a CSS transform transition with literal values (so it runs on the
+ * compositor), and it only swaps while the words are actually on screen.
  */
 @Component({
   selector: 'app-rotating-words',
@@ -54,23 +55,31 @@ export class RotatingWordsComponent {
       let index = 0;
 
       this.zone.runOutsideAngular(() => {
+        // Don't animate words nobody can see (the hero is off-screen for most of a visit).
+        let visible = true;
+        const io = typeof IntersectionObserver === 'undefined' ? undefined : new IntersectionObserver(([entry]) => (visible = entry.isIntersecting));
+        io?.observe(list);
+
         const timer = setInterval(() => {
-          if (document.hidden) return;
+          if (document.hidden || !visible) return;
           index += 1;
-          list.style.setProperty('--i', String(index));
+          list.style.transform = `translate3d(0, ${(-index * 1.2).toFixed(1)}em, 0)`;
           if (index === last) {
             // We're showing the cloned first word: after the slide finishes,
             // snap back to the real first word with transitions off.
             setTimeout(() => {
               list.style.transition = 'none';
-              list.style.setProperty('--i', '0');
+              list.style.transform = 'translate3d(0, 0, 0)';
               void list.offsetWidth;
               list.style.transition = '';
               index = 0;
             }, 700);
           }
         }, this.intervalMs);
-        this.destroyRef.onDestroy(() => clearInterval(timer));
+        this.destroyRef.onDestroy(() => {
+          clearInterval(timer);
+          io?.disconnect();
+        });
       });
     });
   }

@@ -45,7 +45,7 @@ export class WaveformComponent {
     let w = 0;
     let h = 0;
     let dpr = 1;
-    let visible = true;
+    let visible = false; // set by the IntersectionObserver below
     let raf = 0;
     let last = 0;
     let frame = 0;
@@ -74,13 +74,25 @@ export class WaveformComponent {
       ctx.fill();
     };
 
+    // The loop only exists while the canvas is on screen, the tab is visible and
+    // motion is allowed. A pending requestAnimationFrame forces the browser to run
+    // its whole render pipeline every frame, so it must never idle in the background.
+    const shouldRun = () => visible && !document.hidden && animate();
     const loop = (now: number) => {
+      raf = 0;
+      if (!shouldRun()) return;
       raf = requestAnimationFrame(loop);
-      if (!visible || document.hidden || !animate()) return;
       if (now - last < 33) return; // ~30fps is plenty for a waveform
       last = now;
       if (++frame % 60 === 0) color = getComputedStyle(canvas).color || color; // follows theme
       draw((now / 1000) * this.speed);
+    };
+    const wake = () => {
+      if (!raf && shouldRun()) raf = requestAnimationFrame(loop);
+    };
+    const sleep = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
     };
 
     const resize = () => {
@@ -97,14 +109,22 @@ export class WaveformComponent {
 
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
-    const io = new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { rootMargin: '80px' });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        visible ? wake() : sleep();
+      },
+      { rootMargin: '80px' }
+    );
     io.observe(canvas);
-    raf = requestAnimationFrame(loop);
+    const onVisibility = () => (document.hidden ? sleep() : wake());
+    document.addEventListener('visibilitychange', onVisibility);
 
     this.destroyRef.onDestroy(() => {
-      cancelAnimationFrame(raf);
+      sleep();
       ro.disconnect();
       io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
     });
   }
 }

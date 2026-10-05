@@ -16,32 +16,32 @@
   opacity: 1;
 }
 
-.dot,
-.follow {
+.cur-pos {
   position: absolute;
   top: 0;
   left: 0;
+  width: 0;
+  height: 0;
   will-change: transform;
 }
 
-.dot {
+// Visuals sit on the core so scaling/fading never touches the element that is
+// being translated to the pointer (see the note in the template).
+.cur-dot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
   width: 8px;
   height: 8px;
-  margin: -4px 0 0 -4px;
   border-radius: 50%;
   background: var(--lime);
   transition: scale 0.25s var(--ease-out), opacity 0.2s ease;
 }
-:root[data-theme='light'] .dot {
+:root[data-theme='light'] .cur-dot {
   background: var(--text);
 }
 
-.follow {
-  width: 0;
-  height: 0;
-}
-
-.ring {
+.cur-ring {
   position: absolute;
   top: -20px;
   left: -20px;
@@ -57,7 +57,7 @@
     border-color 0.25s ease;
 }
 
-.tag {
+.cur-tag {
   position: absolute;
   top: -12px;
   left: -34px;
@@ -78,27 +78,27 @@
 
 // ----- states (set as a class on the host) -----
 :host(.is-link) {
-  .ring {
+  .cur-ring {
     scale: 1.55;
     opacity: 0.9;
     border-color: var(--lime);
   }
-  .dot {
+  .cur-dot {
     scale: 0.4;
   }
 }
 
 :host(.is-view) {
-  .ring {
+  .cur-ring {
     scale: 2.3;
     opacity: 1;
     border-color: transparent;
     background: var(--cta-bg);
   }
-  .dot {
+  .cur-dot {
     opacity: 0;
   }
-  .tag {
+  .cur-tag {
     opacity: 1;
     scale: 1;
   }
@@ -108,6 +108,6 @@
   opacity: 0;
 }
 
-:host(.is-down) .ring {
+:host(.is-down) .cur-ring {
   scale: 0.8;
 }

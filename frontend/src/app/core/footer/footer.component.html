@@ -8,7 +8,7 @@
         <ul>
           @for (link of links; track link.id) {
             <li>
-              <a routerLink="/" [fragment]="link.id">{{ link.label === 'Work' ? 'Projects' : link.label }}</a>
+              <a [appSection]="link.id">{{ link.label === 'Work' ? 'Projects' : link.label }}</a>
             </li>
           }
         </ul>
@@ -35,7 +35,7 @@
             </li>
           }
           <li>
-            <a [href]="data.profile.resumePath" download>Résumé <app-icon name="download" [size]="15" /></a>
+            <a [href]="data.profile.resumePath" [attr.download]="data.profile.resumeFileName">Resume <app-icon name="download" [size]="15" /></a>
           </li>
         </ul>
       </div>

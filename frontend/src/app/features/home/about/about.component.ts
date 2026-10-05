@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { SectionLinkDirective } from '../../../shared/section-link/section-link.directive';
 import { SectionHeadingComponent } from '../../../shared/section-heading/section-heading.component';
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { IconComponent } from '../../../shared/icons/icon.component';
@@ -12,7 +12,7 @@ import { PortfolioDataService } from '../../../services/portfolio-data.service';
   selector: 'app-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SectionHeadingComponent, RevealDirective, IconComponent, ClockComponent, MarqueeComponent],
+  imports: [SectionLinkDirective, SectionHeadingComponent, RevealDirective, IconComponent, ClockComponent, MarqueeComponent],
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss'
 })

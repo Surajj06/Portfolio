@@ -42,11 +42,11 @@
       </p>
 
       <div class="hero__cta rise" style="--d: 7">
-        <a class="btn btn--primary" routerLink="/" fragment="projects" appMagnetic>
+        <a class="btn btn--primary" appSection="projects" appMagnetic>
           See my work <app-icon name="arrow-down" [size]="18" />
         </a>
-        <a class="btn btn--ghost" [href]="data.profile.resumePath" download appMagnetic>
-          Résumé <app-icon name="download" [size]="18" />
+        <a class="btn btn--ghost" [href]="data.profile.resumePath" [attr.download]="data.profile.resumeFileName" appMagnetic>
+          Resume <app-icon name="download" [size]="18" />
         </a>
       </div>
 
@@ -107,7 +107,7 @@
     </div>
   </div>
 
-  <a class="hero__scroll" routerLink="/" fragment="about" aria-label="Scroll to the About section">
+  <a class="hero__scroll" appSection="about" aria-label="Scroll to the About section">
     <app-icon name="arrow-down" [size]="20" />
   </a>
 </section>

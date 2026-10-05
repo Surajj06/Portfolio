@@ -4,6 +4,7 @@ import { IconComponent, IconName } from '../icons/icon.component';
 import { PortfolioDataService } from '../../services/portfolio-data.service';
 import { ThemeService } from '../../services/theme.service';
 import { ToastService } from '../../services/toast.service';
+import { SectionScrollService } from '../../services/section-scroll.service';
 import { CommandPaletteService } from './command-palette.service';
 
 interface PaletteCommand {
@@ -37,6 +38,7 @@ export class CommandPaletteComponent {
   private readonly data = inject(PortfolioDataService);
   private readonly theme = inject(ThemeService);
   private readonly toast = inject(ToastService);
+  private readonly sectionScroll = inject(SectionScrollService);
 
   readonly query = signal('');
   readonly active = signal(0);
@@ -48,7 +50,7 @@ export class CommandPaletteComponent {
       hint: 'Section',
       icon: item.icon,
       group: 'Sections',
-      run: () => this.router.navigate(['/'], { fragment: item.id })
+      run: () => this.sectionScroll.go(item.id)
     }));
 
     const projects = this.data.projects.map<PaletteCommand>((project) => ({
@@ -71,11 +73,11 @@ export class CommandPaletteComponent {
       },
       {
         id: 'a-resume',
-        label: 'Download résumé',
+        label: 'Download resume',
         hint: 'PDF',
         icon: 'download',
         group: 'Actions',
-        run: () => window.open(this.data.profile.resumePath, '_blank', 'noopener')
+        run: () => this.downloadResume()
       },
       {
         id: 'a-copy',
@@ -173,6 +175,17 @@ export class CommandPaletteComponent {
 
   private scrollActiveIntoView(): void {
     queueMicrotask(() => document.getElementById(`pal-${this.active()}`)?.scrollIntoView({ block: 'nearest' }));
+  }
+
+  /** Saves the PDF under its friendly name (same as the page's Download buttons). */
+  private downloadResume(): void {
+    const link = document.createElement('a');
+    link.href = this.data.profile.resumePath;
+    link.download = this.data.profile.resumeFileName;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   private copyEmail(): void {

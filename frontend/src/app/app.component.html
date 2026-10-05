@@ -18,3 +18,7 @@
 @defer (when palette.wanted(); prefetch on idle) {
   <app-command-palette />
 }
+<!-- The assistant (bottom-right) loads once the browser is idle — never on the critical path. -->
+@defer (on idle) {
+  <app-chat-widget />
+}

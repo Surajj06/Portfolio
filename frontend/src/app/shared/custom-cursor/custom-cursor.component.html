@@ -1,5 +1,10 @@
-<div #dot class="dot" aria-hidden="true"></div>
-<div #follow class="follow" aria-hidden="true">
-  <span class="ring"></span>
-  <span #tag class="tag"></span>
+<!-- The wrapper only carries the pointer position (transform). Anything that
+     scales or fades lives on an inner element: the standalone `scale` property
+     is applied *outside* `transform`, so scaling the element that holds the
+     translate would shrink the pointer's coordinates toward the page's corner
+     (the dot used to fly off when hovering a button). -->
+<div #dot class="cur-pos" aria-hidden="true"><span class="cur-dot"></span></div>
+<div #follow class="cur-pos" aria-hidden="true">
+  <span class="cur-ring"></span>
+  <span #tag class="cur-tag"></span>
 </div>

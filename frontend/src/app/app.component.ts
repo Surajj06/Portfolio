@@ -1,3 +1,4 @@
+import { ViewportScroller } from '@angular/common';
 import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './core/navbar/navbar.component';
@@ -6,6 +7,7 @@ import { ScrollProgressComponent } from './shared/scroll-progress/scroll-progres
 import { ToastComponent } from './shared/toast/toast.component';
 import { CustomCursorComponent } from './shared/custom-cursor/custom-cursor.component';
 import { CommandPaletteComponent } from './shared/command-palette/command-palette.component';
+import { ChatWidgetComponent } from './shared/chat/chat-widget.component';
 import { DeviceService } from './services/device.service';
 import { PerfGuardService } from './services/perf-guard.service';
 import { ScrollService } from './services/scroll.service';
@@ -23,7 +25,8 @@ import { CommandPaletteService } from './shared/command-palette/command-palette.
     ScrollProgressComponent,
     ToastComponent,
     CustomCursorComponent,
-    CommandPaletteComponent
+    CommandPaletteComponent,
+    ChatWidgetComponent
   ],
   templateUrl: './app.component.html'
 })
@@ -38,6 +41,10 @@ export class AppComponent {
   readonly cursorReady = signal(false);
 
   constructor() {
+    // Router-driven anchor scrolls (e.g. "Back to projects" from a case study)
+    // land below the floating nav, same as in-page section links.
+    inject(ViewportScroller).setOffset([0, 96]);
+
     // Browser-only wiring happens after the first render — never during
     // hydration — so it can't add work to (or mismatch) the prerendered DOM.
     afterNextRender(() => {

@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { SectionHeadingComponent } from '../../../shared/section-heading/section-heading.component';
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { IconComponent } from '../../../shared/icons/icon.component';
-import { ProjectArtComponent } from '../../../shared/project-art/project-art.component';
+import { ProjectVisualComponent } from '../../../shared/project-scene/project-visual.component';
 import { PortfolioDataService } from '../../../services/portfolio-data.service';
 import { MotionService, GsapKit } from '../../../services/motion.service';
 import { Project, ProjectCategory } from '../../../models/project.model';
@@ -14,7 +14,7 @@ type Filter = 'All' | ProjectCategory;
   selector: 'app-projects',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SectionHeadingComponent, RevealDirective, IconComponent, ProjectArtComponent],
+  imports: [RouterLink, SectionHeadingComponent, RevealDirective, IconComponent, ProjectVisualComponent],
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.scss'
 })

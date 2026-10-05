@@ -1,0 +1,155 @@
+<div class="chat" [class.is-open]="open()" [class.is-typing]="typing()">
+  <section
+    id="chat-panel"
+    class="panel"
+    role="dialog"
+    aria-label="Chat with Suraj’s AI assistant"
+    [attr.aria-hidden]="open() ? null : 'true'"
+    [attr.inert]="open() ? null : ''"
+    (keydown.escape)="close()"
+  >
+    <header class="panel__head">
+      <span class="avatar" aria-hidden="true">
+        <svg viewBox="0 0 48 48" focusable="false">
+          <rect x="6" y="12" width="36" height="26" rx="13" />
+          <rect class="avatar__eye" x="15" y="21" width="5" height="9" rx="2.5" />
+          <rect class="avatar__eye" x="28" y="21" width="5" height="9" rx="2.5" />
+        </svg>
+      </span>
+      <div class="panel__who">
+        <strong>Suraj’s AI assistant</strong>
+        <span class="status"><i class="status__dot"></i><span>From Suraj’s portfolio</span></span>
+      </div>
+      @if (chat.messages().length) {
+        <button type="button" class="panel__btn panel__btn--text" (click)="clear()">New chat</button>
+      }
+      <button type="button" class="panel__btn" (click)="close()" aria-label="Close chat"><app-icon name="close" [size]="18" /></button>
+    </header>
+
+    <nav class="quick" aria-label="Contact Suraj directly">
+      <a [href]="'mailto:' + data.profile.email"><app-icon name="mail" [size]="15" />Email</a>
+      <a [href]="'tel:' + data.profile.phone.replace(' ', '')"><app-icon name="phone" [size]="15" />Call</a>
+      <a [href]="data.profile.linkedin" target="_blank" rel="noopener noreferrer"><app-icon name="linkedin" [size]="15" />LinkedIn</a>
+    </nav>
+
+    <div #log class="log" role="log" aria-live="polite" aria-relevant="additions text" tabindex="-1">
+      <div class="msg msg--bot">
+        <div class="bubble">
+          Hi! I’m Suraj’s AI assistant. I can tell you about his projects, experience and skills — and share how to reach him. What would you like to know?
+        </div>
+      </div>
+
+      @for (m of chat.messages(); track m.id) {
+        <div class="msg" [class.msg--me]="m.role === 'user'" [class.msg--bot]="m.role === 'assistant'" [class.is-error]="m.error">
+          <div class="bubble">
+            @if (m.role === 'user') {
+              {{ m.text }}
+            } @else if (m.pending && !m.text) {
+              <span class="typing" aria-label="Assistant is typing"><i></i><i></i><i></i></span>
+            } @else {
+              @for (block of format(m.text); track $index) {
+                @if (block.kind === 'ul') {
+                  <ul>
+                    @for (item of block.items; track $index) {
+                      <li>
+                        @for (part of item; track $index) {
+                          @switch (part.kind) {
+                            @case ('bold') { <strong>{{ part.text }}</strong> }
+                            @case ('link') { <a [href]="part.href" [attr.target]="part.internal ? null : '_blank'" rel="noopener noreferrer" (click)="onLink($event, part.href, part.internal)">{{ part.text }}</a> }
+                            @case ('br') { <br /> }
+                            @default { {{ part.text }} }
+                          }
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p>
+                    @for (part of block.items[0]; track $index) {
+                      @switch (part.kind) {
+                        @case ('bold') { <strong>{{ part.text }}</strong> }
+                        @case ('link') { <a [href]="part.href" [attr.target]="part.internal ? null : '_blank'" rel="noopener noreferrer" (click)="onLink($event, part.href, part.internal)">{{ part.text }}</a> }
+                        @case ('br') { <br /> }
+                        @default { {{ part.text }} }
+                      }
+                    }
+                  </p>
+                }
+              }
+            }
+          </div>
+          @if (m.role === 'assistant' && !m.pending && m.related?.length) {
+            <div class="related">
+              @for (r of m.related; track r.url) {
+                <a [href]="r.url" (click)="onLink($event, r.url, true)"><app-icon name="arrow-up-right" [size]="13" />{{ r.title }}</a>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (!chat.messages().length) {
+        <div class="chips" role="group" aria-label="Suggested questions">
+          @for (s of suggestions; track s) {
+            <button type="button" (click)="ask(s)">{{ s }}</button>
+          }
+        </div>
+      }
+    </div>
+
+    <form class="composer" (submit)="submit($event)">
+      <label class="sr-only" for="chat-input">Your message</label>
+      <textarea
+        #input
+        id="chat-input"
+        rows="1"
+        maxlength="600"
+        placeholder="Ask anything about Suraj…"
+        autocomplete="off"
+        enterkeyhint="send"
+        (input)="onInput($event)"
+        (keydown)="onKeydown($event)"
+        (focus)="typing.set(true)"
+        (blur)="typing.set(false)"
+      ></textarea>
+      <button type="submit" class="send" [disabled]="!draft().trim() || chat.busy()" aria-label="Send message">
+        <app-icon name="send" [size]="18" />
+      </button>
+    </form>
+    <p class="foot">AI replies come from Suraj’s portfolio and can be imperfect — check key details with him.</p>
+  </section>
+
+  @if (nudge() && !open()) {
+    <div class="nudge" role="status">
+      <button type="button" class="nudge__text" (click)="show()">Hi! I’m Suraj’s AI assistant — ask me anything.</button>
+      <button type="button" class="nudge__x" (click)="dismissNudge()" aria-label="Dismiss"><app-icon name="close" [size]="14" /></button>
+    </div>
+  }
+
+  <button
+    #launcher
+    type="button"
+    class="launcher"
+    [class.is-open]="open()"
+    (click)="toggle()"
+    [attr.aria-expanded]="open()"
+    aria-controls="chat-panel"
+    [attr.aria-label]="open() ? 'Close chat' : 'Chat with Suraj’s AI assistant'"
+  >
+    <span class="launcher__ring" aria-hidden="true"></span>
+    <span class="launcher__orb" aria-hidden="true">
+      <svg class="face" viewBox="0 0 48 48" focusable="false">
+        <path class="face__ant" d="M24 12V6.5" />
+        <circle class="face__ant-dot" cx="24" cy="5" r="2.3" />
+        <rect class="face__screen" x="6" y="12" width="36" height="27" rx="13.5" />
+        <rect class="face__eye" x="15" y="21" width="5" height="9" rx="2.5" />
+        <rect class="face__eye" x="28" y="21" width="5" height="9" rx="2.5" />
+        <path class="face__smile" d="M19.5 33.5c2.7 2 6.3 2 9 0" />
+      </svg>
+      <app-icon class="launcher__x" name="close" [size]="26" [stroke]="2.2" />
+    </span>
+    @if (unread()) {
+      <span class="launcher__badge" aria-hidden="true"></span>
+    }
+  </button>
+</div>
