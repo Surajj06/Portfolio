@@ -9,7 +9,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const documents = [];
 
 function add(title, text, url) {
-  const clean = text.replace(/\s+/g, ' ').trim();
+  const clean = text.normalize('NFKC').replace(/[^\S\n]+/g, ' ').replace(/\n\s*/g, '\n').trim();
   if (!clean) throw new Error(`No readable text in ${title}. Supply a text-based document.`);
   // Bounded, overlapping passages keep local lexical retrieval useful.
   let start = 0;
@@ -30,7 +30,7 @@ async function readPdf(filename, title, url) {
   try {
     for (let n = 1; n <= pdf.numPages; n++) {
       const content = await (await pdf.getPage(n)).getTextContent();
-      add(`${title} — page ${n}`, content.items.map(item => 'str' in item ? item.str : '').join(' '), url);
+      add(`${title} — page ${n}`, content.items.map(item => 'str' in item ? item.str + (item.hasEOL ? '\n' : ' ') : '').join(''), url);
     }
   } finally {
     await pdf.destroy();

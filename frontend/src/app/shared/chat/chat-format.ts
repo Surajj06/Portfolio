@@ -30,7 +30,7 @@ const TOKEN = new RegExp(
 
 function safeHref(raw: string): { href: string; internal: boolean } | null {
   const href = raw.trim();
-  if (/^\/(?!\/)/.test(href)) return { href, internal: true };
+  if (/^\/(?!\/)/.test(href)) return { href, internal: !href.startsWith('/assets/') };
   if (/^(https?:|mailto:|tel:)/i.test(href)) return { href, internal: false };
   return null;
 }

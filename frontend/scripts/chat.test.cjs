@@ -41,6 +41,9 @@ function stream(text) {
 test('resume facts, specific projects and follow-ups are retrieved', () => {
   assert.match(retrieve('Where did Suraj study his MCA?').chunks.map(c => c.text).join(' '), /University of Mumbai/);
   assert.match(retrieve('What certifications does Suraj have?').chunks.map(c => c.text).join(' '), /NPTEL/);
+  const credentials = retrieve('Which degrees and certifications does Suraj list in his resume?');
+  assert.ok(!credentials.chunks.some(c => c.kind === 'project'));
+  assert.ok(!credentials.chunks.some(c => /does not list Suraj.s education/.test(c.text)));
   const found = retrieve('Explain its architecture', ['Tell me about the WhatsApp document verification bot']);
   assert.ok(found.chunks.some(c => c.id.includes('whatsapp-document-verification-bot:Architecture')));
   assert.ok(!found.chunks.some(c => c.id === 'contact'));
