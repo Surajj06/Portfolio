@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { buildSystemPrompt, offlineAnswer, relatedLinks, retrieve } from './_rag';
+import { compactHistory, responsePlan } from './_chat-policy';
 
 /**
  * Portfolio assistant endpoint (RAG chat) — a Vercel serverless function in the
@@ -12,7 +13,8 @@ import { buildSystemPrompt, offlineAnswer, relatedLinks, retrieve } from './_rag
  * Which model? Whichever key is configured in the Vercel dashboard (never in code):
  *   ANTHROPIC_API_KEY                      → Claude (default model: claude-haiku-4-5-20251001)
  *   OPENAI_API_KEY                         → OpenAI-compatible chat API (default: gpt-4o-mini)
- *   GEMINI_API_KEY / GROQ_API_KEY          → via their OpenAI-compatible endpoints (Groq default: llama-3.3-70b-versatile)
+ *   GROQ_API_KEY (preferred)               → Groq (default: openai/gpt-oss-20b)
+ *   GEMINI_API_KEY                         → Gemini's OpenAI-compatible endpoint
  *   CHAT_MODEL        (optional)           → override the model name
  *   OPENAI_BASE_URL / ANTHROPIC_BASE_URL   → point at another compatible host
  *   CHAT_ALLOWED_ORIGINS (optional, CSV)   → extra allowed browser origins
@@ -30,13 +32,14 @@ interface Provider {
   key: string;
   base: string;
   model: string;
+  /** Tried in order if `model` is rejected as unknown / not accessible. */
+  fallbackModels?: string[];
 }
 
-const MAX_MESSAGES = 12;
+const MAX_MESSAGES = 7;
 const MAX_USER_CHARS = 600;
-const MAX_ASSISTANT_CHARS = 2500;
-const MAX_OUTPUT_TOKENS = 450;
-const MAX_REPLY_CHARS = 3000;
+const MAX_ASSISTANT_CHARS = 1200;
+const MAX_REPLY_CHARS = 6500;
 const UPSTREAM_TIMEOUT_MS = 25_000;
 
 // ------------------------------------------------------------------ guards ---
@@ -44,8 +47,8 @@ const UPSTREAM_TIMEOUT_MS = 25_000;
 // Best-effort, per-instance rate limits (see api/contact.ts for the same trade-off):
 // a speed bump against casual abuse, not a hard guarantee. Set a spend limit with
 // your model provider as the real backstop.
-const PER_MINUTE = 10;
-const PER_HOUR = 60;
+const PER_MINUTE = 6;
+const PER_HOUR = 30;
 const hits = new Map<string, number[]>();
 
 function rateLimited(ip: string): boolean {
@@ -107,7 +110,7 @@ function parseMessages(body: unknown): ChatMessage[] | null {
     const text = cleanText(content, role === 'user' ? MAX_USER_CHARS : MAX_ASSISTANT_CHARS);
     if (!text) continue;
     const last = messages[messages.length - 1];
-    if (last && last.role === role) last.content += `\n${text}`; // providers want alternating turns
+    if (last && last.role === role) last.content = `${last.content}\n${text}`.slice(-(role === 'user' ? MAX_USER_CHARS : MAX_ASSISTANT_CHARS));
     else messages.push({ role, content: text });
   }
   while (messages[0]?.role === 'assistant') messages.shift();
@@ -122,6 +125,16 @@ function resolveProvider(): Provider | null {
   const key = (name: string) => env[name]?.trim() || undefined;
   const model = env['CHAT_MODEL']?.trim();
   const trim = (u: string) => u.trim().replace(/\/+$/, '');
+  // This portfolio uses Groq's free plan. Prefer its key over unrelated keys
+  // left on the project, and recover from stale/retired CHAT_MODEL values.
+  if (key('GROQ_API_KEY')) {
+    return {
+      kind: 'openai', key: key('GROQ_API_KEY')!,
+      base: trim(env['GROQ_BASE_URL'] || 'https://api.groq.com/openai/v1'),
+      model: model || 'openai/gpt-oss-20b',
+      fallbackModels: ['openai/gpt-oss-20b', 'openai/gpt-oss-120b']
+    };
+  }
   if (key('ANTHROPIC_API_KEY')) {
     return { kind: 'anthropic', key: key('ANTHROPIC_API_KEY')!, base: trim(env['ANTHROPIC_BASE_URL'] || 'https://api.anthropic.com'), model: model || 'claude-haiku-4-5-20251001' };
   }
@@ -131,10 +144,21 @@ function resolveProvider(): Provider | null {
   if (key('GEMINI_API_KEY')) {
     return { kind: 'openai', key: key('GEMINI_API_KEY')!, base: trim(env['OPENAI_BASE_URL'] || 'https://generativelanguage.googleapis.com/v1beta/openai'), model: model || 'gemini-2.5-flash' };
   }
-  if (key('GROQ_API_KEY')) {
-    return { kind: 'openai', key: key('GROQ_API_KEY')!, base: trim(env['OPENAI_BASE_URL'] || 'https://api.groq.com/openai/v1'), model: model || 'llama-3.3-70b-versatile' };
-  }
   return null;
+}
+
+/** The model that last answered successfully on this instance — tried first next time. */
+let preferredModel: string | undefined;
+
+/** The provider's own machine-readable error code (e.g. "model_not_found"), if it sent a safe-looking one. */
+function errorCode(detail: string): string | undefined {
+  try {
+    const parsed = JSON.parse(detail) as { error?: { code?: unknown; type?: unknown } | string };
+    const code = typeof parsed.error === 'object' ? (parsed.error?.code ?? parsed.error?.type) : undefined;
+    return typeof code === 'string' && /^[A-Za-z0-9_.-]{1,48}$/.test(code) ? code : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Strips anything that looks like a credential before it can reach a log line. */
@@ -147,7 +171,7 @@ function failureReason(err: unknown): string {
   if (err instanceof UpstreamError) {
     if (err.status === 401 || err.status === 403) return 'auth';
     if (err.status === 404) return 'model';
-    if (err.status === 400) return /model/i.test(err.detail) ? 'model' : 'request';
+    if (err.status === 400) return /model_(?:not_found|decommissioned|not_supported)|does not exist|decommissioned|no longer supported/i.test(err.detail) ? 'model' : 'request';
     if (err.status === 429) return 'rate-limit';
     if (err.status >= 500) return 'provider';
     return 'upstream';
@@ -187,8 +211,10 @@ async function* sseData(body: ReadableStream<Uint8Array>): AsyncGenerator<string
 }
 
 class UpstreamError extends Error {
-  constructor(message: string, readonly status: number, readonly detail: string) {
+  readonly code?: string;
+  constructor(message: string, readonly status: number, readonly detail: string, readonly retryAfter?: number) {
     super(message);
+    this.code = errorCode(detail);
   }
 }
 
@@ -205,16 +231,17 @@ async function post(url: string, headers: Record<string, string>, payload: Recor
       throw new UpstreamError('bad request', 400, text.slice(0, 300));
     }
   }
-  if (!res.ok || !res.body) throw new UpstreamError(`upstream ${res.status}`, res.status, (await res.text().catch(() => '')).slice(0, 300));
+  if (!res.ok || !res.body) throw new UpstreamError(`upstream ${res.status}`, res.status, (await res.text().catch(() => '')).slice(0, 300), Math.min(3600, Math.max(1, Number(res.headers.get('retry-after')) || 60)));
   return res;
 }
 
 async function* streamModel(provider: Provider, system: string, messages: ChatMessage[], signal: AbortSignal): AsyncGenerator<string> {
+  const plan = responsePlan(messages[messages.length - 1].content);
   if (provider.kind === 'anthropic') {
     const res = await post(
       `${provider.base}/v1/messages`,
       { 'x-api-key': provider.key, 'anthropic-version': '2023-06-01' },
-      { model: provider.model, max_tokens: MAX_OUTPUT_TOKENS, temperature: 0.3, system, messages, stream: true },
+      { model: provider.model, max_tokens: plan.tokens, temperature: 0.3, system, messages, stream: true },
       signal
     );
     for await (const data of sseData(res.body!)) {
@@ -228,7 +255,7 @@ async function* streamModel(provider: Provider, system: string, messages: ChatMe
       else if (event.type === 'error') throw new UpstreamError('stream error', 500, event.error?.message ?? '');
       else if (event.type === 'message_stop') return;
     }
-    return;
+    throw new UpstreamError('incomplete stream', 502, 'Stream ended without a completion event');
   }
 
   const res = await post(
@@ -236,7 +263,8 @@ async function* streamModel(provider: Provider, system: string, messages: ChatMe
     { authorization: `Bearer ${provider.key}` },
     {
       model: provider.model,
-      max_tokens: MAX_OUTPUT_TOKENS,
+      max_completion_tokens: plan.tokens + (provider.model.startsWith('openai/gpt-oss-') ? 512 : 0),
+      ...(provider.model.startsWith('openai/gpt-oss-') ? { reasoning_effort: 'low', include_reasoning: false } : {}),
       temperature: 0.3,
       stream: true,
       messages: [{ role: 'system', content: system }, ...messages]
@@ -246,15 +274,24 @@ async function* streamModel(provider: Provider, system: string, messages: ChatMe
   for await (const data of sseData(res.body!)) {
     if (data === '[DONE]') return;
     try {
-      const delta = (JSON.parse(data) as { choices?: { delta?: { content?: string } }[] }).choices?.[0]?.delta?.content;
+      const event = JSON.parse(data) as { error?: { message?: string }; choices?: { delta?: { content?: string }; finish_reason?: string }[] };
+      if (event.error) throw new UpstreamError('stream error', 500, event.error.message ?? '');
+      const delta = event.choices?.[0]?.delta?.content;
       if (delta) yield delta;
-    } catch {
+      if (event.choices?.[0]?.finish_reason === 'length') throw new UpstreamError('output limit', 502, 'Reply reached the completion limit');
+    } catch (err) {
+      if (err instanceof UpstreamError) throw err;
       /* keep-alive or partial frame */
     }
   }
+  throw new UpstreamError('incomplete stream', 502, 'Stream ended without a completion event');
 }
 
 // ----------------------------------------------------------------- handler ---
+
+// Per-instance backoff prevents repeated requests during a provider cooldown.
+// Groq's organization-wide limits remain the authoritative free-tier backstop.
+let cooldownUntil = 0;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -264,7 +301,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!originAllowed(req)) return res.status(403).json({ error: 'Forbidden.' });
 
   const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ?? req.socket?.remoteAddress ?? 'unknown';
-  if (rateLimited(ip)) return res.status(429).json({ error: 'You are sending messages quickly — please try again in a minute.' });
+  if (rateLimited(ip)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'You are sending messages quickly — please try again in a minute.' });
+  }
 
   const messages = parseMessages(req.body);
   if (!messages) return res.status(400).json({ error: 'Send a "messages" array that ends with a user message.' });
@@ -273,6 +313,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const earlier = messages.slice(0, -1).filter((m) => m.role === 'user').map((m) => m.content);
   const found = retrieve(question, earlier);
   const provider = resolveProvider();
+  const history = compactHistory(messages);
 
   res.status(200);
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -286,33 +327,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   let produced = 0;
   let mode: 'model' | 'retrieval' = provider ? 'model' : 'retrieval';
-  send({ type: 'meta', mode, related: relatedLinks(found.chunks) });
+  let reason = provider ? undefined : 'not-configured';
+  let interrupted = false;
+  send({ type: 'meta', mode, reason, related: relatedLinks(found.chunks) });
 
   try {
     if (provider) {
-      try {
-        for await (const delta of streamModel(provider, buildSystemPrompt(found.chunks), messages, controller.signal)) {
-          produced += delta.length;
-          send({ type: 'delta', text: delta });
-          if (produced > MAX_REPLY_CHARS) break;
-        }
-      } catch (err) {
-        // Never leak upstream details to visitors; keep them in the function logs.
-        const info = err instanceof UpstreamError ? `${err.status} ${err.detail}` : err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-        console.error('Chat model call failed:', redact(info));
-        if (!produced) {
-          mode = 'retrieval';
-          send({ type: 'meta', mode, reason: failureReason(err), related: relatedLinks(found.chunks) });
+      const system = buildSystemPrompt(found.chunks, question);
+      const candidates = [...new Set([preferredModel, provider.model, ...(provider.fallbackModels ?? [])])].filter((m): m is string => !!m);
+      let failure: unknown;
+      for (const model of candidates) {
+        try {
+          if (Date.now() < cooldownUntil) throw new UpstreamError('cooldown', 429, '');
+          for await (const delta of streamModel({ ...provider, model }, system, history, controller.signal)) {
+            const text = delta.slice(0, MAX_REPLY_CHARS - produced);
+            produced += text.length;
+            send({ type: 'delta', text });
+            if (produced >= MAX_REPLY_CHARS) { interrupted = true; break; }
+          }
+          if (!produced) throw new UpstreamError('empty response', 502, 'No answer text received');
+          preferredModel = model;
+          failure = undefined;
+          break;
+        } catch (err) {
+          failure = err;
+          if (err instanceof UpstreamError && err.status === 429 && err.retryAfter) cooldownUntil = Date.now() + err.retryAfter * 1000;
+          // Never leak upstream details to visitors; keep them in the function logs.
+          const info = err instanceof UpstreamError ? `${err.status} ${err.detail}` : err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+          console.error(`Chat model call failed (${model}):`, redact(info));
+          // Only a rejected *model name* is worth retrying with another model.
+          if (produced || failureReason(err) !== 'model') break;
         }
       }
+      if (failure && !produced) {
+        mode = 'retrieval';
+        reason = failureReason(failure);
+        send({ type: 'meta', mode, reason, code: failure instanceof UpstreamError ? failure.code : undefined, related: relatedLinks(found.chunks) });
+      }
+      if (failure && produced) interrupted = true;
     }
     if (!produced) {
       // No key configured, or the model was unreachable: answer from the retrieved facts.
       for (const part of offlineAnswer(question, found).split(/(?<=\n\n)/)) send({ type: 'delta', text: part });
+      if (mode !== 'retrieval') send({ type: 'meta', mode: 'retrieval', reason: 'provider' });
     }
+    if (interrupted) send({ type: 'meta', mode: 'model', reason: 'interrupted' });
     send({ type: 'done' });
   } finally {
     clearTimeout(timer);
+    controller.abort();
     res.end();
   }
 }

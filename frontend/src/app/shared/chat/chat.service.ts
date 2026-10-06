@@ -15,6 +15,8 @@ export interface ChatMessage {
   /** Assistant reply still streaming in. */
   pending?: boolean;
   error?: boolean;
+  notice?: string;
+  mode?: 'model' | 'retrieval';
 }
 
 const STORAGE_KEY = 'portfolio-chat:v1';
@@ -61,6 +63,7 @@ export class ChatService {
 
     const history = this.messages()
       .filter((m) => !m.error && m.text)
+      .filter((m) => m.mode !== 'retrieval')
       .slice(-MAX_HISTORY)
       .map((m) => ({ role: m.role, content: m.text }));
 
@@ -103,7 +106,7 @@ export class ChatService {
           buffer = buffer.slice(cut + 2);
           const line = event.split('\n').find((l) => l.startsWith('data:'));
           if (!line) continue;
-          let data: { type?: string; text?: string; related?: RelatedLink[] };
+          let data: { type?: string; text?: string; related?: RelatedLink[]; mode?: 'model' | 'retrieval'; reason?: string };
           try {
             data = JSON.parse(line.slice(5));
           } catch {
@@ -112,8 +115,15 @@ export class ChatService {
           if (data.type === 'delta' && data.text) {
             pendingText += data.text;
             frame ||= requestAnimationFrame(flush);
-          } else if (data.type === 'meta' && data.related) {
-            this.patch(reply.id, (m) => ({ ...m, related: data.related }));
+          } else if (data.type === 'meta') {
+            const notice = data.reason === 'interrupted'
+              ? 'The reply was interrupted. Please try again for the rest.'
+              : data.mode === 'retrieval'
+                ? data.reason === 'rate-limit'
+                  ? 'AI is taking a short break due to its usage limit. Here are saved portfolio details; try again shortly.'
+                  : 'AI is temporarily unavailable. These are saved portfolio details.'
+                : undefined;
+            this.patch(reply.id, (m) => ({ ...m, related: data.related ?? m.related, mode: data.mode, notice }));
           }
         }
       }
@@ -132,7 +142,7 @@ export class ChatService {
       }));
     } finally {
       clearTimeout(timeout);
-      this.busy.set(false);
+      if (this.abort === controller) this.busy.set(false);
       this.persist();
     }
   }

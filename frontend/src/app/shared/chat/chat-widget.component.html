@@ -41,6 +41,9 @@
 
       @for (m of chat.messages(); track m.id) {
         <div class="msg" [class.msg--me]="m.role === 'user'" [class.msg--bot]="m.role === 'assistant'" [class.is-error]="m.error">
+          @if (m.notice) {
+            <p class="reply-notice" role="status">{{ m.notice }}</p>
+          }
           <div class="bubble">
             @if (m.role === 'user') {
               {{ m.text }}

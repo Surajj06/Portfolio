@@ -9,6 +9,7 @@
 }
 
 .tile {
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -62,6 +63,7 @@
 // ---- clock ----
 .clock {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 0.4em;
   font-size: clamp(2.3rem, 4.4vw, 3.4rem);
@@ -163,7 +165,7 @@
 // ---- links ----
 .links {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
   gap: 8px;
 
   a {

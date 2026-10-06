@@ -72,7 +72,7 @@ his email, phone/WhatsApp, LinkedIn, GitHub and resume link).
 **How it works (RAG):** `frontend/api/chat.ts` is a Vercel function in the same
 project. On every question it (1) *retrieves* the most relevant facts from a
 knowledge base built from `frontend/src/app/data/portfolio-content.ts` — the same
-file the site renders, so the two can never disagree — using BM25 (`api/_rag.ts`),
+file the site renders — plus the resume PDF and public documents, using BM25 (`api/_rag.ts`),
 (2) hands only those facts to a language model with strict instructions to answer
 **only** from them (no guessing, off-topic requests politely declined, prompt
 injection ignored), and (3) streams the reply back. Edit your content once and
@@ -86,10 +86,10 @@ Environment Variables (never commit keys), then redeploy:
 | `ANTHROPIC_API_KEY` | Claude (`claude-haiku-4-5-20251001`) |
 | `OPENAI_API_KEY` | OpenAI (`gpt-4o-mini`) |
 | `GEMINI_API_KEY` | Google Gemini via its OpenAI-compatible endpoint (`gemini-2.5-flash`) |
-| `GROQ_API_KEY` | Groq (`llama-3.1-8b-instant`) |
+| `GROQ_API_KEY` | Groq (`openai/gpt-oss-20b`, preferred when multiple keys exist) |
 
 Optional: `CHAT_MODEL` (override the model name), `OPENAI_BASE_URL` /
-`ANTHROPIC_BASE_URL` (another compatible host), `CHAT_ALLOWED_ORIGINS` (extra
+`ANTHROPIC_BASE_URL` / `GROQ_BASE_URL` (another compatible host), `CHAT_ALLOWED_ORIGINS` (extra
 browser origins, comma-separated).
 
 **With no key set the assistant still works** — it answers directly from the
@@ -103,10 +103,33 @@ dead end.
 answers, the model call failed and the stream carries a coarse `reason`:
 `auth` (key rejected), `model` (unknown model name — set `CHAT_MODEL`),
 `rate-limit`, `provider` (their outage), `key-format`, `timeout` or `network`.
-The Vercel function log has the (redacted) detail.
+The Vercel function log has the (redacted) detail. Rejected Groq model names,
+including an obsolete `CHAT_MODEL`, fall back to currently supported GPT-OSS
+models. Authentication errors and usage limits are not retried. The widget
+clearly labels saved details when AI is unavailable instead of presenting a
+fallback as a generated answer.
+
+**Documents:** `npm run knowledge` extracts `src/assets/resume.pdf` and public
+PDF/Markdown/text files placed in `frontend/knowledge/` into bounded passages.
+The production build runs this automatically and checks the API's TypeScript.
+The generated `api/_documents.ts` is committed for local API development and
+regenerated before each deployment. Do not put private documents in that folder.
+Current structured portfolio facts take precedence over conflicting documents.
+
+**Free-tier budgets:** reply targets are 160 tokens for brief answers, 360 for
+normal questions and 720 for detailed explanations, plus at most 512 completion
+tokens for GPT-OSS reasoning. Relevant evidence is capped at an estimated 1,250
+tokens; previous turns at 450. These conservative UTF-8 estimates are not exact
+provider token counts. There are no embedding calls or paid vector services.
+Groq's organization limits still apply across all serverless instances; an
+upstream 429 causes a per-instance cooldown using `Retry-After`, without a retry
+storm. Consult [Groq's current limits](https://console.groq.com/docs/rate-limits).
+
+Run `npm run test:chat` for document retrieval, follow-ups, request validation,
+response budgets, model retirement, empty replies and rate-limit regression tests.
 
 **Safety & cost:** same-origin only (a foreign `Origin` gets a 403), message
-length/turn caps, a per-IP rate limit (10/minute, 60/hour — best-effort, per
+length/turn caps, a per-IP rate limit (6/minute, 30/hour — best-effort, per
 instance), a capped reply length, no tools, and reply text is rendered through a
 small safe formatter (never `innerHTML`). A small model such as Haiku costs a
 fraction of a cent per chat; set a monthly spend limit with your provider as the
@@ -118,8 +141,11 @@ Each project card and case-study header is a small CSS-3D scene
 (`shared/project-scene/`): pure CSS (`preserve-3d`, compositor-only animation),
 sized in `em` so it scales to any card, tilted by the pointer, mounted only when
 the card is about to scroll into view and **frozen while off-screen**. The SVG
-illustration (`shared/project-art/`) is what the server renders and what lite
-mode / old browsers fall back to. New projects get a generic scene until you add
+illustration (`shared/project-art/`) is what the server renders while the lazy
+scene loads. Scenes mount within 400px of the viewport, including fresh and
+anchored visits, and release their layers when farther away. Adaptive lite mode
+no longer replaces the project demos with still images. Reduced-motion users
+see a still 3D pose. New projects get a generic scene until you add
 a `@case` for them in `project-scene.component.html` (plus its stylesheet block).
 
 ## Editing content

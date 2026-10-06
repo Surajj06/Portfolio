@@ -191,7 +191,9 @@ h3 em,
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-2);
-  white-space: nowrap;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 
   &--solid {
     background: var(--surface-2);

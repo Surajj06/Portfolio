@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && node scripts/postbuild.mjs",
+    "build": "npm run knowledge && npm run typecheck:api && ng build && node scripts/postbuild.mjs",
+    "knowledge": "node scripts/build-knowledge.mjs",
+    "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
+    "test:chat": "npm run knowledge && tsc -p api/tsconfig.json --outDir out-tsc/api && node --test scripts/chat.test.cjs",
     "watch": "ng build --watch --configuration development",
     "prerender": "echo Prerendering now runs as part of npm run build",
     "typecheck": "tsc -p tsconfig.app.json --noEmit"
@@ -36,6 +39,7 @@
     "@types/node": "^18.18.0",
     "@types/nodemailer": "^6.4.0",
     "@vercel/node": "^3.2.0",
+    "pdfjs-dist": "^5.4.624",
     "typescript": "~5.4.0"
   }
 }

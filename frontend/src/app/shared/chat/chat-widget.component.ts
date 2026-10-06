@@ -77,7 +77,11 @@ export class ChatWidgetComponent {
       const vv = window.visualViewport;
       if (vv) {
         const el = this.host.nativeElement;
-        const update = () => el.style.setProperty('--kb', `${Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))}px`);
+        const update = () => {
+          el.style.setProperty('--kb', `${Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))}px`);
+          el.style.setProperty('--chat-viewport', `${Math.round(vv.height)}px`);
+        };
+        update();
         this.zone.runOutsideAngular(() => {
           vv.addEventListener('resize', update);
           vv.addEventListener('scroll', update);
