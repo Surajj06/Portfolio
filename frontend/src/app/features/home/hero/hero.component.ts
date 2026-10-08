@@ -31,7 +31,7 @@ export class HeroComponent {
 
   // A short, curated slice of the focus areas — brief enough that the rotating
   // word never wraps awkwardly next to its label.
-  readonly focusWords = ['Generative AI', 'Real-Time Voice AI', 'LLM Orchestration', 'RAG', 'Agentic AI'];
+  readonly focusWords = ['Generative AI', 'Agentic AI', 'MCP', 'RAG', 'LLM Systems', 'Real-Time Voice AI'];
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly zone = inject(NgZone);

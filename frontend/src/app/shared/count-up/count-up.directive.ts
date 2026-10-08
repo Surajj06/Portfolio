@@ -3,7 +3,7 @@ import { DeviceService } from '../../services/device.service';
 
 /**
  * Counts the host's number up from 0 when it scrolls into view, once. Parses
- * the digits out of `appCountUp` and keeps whatever surrounds them ("20,000+",
+ * the digits out of `appCountUp` and keeps whatever surrounds them ("10,000+",
  * "74+"). The server (and no-JS / reduced-motion visitors) get the real final
  * value straight from the template; the decision to animate is made from the
  * IntersectionObserver's first callback, so no layout is read to decide it.

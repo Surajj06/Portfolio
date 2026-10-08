@@ -64,9 +64,9 @@ export class PortfolioDataService {
 
   /** Curated ticker content — a high-signal slice of the full stack below. */
   readonly marqueeItems = [
-    'Generative AI', 'LLM Orchestration', 'RAG', 'Agentic AI', 'Real-Time Voice AI',
+    'Generative AI', 'LLM Orchestration', 'RAG', 'Agentic AI', 'MCP', 'Ollama', 'Function Calling', 'Structured Outputs', 'Real-Time Voice AI',
     'Python', 'FastAPI', 'C# / .NET', 'Angular', 'PostgreSQL', 'Redis', 'Docker',
-    'OpenAI', 'Anthropic Claude', 'Google Gemini', 'MCP', 'n8n', 'Prometheus + Grafana'
+    'OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'n8n', 'Prometheus + Grafana'
   ];
 
   /**

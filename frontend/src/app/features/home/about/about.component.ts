@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { SectionLinkDirective } from '../../../shared/section-link/section-link.directive';
 import { SectionHeadingComponent } from '../../../shared/section-heading/section-heading.component';
 import { RevealDirective } from '../../../shared/reveal/reveal.directive';
 import { IconComponent } from '../../../shared/icons/icon.component';
@@ -12,7 +11,7 @@ import { PortfolioDataService } from '../../../services/portfolio-data.service';
   selector: 'app-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SectionLinkDirective, SectionHeadingComponent, RevealDirective, IconComponent, ClockComponent, MarqueeComponent],
+  imports: [SectionHeadingComponent, RevealDirective, IconComponent, ClockComponent, MarqueeComponent],
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss'
 })
@@ -26,11 +25,4 @@ export class AboutComponent {
   private readonly allTech = Array.from(new Set(this.data.techStack.flatMap((c) => c.items)));
   readonly stackTop = this.allTech.filter((_, i) => i % 2 === 0);
   readonly stackBottom = this.allTech.filter((_, i) => i % 2 === 1);
-
-  readonly pipeNodes = [
-    { label: 'Call', icon: 'phone' },
-    { label: 'STT', icon: 'mic' },
-    { label: 'LLM', icon: 'brain' },
-    { label: 'TTS', icon: 'sparkles' }
-  ] as const;
 }

@@ -31,28 +31,6 @@
         <p class="tile-text">Local time — a good moment to say hi.</p>
       </article>
 
-      <!-- Pipeline teaser -->
-      <article class="card tile t-pipe" appReveal [revealDelay]="1">
-        <p class="eyebrow"><app-icon name="wave" [size]="15" />How a call flows</p>
-        <div class="mini" aria-hidden="true">
-          <div class="mini__line"><span class="mini__pulse"></span></div>
-          <ul class="mini__nodes">
-            @for (node of pipeNodes; track node.label) {
-              <li>
-                <span class="mini__dot"><app-icon [name]="node.icon" [size]="18" /></span>
-                <span class="mini__label">{{ node.label }}</span>
-              </li>
-            }
-          </ul>
-        </div>
-        <p class="tile-text">
-          The real-time voice pipeline behind 20,000+ calls a day.
-          <a class="more" appSection="systems">
-            See how it works <app-icon name="arrow-right" [size]="15" />
-          </a>
-        </p>
-      </article>
-
       <!-- Links -->
       <article class="card tile t-links" appReveal [revealDelay]="2">
         <p class="eyebrow"><app-icon name="link" [size]="15" />Find me</p>

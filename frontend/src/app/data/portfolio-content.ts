@@ -30,7 +30,7 @@ export const PROJECT_META: Record<string, ProjectMeta> = {
     categories: ['AI / ML'],
     accent: 'lime',
     highlights: [
-      { value: '20,000+', label: 'outbound calls a day' },
+      { value: '10K+', label: 'daily call capacity' },
       { value: '<1s', label: 'turn latency' },
       { value: '~80%', label: 'of turns answered in under 50ms' },
       { value: '6', label: 'LLM providers with auto-failover' }
@@ -100,7 +100,7 @@ export const PROFILE = {
   resumePath: '/assets/resume.pdf',
   // Name the browser saves the resume under when someone downloads it.
   resumeFileName: 'Suraj_resume.pdf',
-  status: 'Building with AI + .NET',
+  status: 'Building with AI',
   // Shown on the About "local time" tile — edit if this isn't right.
   location: 'India',
   timezone: 'Asia/Kolkata',
@@ -112,7 +112,7 @@ export const PROFILE = {
 
 /** Big-number strip under the hero — each figure is quoted from a case study. */
 export const STATS = [
-  { value: '20,000+', label: 'Outbound calls a day handled by the voice platform' },
+  { value: '10K+', label: 'Daily call capacity across concurrent bots' },
   { value: '74+', label: 'Partner APIs monitored in real time' },
   { value: '15+', label: 'Insurance partners integrated in the matching engine' },
   { value: '7', label: 'Systems built, each with a full case study' }
@@ -120,15 +120,19 @@ export const STATS = [
 
 export const ABOUT = {
   summary:
-    'I\'m an AI Engineer specializing in Generative AI, LLM systems, and real-time Voice AI, with production experience building scalable AI applications for the insurance domain — including a voice calling platform handling 20,000+ calls a day. My work spans LLM orchestration, RAG, agentic workflows, and the real-time speech and backend engineering needed to run them reliably at scale.',
+    'I\'m an AI Engineer specializing in Generative AI, LLM systems, and real-time Voice AI for insurance operations. My work spans LLM orchestration, RAG, MCP integrations, agentic workflows, and the real-time speech and backend engineering needed to run them reliably at scale.',
   focusAreas: [
     'Generative AI',
     'Large Language Models',
     'Real-Time Voice AI',
     'RAG',
     'Agentic AI',
-    'Prompt Engineering',
     'MCP (Model Context Protocol)',
+    'Ollama',
+    'Prompt Engineering',
+    'Function Calling',
+    'Structured Outputs',
+    'Multi-Provider AI',
     'Python',
     'FastAPI',
     'Microservices',
@@ -170,9 +174,9 @@ export const EXPERIENCE: ExperienceEntry[] = [
     company: 'Probus Insurance Broker Private Limited',
     duration: 'Aug 2025 — Present',
     description:
-      'Building production AI systems for the insurance domain — a real-time voice calling platform, multi-provider LLM orchestration, vehicle-data automation pipelines, and MCP-based agentic workflows.',
+      'Building AI systems for insurance operations — a configurable voice platform, multi-provider LLM orchestration, vehicle-data automation pipelines, and MCP-based agentic workflows.',
     responsibilities: [
-      'Architected and deployed a production AI voice calling agent handling 20,000+ outbound calls/day for insurance policy renewals, with a real-time STT → VAD → LLM → TTS pipeline and sub-second turn latency.',
+      'Architected a configurable AI voice platform for insurance operations, designed for 10,000+ daily calls across concurrent bots with a real-time STT → VAD → LLM → TTS pipeline.',
       'Built a provider-agnostic LLM orchestration layer spanning multiple providers (OpenAI, Anthropic Claude, Google Gemini, Groq, Mistral, DeepSeek, and others) with automatic health-based failover and live mid-call provider switching.',
       'Developed vehicle data mapping and normalization pipelines with rule-based scoring and insurance-domain validation logic for GCV and PCV quotation workflows.',
       'Designed MCP server architectures and n8n automation pipelines orchestrating LLMs, REST APIs, and PostgreSQL/Redis databases into scalable production workflows.',
@@ -194,9 +198,9 @@ export const BASE_PROJECTS: ProjectBase[] = [
     id: 'ai-voice-calling-platform',
     index: '01',
     title: 'AI Voice Calling Platform',
-    summary: 'A production voice AI agent handling 20,000+ outbound calls a day, with multi-LLM failover and a live monitoring dashboard.',
+    summary: 'A configurable voice AI platform for insurance operations, designed for 10,000+ daily calls across concurrent bots.',
     description:
-      'A production AI voice calling agent handling 20,000+ outbound calls a day for insurance policy renewals — a real-time STT → VAD → LLM → TTS pipeline with sub-second turn latency, multi-provider LLM failover, and a multi-tenant monitoring dashboard.',
+      'A configurable AI voice platform for insurance operations — a real-time STT → VAD → LLM → TTS pipeline with multi-provider failover, concurrent bots, and a multi-tenant monitoring dashboard. Supported provider credentials can be configured for STT, TTS, and LLM integrations.',
     concepts: ['Voice AI', 'Real-Time Systems', 'Telephony', 'LLM Orchestration', 'Multi-Provider Failover', 'RAG'],
     techStack: ['Python', 'Pipecat', 'FastAPI', 'Twilio', 'Sarvam AI', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'Mistral', 'DeepSeek', 'Silero VAD', 'DeepFilterNet', 'PostgreSQL', 'Redis', 'C#', '.NET', 'Angular', 'Docker', 'Prometheus', 'Grafana'],
     workflowSteps: ['Call connects', 'Noise suppression + VAD', 'Speech-to-text', 'State machine / LLM + RAG', 'Text-to-speech', 'Live dashboard update'],
@@ -205,7 +209,7 @@ export const BASE_PROJECTS: ProjectBase[] = [
     liveUrl: null,
     caseStudy: {
       problem:
-        'A production AI voice agent for outbound insurance policy renewal calls at scale — 20,000+ calls a day — holding a natural, real-time conversation with sub-second turn latency, plus a multi-tenant staff dashboard for monitoring and control.',
+        'A configurable AI voice platform for insurance operations, designed to support 10,000+ daily calls across multiple concurrent bots while giving staff a dashboard for monitoring and control.',
       whyItWasDifficult:
         'Sub-second turn latency on real telephony audio leaves very little room for a slow model call, at a call volume where any systemic slowdown compounds fast. On top of that: keeping the conversation flowing over a lossy phone audio path in noisy real-world environments, correctly pronouncing a wide range of Indian names across regional languages, staying compliant with do-not-call and calling-hours regulations, and integrating enough independent providers (telephony, speech-to-text, text-to-speech, and multiple LLMs) that any single one failing should not take calls down at that scale.',
       architecture:
@@ -215,13 +219,13 @@ export const BASE_PROJECTS: ProjectBase[] = [
       implementation:
         'Production resilience is built in at every layer: async circuit breakers around each external provider, an answering-machine-detection gate, TRAI-compliant do-not-call enforcement, and a custom phonetics module covering 500+ names for correct pronunciation across Indian regional languages. Prompts are structured as an explicit call state machine plus a Hindi objection-handling playbook and anti-hallucination guardrails, refined iteratively from real call recordings. The control-plane dashboard is a multi-tenant Angular + .NET application with role-based access control, audit trails, and a function-calling tool framework, deployed via Docker with multi-worker scaling.',
       challenges:
-        'The first few seconds of a call are the highest-risk window — if the pipeline needs time to initialize, the caller hears dead air, which reads as a dropped call. Running this at 20,000+ calls a day also means a single misbehaving provider or a quietly degrading fallback path can affect a large number of real customers before anyone notices.',
+        'The first few seconds of a call are the highest-risk window — if the pipeline needs time to initialize, the caller hears dead air, which reads as a dropped call. A misbehaving provider or a quietly degrading fallback path can also affect multiple concurrent bots before anyone notices.',
       solution:
         'A short greeting is pre-synthesized and played immediately on connect, so the caller hears something natural while the rest of the pipeline finishes initializing in the background. Every external provider call is wrapped in a circuit breaker so a struggling STT, TTS, or LLM provider degrades gracefully — failing over automatically — instead of taking calls down, and explicit startup validation checks catch misconfiguration before it can reach a live call.',
       evaluation:
         'An automated test suite covers the voice engine, with component health checks exposed per provider and structured logging throughout. Prompt behavior is refined iteratively against real call recordings rather than tuned once and left alone.',
       results:
-        '20,000+ outbound calls handled per day in production, with sub-second turn latency and a deterministic fast-path resolving roughly 80% of turns in under 50ms. Uptime and cost figures are not published here — ask Suraj if he wants specific numbers included.',
+        'Designed for 10,000+ daily calls across concurrent bots, with a deterministic fast-path resolving roughly 80% of turns in under 50ms. Uptime and cost figures are not published here — ask Suraj if he wants specific numbers included.',
       futureImprovements:
         'The deterministic fast-path and phonetics module are both designed to keep improving with more real-call data rather than being tuned once and left static.'
     }
@@ -391,7 +395,7 @@ export const BASE_PROJECTS: ProjectBase[] = [
       architecture:
         'A company name resolves to a ticker, which fans out into parallel ingestion: price data and computed technicals on one side, RSS aggregation across 11 financial news sources on the other. Both land in PostgreSQL, after which an AI-analysis step reads the stored price and news data and generates structured summaries and key points, served through a FastAPI backend and a single-page dashboard.',
       technicalApproach:
-        'Technicals are computed directly rather than pulled from a paid API — RSI-14 uses proper Wilder smoothing rather than a naive moving average, and the 50/200-day moving averages use standard rolling means. News deduplication hashes normalized headlines to drop exact repeats across feeds, while a separate embedding-based similarity layer goes further, matching genuinely similar historical events rather than just identical headlines. The LLM step is provider-agnostic — it runs against a paid API or a fully local free model interchangeably, so the tool works at zero ongoing cost if needed.',
+        'Technicals are computed directly rather than pulled from a paid API — RSI-14 uses proper Wilder smoothing rather than a naive moving average, and the 50/200-day moving averages use standard rolling means. News deduplication hashes normalized headlines to drop exact repeats across feeds, while a separate embedding-based similarity layer goes further, matching genuinely similar historical events rather than just identical headlines. The LLM step supports a hosted OpenAI option or a fully local Ollama model, so the tool can run without an ongoing model-API cost when needed.',
       implementation:
         'A FastAPI backend with SQLAlchemy models, a scheduler that runs daily and weekly ingestion jobs automatically, and prompts constrained to only cite numbers that are actually present in the stored data rather than letting the model speculate.',
       challenges:
@@ -445,11 +449,11 @@ export const BASE_PROJECTS: ProjectBase[] = [
 ];
 
 export const TECH_STACK: TechCategoryData[] = [
-  { name: 'AI / ML', subtitle: 'Building intelligent systems for real-world impact', icon: 'brain', items: ['Generative AI', 'LLMs', 'RAG', 'NLP', 'Machine Learning', 'Deep Learning', 'Agentic AI', 'Real-Time Voice AI'] },
+  { name: 'AI / ML', subtitle: 'Building intelligent systems for real-world impact', icon: 'brain', items: ['Generative AI', 'LLM Systems', 'RAG', 'NLP', 'Machine Learning', 'Deep Learning', 'Agentic AI', 'Real-Time Voice AI', 'Prompt Engineering'] },
   { name: 'Voice AI', subtitle: 'Real-time speech pipelines that feel like a conversation', icon: 'mic', items: ['Pipecat', 'Twilio Media Streams', 'Silero / WebRTC VAD', 'Sarvam AI', 'Deepgram', 'ElevenLabs', 'Cartesia', 'Azure Speech'] },
-  { name: 'LLMs & Agentic', subtitle: 'Multi-provider orchestration and tool-calling workflows', icon: 'sparkles', items: ['OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'Mistral', 'DeepSeek', 'MCP', 'Function Calling', 'n8n', 'Prompt Engineering'] },
-  { name: 'Backend & APIs', subtitle: 'Production services that run reliably at scale', icon: 'server', items: ['Python', 'FastAPI', 'Flask', 'REST APIs', 'WebSockets', 'AsyncIO', 'C#', '.NET', 'ASP.NET Core'] },
-  { name: 'Data', subtitle: 'Storage, processing, and fast reliable retrieval', icon: 'database', items: ['PostgreSQL', 'MySQL', 'Redis', 'SQLite', 'Pandas', 'RapidFuzz', 'NumPy', 'Scikit-learn'] },
+  { name: 'LLMs & Agentic', subtitle: 'Multi-provider orchestration and tool-calling workflows', icon: 'sparkles', items: ['OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'Mistral', 'DeepSeek', 'Ollama', 'MCP', 'Function Calling', 'Structured Outputs', 'n8n'] },
+  { name: 'Backend & APIs', subtitle: 'Production services that run reliably at scale', icon: 'server', items: ['Python', 'FastAPI', 'Flask', 'REST APIs', 'WebSockets', 'Server-Sent Events', 'AsyncIO', 'C#', '.NET', 'ASP.NET Core'] },
+  { name: 'Data', subtitle: 'Storage, processing, and fast reliable retrieval', icon: 'database', items: ['PostgreSQL', 'MySQL', 'Redis', 'SQLite', 'Pandas', 'RapidFuzz', 'NumPy', 'Scikit-learn', 'sentence-transformers', 'FAISS', 'FinBERT'] },
   { name: 'Infra & DevOps', subtitle: 'Shipping, monitoring, and scaling what gets built', icon: 'cpu', items: ['Docker', 'Docker Compose', 'Git', 'Linux', 'CI/CD', 'Prometheus', 'Grafana', 'AWS (S3)', 'Azure'] }
 ];
 
