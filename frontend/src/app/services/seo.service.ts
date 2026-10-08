@@ -10,6 +10,8 @@ export interface SeoData {
   description: string;
   /** Path relative to the site root, no leading slash (e.g. '' for home, 'projects/foo' for a project page). */
   path: string;
+  /** Project case studies are articles; the home route is the portfolio website. */
+  type?: 'website' | 'article';
   jsonLd?: object;
 }
 
@@ -33,6 +35,7 @@ export class SeoService {
 
     this.title.setTitle(data.title);
     this.meta.updateTag({ name: 'description', content: data.description });
+    this.meta.updateTag({ property: 'og:type', content: data.type ?? 'website' });
     this.meta.updateTag({ property: 'og:title', content: data.title });
     this.meta.updateTag({ property: 'og:description', content: data.description });
     this.meta.updateTag({ property: 'og:url', content: url });

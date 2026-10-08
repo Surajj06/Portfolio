@@ -125,18 +125,32 @@ export class ProjectDetailComponent {
       title: `${project.title} — Suraj Jha | AI Engineer`,
       description: project.summary,
       path: `projects/${project.id}`,
+      type: 'article',
       jsonLd: {
         '@context': 'https://schema.org',
-        '@type': 'CreativeWork',
-        name: project.title,
-        description: project.description,
-        url: `https://www.aisurajjha.in/projects/${project.id}`,
-        keywords: project.concepts.join(', '),
-        creator: {
-          '@type': 'Person',
-          name: 'Suraj Jha',
-          url: 'https://www.aisurajjha.in/'
-        }
+        '@graph': [
+          {
+            '@type': 'CreativeWork',
+            name: project.title,
+            description: project.description,
+            url: `https://www.aisurajjha.in/projects/${project.id}`,
+            mainEntityOfPage: `https://www.aisurajjha.in/projects/${project.id}`,
+            keywords: project.concepts.join(', '),
+            creator: {
+              '@type': 'Person',
+              name: 'Suraj Jha',
+              url: 'https://www.aisurajjha.in/'
+            }
+          },
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.aisurajjha.in/' },
+              { '@type': 'ListItem', position: 2, name: 'Projects', item: 'https://www.aisurajjha.in/#projects' },
+              { '@type': 'ListItem', position: 3, name: project.title, item: `https://www.aisurajjha.in/projects/${project.id}` }
+            ]
+          }
+        ]
       }
     });
   }

@@ -43,9 +43,9 @@ export class HomeComponent implements OnInit {
     // the user arrived via client-side navigation from a project page, which
     // overwrites those tags with its own (see SeoService).
     this.seo.update({
-      title: 'Suraj Jha — AI Engineer',
+      title: 'Suraj Jha | AI Engineer — Voice AI, RAG & MCP',
       description:
-        'AI Engineer specializing in Generative AI, LLM systems, and real-time Voice AI, with production experience building scalable AI applications for the insurance domain.',
+        'Suraj Jha is an AI Engineer building Voice AI, RAG, MCP integrations and agentic AI systems for insurance automation.',
       path: ''
     });
   }
