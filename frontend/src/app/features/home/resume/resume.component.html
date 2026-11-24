@@ -1,18 +1,33 @@
 <section id="resume" class="section resume" aria-labelledby="resume-title">
   <div class="container">
     <div class="resume-card card" appReveal>
-      <div class="paper" aria-hidden="true">
-        <span class="paper__sheet paper__sheet--back"></span>
-        <span class="paper__sheet">
-          <i class="paper__name"></i>
-          <i class="paper__line"></i>
-          <i class="paper__line paper__line--short"></i>
-          <i class="paper__block"></i>
-          <i class="paper__line"></i>
-          <i class="paper__line paper__line--mid"></i>
-          <i class="paper__line paper__line--short"></i>
-        </span>
-      </div>
+      <a
+        class="paper"
+        [href]="data.profile.resumePath"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open the full resume as a PDF (opens in a new tab)"
+      >
+        <span class="paper__sheet paper__sheet--accent" aria-hidden="true"></span>
+        <img
+          class="paper__sheet paper__page paper__page--2"
+          src="/assets/resume-p2.webp"
+          width="1000"
+          height="1294"
+          loading="lazy"
+          decoding="async"
+          alt="Page 2 of Suraj Jha's resume: technical skills, education and certifications"
+        />
+        <img
+          class="paper__sheet paper__page paper__page--1"
+          src="/assets/resume-p1.webp"
+          width="1000"
+          height="1294"
+          loading="lazy"
+          decoding="async"
+          alt="Page 1 of Suraj Jha's resume: summary, experience and key projects"
+        />
+      </a>
 
       <div class="resume-card__copy">
         <p class="kicker">Resume</p>

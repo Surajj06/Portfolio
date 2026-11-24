@@ -30,62 +30,50 @@
   }
 }
 
-// A stylised paper stack — decorative, drawn with plain boxes.
+// The real resume: page 1 on top, page 2 and an accent sheet fanned out behind it.
 .paper {
   position: relative;
-  width: min(220px, 56%);
-  aspect-ratio: 3 / 4;
+  display: block;
+  width: min(380px, 84%);
+  aspect-ratio: 1000 / 1294;
   margin-inline: auto;
+  border-radius: 10px;
   transition: transform 0.7s var(--ease-out);
 
   &__sheet {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 20px 18px;
-    border-radius: 14px;
-    background: #f4f3ee;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    background: #fff;
     box-shadow: 0 24px 50px -22px rgba(0, 0, 0, 0.7);
-    transform: rotate(-4deg);
-
-    &--back {
-      background: var(--lime);
-      transform: rotate(5deg) translate3d(10px, 6px, 0);
-    }
+    transition: transform 0.7s var(--ease-out);
   }
-  &__name {
-    width: 56%;
-    height: 14px;
-    border-radius: 3px;
-    background: #0a0a0b;
+  &__page {
+    object-fit: cover;
+    border: 1px solid rgba(10, 10, 11, 0.12);
   }
-  &__line {
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(10, 10, 11, 0.2);
-
-    &--short {
-      width: 48%;
-    }
-    &--mid {
-      width: 72%;
-    }
+  &__sheet--accent {
+    background: var(--lime);
+    transform: rotate(9deg) translate3d(26px, 12px, 0);
   }
-  &__block {
-    height: 44px;
-    margin-top: 6px;
-    border-radius: 8px;
-    background: rgba(10, 10, 11, 0.1);
+  &__page--2 {
+    transform: rotate(4deg) translate3d(14px, 6px, 0);
+  }
+  &__page--1 {
+    transform: rotate(-3deg);
   }
 }
-.resume-card:hover .paper {
-  transform: rotate(-3deg) translate3d(0, -6px, 0);
+.resume-card:hover .paper__page--1 {
+  transform: rotate(-2deg) translate3d(-4px, -8px, 0);
+}
+.resume-card:hover .paper__page--2 {
+  transform: rotate(5deg) translate3d(20px, 8px, 0);
 }
 
 @media (min-width: 820px) {
   .resume-card {
-    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
 }

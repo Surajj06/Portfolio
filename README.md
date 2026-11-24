@@ -174,7 +174,9 @@ a `@case` for them in `project-scene.component.html` (plus its stylesheet block)
   Experience entry and the resume.
 - Resume: replace `frontend/src/assets/resume.pdf`. It always downloads as
   `Suraj_resume.pdf` (`profile.resumeFileName`; `vercel.json` sets the same name
-  for direct visits).
+  for direct visits). The Resume section shows the real pages as images, so after
+  replacing the PDF run `npm run resume:preview` (in `frontend/`) and commit the
+  regenerated `src/assets/resume-p1.webp` / `resume-p2.webp`.
 - Canonical/OG URLs live in `frontend/src/index.html`, `sitemap.xml` and
   `robots.txt`.
 
