@@ -169,6 +169,15 @@ a `@case` for them in `project-scene.component.html` (plus its stylesheet block)
   `frontend/src/app/shared/demos/` and are mapped to project ids in
   `project-demo.component.ts` (each is lazy-loaded with `@defer`). Demo data is
   synthetic — never paste real records, credentials, or company names into them.
+- **Live voice demo:** the voice-agent demo on the AI Voice Calling Platform page
+  calls `frontend/api/voice.ts`, which uses the same provider setup, same-origin
+  check and per-IP rate limits as the chat assistant (shared code in
+  `frontend/api/_llm.ts`), so it needs no extra environment variables: whatever
+  key the assistant uses (Groq first) powers it. Replies are spoken with the
+  visitor's browser voices and the optional mic uses the browser's speech
+  recognition. If the model is unavailable the demo falls back to a built-in
+  keyword classifier and says so. Tests: `npm run test:chat` (covers both
+  endpoints).
 - **No company names in projects:** project copy, demos and cover art must stay
   generic ("Partner A", "a quotation portal"). The employer appears only in the
   Experience entry and the resume.

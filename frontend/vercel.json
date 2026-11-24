@@ -48,6 +48,9 @@
   "functions": {
     "api/chat.ts": {
       "maxDuration": 30
+    },
+    "api/voice.ts": {
+      "maxDuration": 20
     }
   }
 }

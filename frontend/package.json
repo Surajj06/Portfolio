@@ -8,7 +8,7 @@
     "knowledge": "node scripts/build-knowledge.mjs",
     "resume:preview": "node scripts/render-resume-preview.mjs",
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
-    "test:chat": "npm run knowledge && tsc -p api/tsconfig.json --outDir out-tsc/api && node --test scripts/chat.test.cjs",
+    "test:chat": "npm run knowledge && tsc -p api/tsconfig.json --outDir out-tsc/api && node --test scripts/chat.test.cjs scripts/voice.test.cjs",
     "watch": "ng build --watch --configuration development",
     "prerender": "echo Prerendering now runs as part of npm run build",
     "typecheck": "tsc -p tsconfig.app.json --noEmit"

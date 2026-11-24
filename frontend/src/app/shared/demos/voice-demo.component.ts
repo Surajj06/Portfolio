@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, ViewChild, afterNextRender, computed, inject, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { DeviceService } from '../../services/device.service';
 import { DEMO_STYLES } from './demo-styles';
+import { SpeechOut, listenOnce, recognitionSupported } from './speech';
 
 type Intent = 'pickup-word' | 'yes' | 'no' | 'callback' | 'ai-check' | 'knowledge' | 'not-in-docs' | 'personal-fact' | 'unknown';
 type CallStage = 'identity' | 'timecheck' | 'talk' | 'ended';
@@ -34,6 +36,17 @@ interface Decision {
   toolLog: string[];
   why: string;
 }
+/** What /api/voice returns when the live model answered. */
+interface LiveReply {
+  ok: true;
+  reply: string;
+  intent: Intent;
+  tools: string[];
+  time: string | null;
+  llmMs: number;
+}
+type AiState = 'idle' | 'live' | 'offline';
+
 interface KbFact {
   key: string;
   keywords: string[];
@@ -86,6 +99,7 @@ const QUICK_REPLIES: string[] = [
   'No',
 ];
 
+const LIVE_TIMEOUT_MS = 14_000;
 const OVERLAP_MS = 170;
 const TIME_SCALE = 0.4;
 const EQ_BARS = 30;
@@ -114,8 +128,9 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
 
       <div class="demo__body">
         <p class="hint">
-          Scenario: a reminder call for a made-up dealer rewards contest (&ldquo;Acme Rewards&rdquo;). You are the person who picks up. Tap a reply or type
-          your own (English or Hinglish), press <strong>Send</strong>, and watch the turn travel through the pipeline.
+          Scenario: a reminder call for a made-up dealer rewards contest (&ldquo;Acme Rewards&rdquo;). You are the person who picks up. Tap a reply, type
+          your own, or use the microphone (English or Hinglish). A live AI model writes the agent&rsquo;s answer and your browser speaks it. Watch the
+          turn travel through the pipeline.
         </p>
 
         <div class="row" role="group" aria-label="Quick replies">
@@ -135,10 +150,60 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
               placeholder="e.g. haan bolo, kal 3 baje call karna, kab milega?"
               [value]="draft()"
               [disabled]="busy() || ended()"
-              (input)="onDraft($event)" />
+              (input)="onDraft($event)"
+              (keydown.enter)="$event.preventDefault(); send(draft())" />
           </label>
           <button type="submit" class="dbtn dbtn--primary composer__send" [disabled]="busy() || ended() || !draft().trim()">Send</button>
         </form>
+
+        <div class="row" role="group" aria-label="Live model and voice options">
+          <button type="button" class="dbtn dbtn--sm" [attr.aria-pressed]="useLive()" [disabled]="busy()" (click)="toggleLive()">
+            Live AI replies: {{ useLive() ? 'on' : 'off' }}
+          </button>
+          @if (ttsOk()) {
+            <button type="button" class="dbtn dbtn--sm" [attr.aria-pressed]="speakOn()" (click)="toggleSpeak()">
+              Voice: {{ speakOn() ? 'on' : 'off' }}
+            </button>
+          }
+          @if (micOk()) {
+            <button type="button" class="dbtn dbtn--sm" [attr.aria-pressed]="listening()" [disabled]="(busy() && !listening()) || ended()" (click)="toggleMic()">
+              {{ listening() ? 'Listening... tap to stop' : 'Speak your reply' }}
+            </button>
+            <label class="field lang">
+              <span class="sr-only">Microphone language</span>
+              <select [value]="micLang()" [disabled]="listening()" (change)="setMicLang($event)">
+                <option value="en-IN">English (India)</option>
+                <option value="hi-IN">Hindi</option>
+              </select>
+            </label>
+          }
+          @if (thinking()) {
+            <span class="pill info">Asking the live model...</span>
+          } @else if (aiState() === 'live') {
+            <span class="pill ok">Live model replied</span>
+          } @else if (aiState() === 'offline') {
+            <span class="pill warn">Offline classifier</span>
+          }
+        </div>
+        <div aria-live="polite">
+          @if (interim()) {
+            <p class="hint">Hearing: &ldquo;{{ interim() }}&rdquo;</p>
+          }
+          @if (micMsg()) {
+            <p class="hint hint--warn" role="status">{{ micMsg() }}</p>
+          }
+          @if (aiState() === 'offline' && aiNote()) {
+            <p class="hint hint--small" role="status">Using the built-in offline classifier instead, because {{ aiNote() }}.</p>
+          }
+        </div>
+        @if (ttsOk() && speakOn() && voiceName()) {
+          <p class="hint hint--small">
+            Voice: {{ voiceName() }} (a voice built into your browser or device). Replies are spoken after you press Send.
+            @if (micOk()) {
+              The microphone is optional; your browser's speech service transcribes what you say, and this page never records or stores audio.
+            }
+          </p>
+        }
 
         <div class="row">
           <button
@@ -147,7 +212,7 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
             [attr.aria-pressed]="failover()"
             [disabled]="busy()"
             (click)="toggleFailover()">
-            Make the primary LLM fail: {{ failover() ? 'on' : 'off' }}
+            Simulate primary LLM failure: {{ failover() ? 'on' : 'off' }}
           </button>
           <button type="button" class="dbtn dbtn--sm" [disabled]="busy() || !hasTurn()" (click)="replay()">Replay last turn</button>
           <button type="button" class="dbtn dbtn--sm" [disabled]="busy()" (click)="restart()">Restart call</button>
@@ -177,8 +242,9 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
           }
         </div>
         <p class="hint hint--small">
-          Stage figures are typical measured timings from real test calls, with small random jitter. The animation is sped up; the meter shows real time.
-          Stages overlap slightly (the speech-to-text stage streams), so they do not sum exactly to the total.
+          Stage figures are typical measured timings from real test calls, with small random jitter; with a live reply, the LLM stage shows this page's real
+          measured round trip instead. The animation is sped up; the meter shows real time. Stages overlap slightly (the speech-to-text stage streams), so they
+          do not sum exactly to the total.
         </p>
 
         <div class="meter" aria-live="polite">
@@ -187,8 +253,9 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
               {{ wave() === 'caller' ? 'Caller audio' : wave() === 'agent' ? 'Agent audio' : 'Line quiet' }}
             </span>
             <span class="meter__num"
-              >caller stops &rarr; first agent sound: <strong>{{ secs(elapsed()) }}</strong> s
-              <span class="meter__typ">(typical &asymp; 2.2 s)</span></span
+              >caller stops &rarr; first agent audio: <strong>{{ secs(firstShown()) }}</strong> s
+              <span class="meter__typ">(typical &asymp; 1.1 s on live calls)</span>
+              &middot; full answer from <strong>{{ secs(elapsed()) }}</strong> s</span
             >
           </div>
           <div class="eq" aria-hidden="true" [attr.data-mode]="wave()" [class.eq--still]="reduced">
@@ -198,12 +265,12 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
           </div>
           <div class="track" role="img" [attr.aria-label]="'Latency meter, ' + secs(elapsed()) + ' seconds of about 3.5'">
             <div class="track__fill" [class.warn]="elapsed() > 2800" [style.transform]="fillTransform()"></div>
-            <div class="track__mark" style="left: 62.857%"></div>
+            <div class="track__mark" style="left: 31.43%" title="1.1 s: typical first agent audio"></div>
           </div>
           @if (delta() > 0) {
             <p class="hint hint--small delta">
-              <span class="pill warn">Failover</span> primary LLM failed, the hedged backup request answered: about
-              <strong>+{{ secs(delta()) }} s</strong> compared with a healthy turn.
+              <span class="pill warn">Failover</span> primary LLM failed, the hedged backup request answered: the full answer starts about
+              <strong>+{{ secs(delta()) }} s</strong> later than on a healthy turn (the first audio is unaffected).
             </p>
           }
         </div>
@@ -248,10 +315,12 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
       </div>
 
       <p class="demo__note">
-        Illustrative scenario: the campaign, dates and figures are invented, and timings are typical values from test calls, not guarantees. Simplified here:
-        in the real platform the language model handles every turn from a written prompt, and a small keyword layer only recognises yes/no style replies. The
-        classifier in this demo (keywords, Hinglish, time parsing) stands in for the model so the page works offline. The real pipeline also does noise
-        suppression and has more speech, language and voice providers than shown.
+        Illustrative scenario: the campaign, dates and figures are invented, and the stage timings other than the LLM are typical values from real test calls, not
+        guarantees. With <strong>Live AI replies</strong> on, the agent&rsquo;s words come from a real language model through this site&rsquo;s own serverless
+        function (the same provider setup as the chat assistant) and the LLM stage shows its measured round trip. First agent audio (about 1.1 s on live calls) is modelled as the platform&rsquo;s optional instant acknowledgement, a one-word live voice that plays while the model works, and is shown in the timing rather than spoken separately here; the reply is validated before use and the demo
+        falls back to a built-in keyword classifier if the model is unavailable. Speech output and the microphone use your browser&rsquo;s built-in features, not
+        the production speech providers. In the real platform the language model handles every turn from a written prompt; here the speech-to-text, text-to-speech
+        and noise-suppression stages are represented rather than run. The failure button only simulates a provider outage.
       </p>
     </section>
   `,
@@ -260,6 +329,8 @@ const jitter = (base: number, pct: number): number => Math.round(base * (1 + (Ma
     `
       .sect { margin: 0; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; }
       .hint--small { font-size: 0.78rem; color: var(--text-3); }
+      .hint--warn { color: var(--amber); }
+      .lang select { min-height: 36px; padding: 4px 10px; font-size: 0.85rem; }
       .composer { align-items: flex-end; }
       .composer__field { flex: 1 1 240px; }
       .composer__send { flex: none; min-width: 96px; }
@@ -347,9 +418,27 @@ export class VoiceDemoComponent {
   readonly timings = signal<number[]>([0, 700, 500, 860, 230, 80]);
   readonly toolChips = signal<string[]>([]);
   readonly delta = signal(0);
+  /** Modelled caller-stop -> first agent audio (the instant acknowledgement), in ms. */
+  readonly firstSound = signal(0);
   readonly hasTurn = signal(false);
 
+  // live model + real voice
+  readonly useLive = signal(true);
+  readonly aiState = signal<AiState>('idle');
+  readonly aiNote = signal('');
+  readonly thinking = signal(false);
+  readonly speakOn = signal(true);
+  readonly speaking = signal(false);
+  readonly ttsOk = signal(false);
+  readonly micOk = signal(false);
+  readonly listening = signal(false);
+  readonly micLang = signal('en-IN');
+  readonly interim = signal('');
+  readonly micMsg = signal('');
+  readonly voiceName = signal<string | null>(null);
+
   readonly ended = computed(() => this.callStage() === 'ended');
+  readonly firstShown = computed(() => (this.stageIdx() >= 2 ? this.firstSound() : 0));
   readonly fillTransform = computed(() => 'scaleX(' + Math.min(1, this.elapsed() / 3500).toFixed(3) + ')');
   readonly stages = computed<StageView[]>(() => {
     const t = this.timings();
@@ -366,10 +455,27 @@ export class VoiceDemoComponent {
 
   private nextId = 1;
   private pickups = 0;
-  private last: { raw: string; decision: Decision; classified: Classified } | null = null;
+  private last: { raw: string; decision: Decision; classified: Classified; live: LiveReply | null } | null = null;
+  private readonly zone = inject(NgZone);
+  private readonly speech = new SpeechOut();
+  private stopListen: (() => void) | null = null;
+  private liveAbort?: AbortController;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.clearTimers());
+    inject(DestroyRef).onDestroy(() => {
+      this.clearTimers();
+      this.liveAbort?.abort();
+      this.stopListen?.();
+      this.speech.cancel();
+    });
+    // Feature-detect in the browser only (the server render has no speech APIs).
+    afterNextRender(() => {
+      this.ttsOk.set(this.speech.supported);
+      this.micOk.set(recognitionSupported());
+      this.speech.init();
+      this.voiceName.set(this.speech.voiceName());
+      if (this.speech.supported) setTimeout(() => this.voiceName.set(this.speech.voiceName()), 800);
+    });
     this.lines.set([
       {
         id: this.nextId++,
@@ -412,16 +518,202 @@ export class VoiceDemoComponent {
   send(raw: string): void {
     const text = raw.trim();
     if (!text || this.busy() || this.ended()) return;
+    this.speech.cancel(); // barge-in: the caller talking over the agent stops the agent
+    this.stopListen?.();
     this.draft.set('');
-    const classified = this.classify(text);
-    const decision = this.decide(classified);
-    this.last = { raw: text, decision, classified };
-    this.hasTurn.set(true);
-    this.pickups = decision.pickups;
+    this.interim.set('');
+    const history = this.historyFor(text);
     const callerId = this.nextId++;
     this.lines.update((l) => [...l, { id: callerId, who: 'caller', text }]);
+    this.hasTurn.set(true);
+    this.busy.set(true);
+    this.thinking.set(this.useLive());
+    this.wave.set('caller');
     this.scrollChat();
-    this.animate(callerId, true);
+    void this.decideTurn(text, history).then(({ decision, classified, live }) => {
+      this.last = { raw: text, decision, classified, live };
+      this.pickups = decision.pickups;
+      this.thinking.set(false);
+      this.animate(callerId, true);
+    });
+  }
+
+  /** The live model's answer if it is available, otherwise the offline classifier's. */
+  private async decideTurn(
+    text: string,
+    history: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<{ decision: Decision; classified: Classified; live: LiveReply | null }> {
+    const classified = this.classify(text);
+    if (this.useLive()) {
+      const live = await this.askModel(history);
+      if (live) {
+        this.aiState.set('live');
+        this.aiNote.set('');
+        return { decision: this.fromLive(live), classified, live };
+      }
+      this.aiState.set('offline');
+    } else {
+      this.aiState.set('idle');
+      this.aiNote.set('');
+    }
+    return { decision: this.decide(classified), classified, live: null };
+  }
+
+  /** POSTs the conversation to the same-origin /api/voice function (same provider setup as the chat assistant). */
+  private async askModel(turns: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<LiveReply | null> {
+    this.liveAbort?.abort();
+    const abort = new AbortController();
+    this.liveAbort = abort;
+    const timer = setTimeout(() => abort.abort(), LIVE_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${environment.apiUrl}/voice`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ turns }),
+        signal: abort.signal,
+      });
+      const json = (await res.json()) as { ok?: boolean; reason?: string } & Partial<LiveReply>;
+      if (!res.ok || !json.ok || typeof json.reply !== 'string') {
+        this.aiNote.set(this.reasonText(json.reason ?? (res.status === 429 ? 'rate-limit' : 'provider')));
+        return null;
+      }
+      return {
+        ok: true,
+        reply: json.reply,
+        intent: (json.intent ?? 'unknown') as Intent,
+        tools: Array.isArray(json.tools) ? json.tools : [],
+        time: json.time ?? null,
+        llmMs: typeof json.llmMs === 'number' ? json.llmMs : 0,
+      };
+    } catch {
+      // Offline, a static host with no functions (local `ng serve`), a timeout, or a non-JSON reply.
+      this.aiNote.set(this.reasonText('network'));
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private reasonText(reason: string): string {
+    switch (reason) {
+      case 'not-configured':
+        return 'no model key is configured on this server';
+      case 'rate-limit':
+        return 'the model is rate-limited right now, try again in a minute';
+      case 'auth':
+        return 'the model key was rejected';
+      default:
+        return 'the live model could not be reached';
+    }
+  }
+
+  /** The conversation so far (without the fixed opening line, which is part of the server prompt) plus the new reply. */
+  private historyFor(text: string): Array<{ role: 'user' | 'assistant'; content: string }> {
+    const past = this.lines()
+      .slice(1)
+      .map((l) => ({ role: (l.who === 'caller' ? 'user' : 'assistant') as 'user' | 'assistant', content: l.text }));
+    return [...past, { role: 'user' as const, content: text }].slice(-8);
+  }
+
+  /** Turns the validated live reply into the same Decision the animation and transcript already use. */
+  private fromLive(l: LiveReply): Decision {
+    const tools: string[] = [];
+    const toolLog: string[] = [];
+    if (l.tools.includes('callback_scheduled')) {
+      tools.push('callback_scheduled {time: "' + (l.time ?? 'unspecified') + '"}');
+      toolLog.push('callback tool returned ok, only now does the agent confirm the time to the caller');
+    }
+    const end = l.tools.includes('end_call');
+    if (end) tools.push('end_call');
+    const stage: CallStage = end ? 'ended' : this.callStage() === 'identity' && l.intent === 'yes' ? 'timecheck' : l.intent === 'pickup-word' ? this.callStage() : 'talk';
+    return {
+      intent: l.intent,
+      reply: l.reply,
+      tools,
+      end,
+      stage,
+      pickups: l.intent === 'pickup-word' ? this.pickups + 1 : this.pickups,
+      toolLog,
+      why: 'Live model decision: the written prompt decides every turn, and the JSON is validated before use.',
+    };
+  }
+
+  toggleLive(): void {
+    this.useLive.update((v) => !v);
+    this.aiState.set('idle');
+    this.aiNote.set('');
+  }
+
+  toggleSpeak(): void {
+    this.speakOn.update((v) => !v);
+    if (!this.speakOn()) {
+      this.speech.cancel();
+      this.speaking.set(false);
+    }
+  }
+
+  setMicLang(ev: Event): void {
+    this.micLang.set((ev.target as HTMLSelectElement).value);
+  }
+
+  /** Speak your reply: the browser transcribes one utterance, then it is sent like a typed reply. */
+  toggleMic(): void {
+    if (this.listening()) {
+      this.stopListen?.();
+      return;
+    }
+    if (this.busy() || this.ended()) return;
+    this.speech.cancel();
+    this.micMsg.set('');
+    this.interim.set('');
+    const stop = listenOnce(this.micLang(), {
+      onInterim: (t) => this.zone.run(() => this.interim.set(t)),
+      onFinal: (t) =>
+        this.zone.run(() => {
+          this.interim.set('');
+          this.send(t);
+        }),
+      onError: (r) =>
+        this.zone.run(() =>
+          this.micMsg.set(
+            r === 'denied'
+              ? 'Microphone permission was blocked. Allow it in the address bar, or type your reply.'
+              : r === 'no-speech'
+                ? 'Did not hear anything. Tap the mic and try again.'
+                : 'Speech recognition is not available right now. Type your reply instead.'
+          )
+        ),
+      onEnd: () =>
+        this.zone.run(() => {
+          this.listening.set(false);
+          this.stopListen = null;
+          if (!this.busy() && !this.speaking()) this.wave.set('idle');
+        }),
+    });
+    if (!stop) {
+      this.micMsg.set('Speech recognition is not available in this browser. Type your reply instead.');
+      return;
+    }
+    this.stopListen = stop;
+    this.listening.set(true);
+    this.wave.set('caller');
+  }
+
+  /** Reads the agent's reply aloud with the browser's own voice; the equaliser follows the real speech. */
+  private speakReply(text: string): void {
+    if (!this.speakOn() || !this.ttsOk()) return;
+    this.speech.speak(text, {
+      onStart: () =>
+        this.zone.run(() => {
+          this.speaking.set(true);
+          this.wave.set('agent');
+        }),
+      onEnd: () =>
+        this.zone.run(() => {
+          this.speaking.set(false);
+          if (!this.busy() && !this.listening()) this.wave.set('idle');
+        }),
+    });
   }
 
   toggleFailover(): void {
@@ -436,6 +728,15 @@ export class VoiceDemoComponent {
 
   restart(): void {
     this.clearTimers();
+    this.liveAbort?.abort();
+    this.stopListen?.();
+    this.speech.cancel();
+    this.speaking.set(false);
+    this.thinking.set(false);
+    this.aiState.set('idle');
+    this.aiNote.set('');
+    this.micMsg.set('');
+    this.interim.set('');
     this.busy.set(false);
     this.callStage.set('identity');
     this.pickups = 0;
@@ -445,6 +746,7 @@ export class VoiceDemoComponent {
     this.wave.set('idle');
     this.elapsed.set(0);
     this.delta.set(0);
+    this.firstSound.set(0);
     this.toolChips.set([]);
     this.log.set([]);
     this.timings.set([0, 700, 500, 860, 230, 80]);
@@ -722,17 +1024,20 @@ export class VoiceDemoComponent {
     const fail = this.failover();
 
     const stt = jitter(500, 0.1);
-    const llmBase = jitter(860, 0.1);
+    const llmBase = last.live && last.live.llmMs > 0 ? last.live.llmMs : jitter(860, 0.1);
     const penalty = fail ? jitter(350, 0.12) : 0;
     const llm = llmBase + penalty;
     const tts = jitter(230, 0.1);
     const eng = jitter(80, 0.15);
+    const ack = jitter(290, 0.1); // one short live-TTS word spoken while the model works
     const vad = 700;
     const sum = vad + stt + llm + tts + eng;
     const total = sum - OVERLAP_MS;
     const k = total / sum;
     this.timings.set([0, vad, stt, llm, tts, eng]);
     this.delta.set(penalty);
+    const firstAudio = vad + ack + eng;
+    this.firstSound.set(firstAudio);
     this.toolChips.set([]);
     this.elapsed.set(0);
     this.log.set([]);
@@ -743,7 +1048,10 @@ export class VoiceDemoComponent {
         { at: 0, text: 'VAD (Silero): speech ended, 200 ms of quiet' },
         { at: vad, text: 'Smart-Turn end-of-turn: patience 500 ms elapsed, turn closed (' + vad + ' ms of quiet in total)' },
       ],
-      [{ at: vad, text: 'Streaming STT final transcript: "' + last.raw + '" (~' + stt + ' ms)' }],
+      [
+        { at: vad, text: 'Streaming STT final transcript: "' + last.raw + '" (~' + stt + ' ms)' },
+        { at: firstAudio / k, text: 'Instant acknowledgement (one short word, live TTS) starts playing: first agent audio at ~' + this.secs(firstAudio) + ' s while the model works' },
+      ],
       this.llmLog(d, c, fail, llm, penalty, vad + stt),
       [{ at: vad + stt + llm, text: 'TTS: first audio chunk ready (~' + tts + ' ms)' }],
       [{ at: vad + stt + llm + tts, text: 'Engine: audio frames to telephony (~' + eng + ' ms). Agent starts speaking: "' + this.short(d.reply) + '"' }],
@@ -752,7 +1060,7 @@ export class VoiceDemoComponent {
 
     const finish = (): void => {
       this.stageIdx.set(6);
-      this.wave.set('idle');
+      if (!this.speaking()) this.wave.set('idle');
       this.busy.set(false);
       if (apply) {
         this.callStage.set(d.stage);
@@ -760,9 +1068,11 @@ export class VoiceDemoComponent {
       this.scrollChat();
     };
     const agentSays = (): void => {
-      if (!apply) return;
-      this.lines.update((l) => [...l, { id: this.nextId++, who: 'agent', text: d.reply, tools: d.tools }]);
-      this.scrollChat();
+      if (apply) {
+        this.lines.update((l) => [...l, { id: this.nextId++, who: 'agent', text: d.reply, tools: d.tools }]);
+        this.scrollChat();
+      }
+      this.speakReply(d.reply);
     };
     const tagCaller = (): void => {
       if (!apply) return;
@@ -821,9 +1131,19 @@ export class VoiceDemoComponent {
       out.push({ at: start + 100, text: 'primary LLM: no first token and an error, hedged backup request fired after 0.1 s' });
       out.push({ at: start + llm, text: 'backup LLM first word arrived (+' + penalty + ' ms vs a healthy turn), primary cancelled' });
     } else {
-      out.push({ at: start, text: 'LLM (primary) streaming. First word after ~' + llm + ' ms' });
+      out.push({
+        at: start,
+        text: this.last?.live
+          ? 'LLM (live model) answered in ' + llm + ' ms, measured from this page and including the network round trip'
+          : 'LLM (primary) streaming. First word after ~' + llm + ' ms',
+      });
     }
-    out.push({ at: start + llm, text: 'Decision (demo classifier standing in for the model): intent = ' + d.intent + (c.time ? ', time = ' + c.time : '') });
+    out.push({
+      at: start + llm,
+      text: this.last?.live
+        ? 'Decision (live model, validated JSON): intent = ' + d.intent + (this.last.live.time ? ', time = ' + this.last.live.time : '')
+        : 'Decision (offline demo classifier standing in for the model): intent = ' + d.intent + (c.time ? ', time = ' + c.time : ''),
+    });
     out.push({ at: start + llm, text: d.why });
     for (const t of d.tools) out.push({ at: start + llm, text: 'tool call: ' + t });
     for (const t of d.toolLog) out.push({ at: start + llm, text: t });

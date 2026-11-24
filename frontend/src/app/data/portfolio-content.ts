@@ -30,10 +30,10 @@ export const PROJECT_META: Record<string, ProjectMeta> = {
     categories: ['AI / ML'],
     accent: 'lime',
     highlights: [
-      { value: '~2.2s', label: 'measured: caller stops → first agent audio' },
+      { value: '1.1s', label: 'measured: caller stops → first agent audio' },
       { value: '13', label: 'LLM providers supported, with mid-call failover' },
       { value: '4,000+', label: 'automated Python tests' },
-      { value: '3', label: 'services: voice engine, API, live dashboard' }
+      { value: '30+', label: 'provider integrations: STT, TTS, LLM and telephony' }
     ]
   },
   'mmv-data-extractor': {
@@ -265,15 +265,15 @@ export const BASE_PROJECTS: ProjectBase[] = [
       implementation:
         'The agent can call fifteen types of tool, including end-call, transfer, callback scheduling, contact lookup and sending an email after hang-up. Calling hours and do-not-call lists are enforced before a call is placed, a pronunciation dictionary of roughly 670 words keeps names and terms intelligible, and end-of-call classifiers record sentiment, outcome and structured results. Per-call cost is tracked against provider pricing, and provider health is learned from real call outcomes. Prompts are pinned by tests, so a template can never drift from its master file.',
       challenges:
-        'Latency and turn-taking. Measured on real test calls, the first agent sound arrives about 2.2 seconds after the caller stops (roughly 0.5 s speech recognition, 0.9 s to the model\'s first word, 0.2 s synthesis, plus engine overhead), and the bot deliberately waits about 0.7 seconds of quiet before it answers so it does not talk over someone mid-sentence. Prompts also kept failing in small ways that only real calls reveal — a bare "Hello?" read as a yes, a callback promised before the tool had succeeded.',
+        'Latency and turn-taking. First agent audio arrives about 1.1 seconds after the caller stops talking, measured on live calls, and the bot deliberately waits about 0.7 seconds of quiet before it answers so it does not talk over someone mid-sentence. Prompts also kept failing in small ways that only real calls reveal — a bare "Hello?" read as a yes, a callback promised before the tool had succeeded.',
       solution:
         'Rather than guess, the team listened to real recordings and fixed what they heard: pickup words are treated as "not yet a yes" and the identity question is re-asked once in fewer words; the agent only confirms a callback after the callback tool returns success; and every fix lands with a test and a changelog entry. Latency is measured stage by stage rather than guessed at, and a hedged backup LLM request trims the tail when the primary provider is slow to answer.',
       evaluation:
         'The Python engine has roughly 4,000 test functions across more than 400 test files; the .NET API has over 1,200 test cases and the Angular dashboard over 800. Prompt-pinning tests assert that every assistant template equals its master prompt and that key figures in prompts match the data. The changelog records each fix found in live test calls.',
       results:
-        'A working platform in active use and iteration: three services, a campaign-driven dashboard, thirteen supported LLM providers with failover, and a measured first-audio latency of about 2.2 seconds. Concurrent calls per assistant is a configurable setting (default 5, up to 50); live-call capacity at scale has not been load-tested here, so no throughput number is published.',
+        'A working platform in active use and iteration: three services, a campaign-driven dashboard, thirteen supported LLM providers with failover, and a measured first agent audio of about 1.1 seconds after the caller stops. Concurrent calls per assistant is a configurable setting (default 5, up to 50); live-call capacity at scale has not been load-tested here, so no throughput number is published.',
       futureImprovements:
-        'Cutting the measured latency further (the LLM first word is the largest slice), live-model evaluation of the newer assistant prompts, and measured capacity numbers from a real load test of the voice path.'
+        'Getting the full spoken answer out faster as well (the first word from the model is the largest slice of that), live-model evaluation of the newer assistant prompts, and measured capacity numbers from a real load test of the voice path.'
     }
   },
   {
