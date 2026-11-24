@@ -47,8 +47,37 @@ if (run.status !== 0 || !existsSync(output)) {
 
 const pdf = await getDocument({ data: new Uint8Array(await readFile(output)), useSystemFonts: true, isEvalSupported: false }).promise;
 const pages = pdf.numPages;
+
+// How full is each page? (last inked row within the printable area). Optional: skipped if
+// the canvas module is unavailable. Handy for keeping page 2 comfortably more than half full.
+const fills = [];
+try {
+  const { createCanvas } = await import('@napi-rs/canvas');
+  const marginIn = 0.42; // keep in step with @page in resume.html
+  for (let n = 1; n <= pages; n++) {
+    const page = await pdf.getPage(n);
+    const viewport = page.getViewport({ scale: 1.2 });
+    const canvas = createCanvas(Math.round(viewport.width), Math.round(viewport.height));
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, canvas, viewport }).promise;
+    const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let last = 0;
+    for (let y = height - 1; y >= 0 && !last; y--) {
+      for (let x = 0; x < width; x++) {
+        const i = (y * width + x) * 4;
+        if (data[i] < 235 || data[i + 1] < 235 || data[i + 2] < 235) { last = y; break; }
+      }
+    }
+    const usable = height - 2 * marginIn * 72 * 1.2;
+    fills.push(Math.max(0, Math.min(100, Math.round(((last - marginIn * 72 * 1.2) / usable) * 100))));
+  }
+} catch {
+  /* page-fill report is a nicety */
+}
 await pdf.destroy();
-console.log(`Wrote ${path.relative(root, output)} (${pages} page${pages === 1 ? '' : 's'})`);
+console.log(`Wrote ${path.relative(root, output)} (${pages} page${pages === 1 ? '' : 's'}${fills.length ? `, fill ${fills.map((f, i) => `p${i + 1} ${f}%`).join(', ')}` : ''})`);
 if (pages !== 2) {
   console.error(`Expected exactly 2 pages, got ${pages}. Trim text in resume/resume.html or adjust its margins.`);
   process.exit(1);
