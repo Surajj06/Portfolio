@@ -215,7 +215,7 @@ export const EXPERIENCE: ExperienceEntry[] = [
     description:
       'Building AI systems for insurance operations — a configurable voice platform, multi-provider LLM orchestration, vehicle-data automation pipelines, and MCP-based agentic workflows.',
     responsibilities: [
-      'Architected a configurable AI voice platform for insurance operations, designed for 10,000+ daily calls across concurrent bots with a real-time STT → VAD → LLM → TTS pipeline.',
+      'Architected a configurable AI voice platform for insurance operations — a real-time VAD → STT → LLM → TTS pipeline across concurrent bots, with about 1.1 s from the caller stopping to the first agent audio.',
       'Built a provider-agnostic LLM orchestration layer spanning multiple providers (OpenAI, Anthropic Claude, Google Gemini, Groq, Mistral, DeepSeek, and others) with automatic health-based failover and live mid-call provider switching.',
       'Developed vehicle data mapping and normalization pipelines with rule-based scoring and insurance-domain validation logic for GCV and PCV quotation workflows.',
       'Designed MCP server architectures and n8n automation pipelines orchestrating LLMs, REST APIs, and PostgreSQL/Redis databases into scalable production workflows.',
@@ -243,7 +243,7 @@ export const BASE_PROJECTS: ProjectBase[] = [
     description:
       'A configurable AI voice platform for insurance operations — a real-time VAD → STT → LLM → TTS pipeline over telephony, ten speech-to-text and nine text-to-speech providers, mid-call LLM failover, per-assistant knowledge bases, and a multi-tenant dashboard for staff to monitor and control calls.',
     concepts: ['Voice AI', 'Real-Time Systems', 'Telephony', 'LLM Orchestration', 'Multi-Provider Failover', 'RAG'],
-    techStack: ['Python', 'Pipecat', 'FastAPI', 'Twilio', 'SIP (Asterisk ARI)', 'Sarvam AI', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'Mistral', 'DeepSeek', 'Silero VAD', 'Smart Turn', 'PostgreSQL', 'Redis', 'C#', '.NET', 'Angular', 'Docker', 'Prometheus', 'Grafana'],
+    techStack: ['Python', 'Pipecat', 'FastAPI', 'Twilio', 'SIP (Asterisk ARI)', 'Sarvam AI', 'OpenAI', 'Anthropic Claude', 'Google Gemini', 'Groq', 'Mistral', 'DeepSeek', 'Silero VAD', 'Smart Turn', 'PostgreSQL', 'Redis', 'C#', '.NET', 'Angular', 'nginx', 'systemd', 'Prometheus', 'Grafana'],
     workflowSteps: ['Call connects', 'VAD + turn detection + noise suppression', 'Speech-to-text', 'Prompt-driven LLM + knowledge tool', 'Text-to-speech', 'Live dashboard update'],
     screenshotUrl: null,
     githubUrl: null,

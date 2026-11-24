@@ -181,11 +181,15 @@ a `@case` for them in `project-scene.component.html` (plus its stylesheet block)
 - **No company names in projects:** project copy, demos and cover art must stay
   generic ("Partner A", "a quotation portal"). The employer appears only in the
   Experience entry and the resume.
-- Resume: replace `frontend/src/assets/resume.pdf`. It always downloads as
+- Resume: the source of truth is `frontend/resume/resume.html`. Edit the text
+  there, then run `npm run resume` (in `frontend/`): it renders
+  `src/assets/resume.pdf` with a locally installed Chrome/Edge (and checks it is
+  exactly two pages), then regenerates the page images shown in the Resume
+  section (`resume-p1.webp` / `resume-p2.webp`). Commit those files; the build
+  re-indexes the PDF for the chat assistant. The PDF always downloads as
   `Suraj_resume.pdf` (`profile.resumeFileName`; `vercel.json` sets the same name
-  for direct visits). The Resume section shows the real pages as images, so after
-  replacing the PDF run `npm run resume:preview` (in `frontend/`) and commit the
-  regenerated `src/assets/resume-p1.webp` / `resume-p2.webp`.
+  for direct visits). Only put figures in it that you can defend: project facts
+  there were checked against each project's code and docs.
 - Canonical/OG URLs live in `frontend/src/index.html`, `sitemap.xml` and
   `robots.txt`.
 

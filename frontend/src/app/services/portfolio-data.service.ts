@@ -79,55 +79,55 @@ export class PortfolioDataService {
       title: 'Call connects',
       icon: 'phone',
       detail:
-        'Twilio streams the call audio in. A short greeting is pre-synthesized and played the instant the call connects, so the caller never hears dead air while the rest of the pipeline warms up behind it.'
+        'The call audio streams in over Twilio, Plivo, Exotel or carrier SIP, and the engine opens a live session for that call: its assistant, voice, knowledge documents and tools.'
     },
     {
       id: 'clean',
-      title: 'Noise suppression + VAD',
+      title: 'VAD + turn detection',
       icon: 'wave',
       detail:
-        'Silero VAD detects when the caller is actually speaking and DeepFilterNet strips background noise from the phone line, so everything downstream works from clean speech.'
+        'Silero VAD detects when the caller is actually speaking, Smart Turn decides when a sentence is really finished, and noise suppression cleans the phone line. The bot waits about 0.7 s of quiet before it answers, so it never talks over someone mid-sentence.'
     },
     {
       id: 'stt',
       title: 'Speech-to-text',
       icon: 'mic',
       detail:
-        'Streaming speech-to-text converts the caller’s audio into text in real time and hands it to the conversation layer.'
+        'Streaming speech-to-text (Sarvam by default, with nine other providers available) converts the caller’s audio into text in real time and hands it to the LLM.'
     },
     {
       id: 'brain',
-      title: 'State machine / LLM + RAG',
+      title: 'LLM + knowledge',
       icon: 'brain',
       detail:
-        'A deterministic state machine resolves roughly 80% of turns in under 50 ms — no LLM involved. Only genuinely off-script utterances escalate to the LLM, backed by a per-bot RAG pipeline over PostgreSQL.'
+        'A written prompt drives every turn: the LLM decides what to say and which tool to call (end the call, schedule a callback, look something up in the assistant’s own documents). It answers only from those documents and never guesses what it was not given.'
     },
     {
       id: 'tts',
       title: 'Text-to-speech',
       icon: 'sparkles',
       detail:
-        'The reply is synthesized and streamed back to the caller. A custom phonetics module covering 500+ names keeps Indian names pronounced correctly across regional languages.'
+        'The reply is synthesized and streamed back to the caller. A pronunciation dictionary keeps Indian names and terms intelligible across regional languages.'
     },
     {
       id: 'live',
       title: 'Live dashboard update',
       icon: 'layers',
       detail:
-        'The multi-tenant control-plane dashboard (Angular + .NET) gets live updates pushed to the browser in real time. It only ever talks to the voice engine — never to telephony or AI providers directly.'
+        'The multi-tenant control-plane dashboard (Angular + .NET) shows the call live. It only ever talks to the voice engine and API — never to telephony or AI providers directly.'
     }
   ];
 
   /** Shown under the pipeline: the resilience story behind every stage. */
   readonly pipelineNote =
-    'Every external provider sits behind an async circuit breaker, so a struggling STT, TTS or LLM provider degrades gracefully — failing over automatically — instead of taking calls down.';
+    'Every external provider can fail over: provider health is tracked from real call outcomes, and a struggling speech or LLM provider is switched out automatically — even mid-call for the LLM — instead of taking calls down.';
 
   /** Facts for the Systems tiles (all from the voice platform case study). */
   readonly systemFacts = [
-    { value: '<1s', label: 'turn latency' },
-    { value: '~80%', label: 'turns on the <50ms fast path' },
-    { value: '6', label: 'LLM providers, auto-failover' },
-    { value: '500+', label: 'names in the phonetics module' }
+    { value: '1.1s', label: 'measured: caller stops → first agent audio' },
+    { value: '13', label: 'LLM providers, auto-failover' },
+    { value: '30+', label: 'provider integrations: STT, TTS, LLM, telephony' },
+    { value: '4,000+', label: 'automated Python tests' }
   ];
 
   /**
@@ -139,10 +139,10 @@ export class PortfolioDataService {
     { role: 'system', text: 'Call connected', step: 0, tag: 'Twilio' },
     { role: 'agent', text: 'Hello! I’m calling about your vehicle insurance renewal. Is this a good time?', step: 4, tag: 'TTS' },
     { role: 'caller', text: 'Yes, go ahead.', step: 2, tag: 'STT' },
-    { role: 'system', text: 'On-script — answered by the state machine', step: 3, tag: 'Fast path' },
+    { role: 'system', text: 'The LLM decides the reply from the written prompt', step: 3, tag: 'LLM' },
     { role: 'agent', text: 'Great. Your renewal quote is ready. Would you like me to walk you through it?', step: 4, tag: 'TTS' },
     { role: 'caller', text: 'Why did the premium change from last year?', step: 2, tag: 'STT' },
-    { role: 'system', text: 'Off-script — escalated to LLM + RAG', step: 3, tag: 'LLM + RAG' },
+    { role: 'system', text: 'The LLM answers from the assistant’s own knowledge documents', step: 3, tag: 'LLM + knowledge' },
     { role: 'agent', text: 'Good question. Let me explain what changed on your policy this year.', step: 4, tag: 'TTS' },
     { role: 'system', text: 'Dashboard updated live', step: 5, tag: 'Live' }
   ];

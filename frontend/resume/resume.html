@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  Source of truth for src/assets/resume.pdf. Edit the text here, then from frontend/ run:
+      npm run resume
+  (renders this file to the PDF with headless Chrome/Edge, then regenerates the page
+  previews shown in the site's Resume section). Every figure here must be one you can
+  defend in an interview; project facts were checked against each project's code and docs.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Suraj Deepak Jha - Resume</title>
+<style>
+  @page { size: Letter; margin: 0.42in 0.55in 0.42in 0.55in; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif; font-size: 10pt; line-height: 1.27; color: #141414; }
+  a { color: inherit; text-decoration: none; }
+  h1 { margin: 0; text-align: center; color: #1f4e96; font-size: 24pt; font-weight: 700; letter-spacing: 0.01em; line-height: 1.15; }
+  .sub { text-align: center; font-style: italic; font-size: 11pt; margin-top: 2px; }
+  .contact { text-align: center; font-size: 10pt; margin-top: 3px; }
+  h2 { margin: 9px 0 3px; padding-bottom: 1px; color: #1f4e96; font-size: 11pt; font-weight: 700; text-transform: uppercase; border-bottom: 1.2px solid #1f4e96; break-after: avoid; }
+  p { margin: 0; text-align: justify; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; break-after: avoid; }
+  .row b { font-size: 10.6pt; }
+  .meta { font-style: italic; }
+  .proj { margin-top: 5px; break-after: avoid; }
+  .proj b { font-size: 10.4pt; }
+  .stack { font-style: italic; break-after: avoid; }
+  ul { margin: 2px 0 3px; padding-left: 17px; }
+  li { margin: 0 0 2.2px; text-align: justify; break-inside: avoid; }
+  .skills p { margin: 0 0 1.5px; text-align: left; }
+</style>
+</head>
+<body>
+
+<h1>SURAJ DEEPAK JHA</h1>
+<div class="sub">AI Engineer &mdash; Generative AI &middot; LLM Systems &middot; Voice AI</div>
+<div class="contact">9867751859 &nbsp;|&nbsp; surajjha462002@gmail.com &nbsp;|&nbsp; Mumbai, India (Open to Ahmedabad / Remote) &nbsp;|&nbsp;
+  <a href="https://www.linkedin.com/in/ai-surajjha/">LinkedIn</a> &nbsp;|&nbsp; <a href="https://github.com/Surajj06">GitHub</a> &nbsp;|&nbsp; <a href="https://www.aisurajjha.in/">Portfolio</a></div>
+
+<h2>Summary</h2>
+<p>AI Engineer specializing in Generative AI, LLM systems, and real-time Voice AI, with production experience building scalable AI applications for the insurance domain. Experienced in LLM orchestration, RAG, agentic workflows, FastAPI, and real-time speech pipelines, including a configurable voice platform with 13 supported LLM providers and automatic failover.</p>
+
+<h2>Experience</h2>
+<div class="row"><b>Probus Insurance Broker Private Limited</b><b>Aug. 2025 &ndash; Present</b></div>
+<div class="row meta"><span>AI Engineer</span><span>Ahmedabad, Gujarat</span></div>
+<ul>
+  <li><b>Architected and deployed a production AI voice calling agent</b> for insurance policy renewals, using Pipecat, FastAPI, Twilio, and Sarvam AI with a real-time VAD &rarr; STT &rarr; LLM &rarr; TTS pipeline and about 1.1 s from the caller stopping to the first agent audio.</li>
+  <li><b>Built a provider-agnostic LLM orchestration layer</b> spanning multiple providers (OpenAI, Anthropic Claude, Google Gemini, Groq, Mistral, DeepSeek, and others) with automatic health-based failover mid-call, powering intelligent analysis, decision support, and agentic workflow automation.</li>
+  <li><b>Developed vehicle data mapping and normalization pipelines</b> using Python, Pandas, and RapidFuzz with rule-based scoring and insurance-domain validation logic for GCV and PCV quotation workflows.</li>
+  <li><b>Designed MCP server architectures and n8n automation pipelines</b> orchestrating LLMs, REST APIs, and PostgreSQL/Redis databases into scalable production workflows.</li>
+  <li><b>Built RESTful microservices</b> with FastAPI and Flask; automated data extraction from insurance partner portals using Selenium, Playwright, and async HTTP with rate-limit-safe execution.</li>
+  <li><b>Operated production AI systems</b> serving thousands of daily user interactions with high availability, using provider health tracking with automatic failover, Redis-based distributed state, and Prometheus + Grafana observability.</li>
+</ul>
+
+<h2>Key Projects &amp; Initiatives</h2>
+
+<div class="proj"><b>Voice AI Platform &mdash; Architecture &amp; Scale</b></div>
+<div class="stack">Pipecat | FastAPI | Twilio | Multi-LLM + Multi-STT/TTS Providers</div>
+<ul>
+  <li>Built a prompt-driven conversation layer in which the LLM handles every turn, with a per-bot knowledge base &mdash; OpenAI embeddings, chunked ingestion, cosine-similarity retrieval over PostgreSQL &mdash; and S3-backed source storage.</li>
+  <li>Built production safeguards: provider health tracking with mid-call failover, calling-hours and do-not-call enforcement, and a pronunciation dictionary for Indian names and terms across regional languages.</li>
+  <li>Integrated real-time voice-activity detection (Silero), Smart Turn end-of-turn detection, and noise suppression over Twilio WebSocket audio streams, improving turn-detection reliability in noisy call environments.</li>
+  <li>Engineered a structured prompt system &mdash; step-by-step call flow, Hindi objection-handling playbook, anti-hallucination guardrails, and a pronunciation dictionary &mdash; to ensure consistent, on-brand agent behavior across languages, refined iteratively from real call recordings.</li>
+  <li>Built the enterprise control plane &mdash; a multi-tenant Angular + .NET dashboard with role-based access control, audit trails, live monitoring, and a function-calling tool framework &mdash; running as systemd services behind nginx on Linux.</li>
+  <li>Backed the platform with a large automated test suite: about 4,000 Python, 1,200 .NET, and 800 Angular test cases.</li>
+</ul>
+
+<div class="proj"><b>Intelligent Vehicle Data Mapping System &mdash; GCV + PCV</b></div>
+<div class="stack">Python | RapidFuzz | PostgreSQL | Rule-Based Pipeline</div>
+<ul>
+  <li>Built an end-to-end vehicle master data standardization pipeline processing thousands of records across 15+ insurance partners, using fuzzy matching, multi-field rule gates (vehicle type, fuel, GVW), and cross-field confidence scoring.</li>
+  <li>Directly powers the company's quotation portal &mdash; the foundational system enabling premium generation for GCV and PCV insurance lines &mdash; with modular per-insurer engines and a PostgreSQL audit trail.</li>
+</ul>
+
+<div class="proj"><b>MMV Data Extraction &amp; Master Sync</b></div>
+<div class="stack">Python | Playwright | SQLite | pandas | SQL Server / PostgreSQL | Angular | ASP.NET Core</div>
+<ul>
+  <li>Built a resumable web extractor that walks a commercial-vehicle master (13 types, 710 makes, 1,807 models, and 4,534 variants in one run) through the source's own master-data calls, keyed by ids, paced to stay under rate limits, stopping cleanly if the site pushes back, and exporting to SQLite and Excel.</li>
+  <li>Built a master-data inserter (24 partner-specific runners, an alias map of about 2,200 make spellings, dry-run mode) that adds only genuinely missing makes, models, and variants, matching variants on name, fuel, and weight.</li>
+  <li>Built an Angular + ASP.NET Core workspace that imports mapping workbooks (highlighted IDs only), validates them against SQL, and applies them in a single serializable transaction.</li>
+</ul>
+
+<div class="proj"><b>Real-Time API Health Intelligence Platform</b></div>
+<div class="stack">FastAPI | asyncio | aiohttp | PostgreSQL | Server-Sent Events</div>
+<ul>
+  <li>Built a monitoring platform concurrently tracking 83 insurance partner APIs using Python asyncio + aiohttp, with status classification (UP/DOWN/SLOW/ERROR), multi-channel alerting (email, Slack, Teams), and smart state-change suppression.</li>
+  <li>Delivered a real-time FastAPI dashboard streaming live status over Server-Sent Events, with per-API isolation and configurable timeouts to minimize cascading failures.</li>
+</ul>
+
+<div class="proj"><b>LLM Applications &amp; MCP Workflow Automation</b></div>
+<div class="stack">OpenAI GPT-4o | Anthropic Claude | Gemini | Ollama | n8n | MCP</div>
+<ul>
+  <li>Built and deployed multiple LLM-powered business applications using OpenAI GPT-4o, Anthropic Claude, Google Gemini, and Ollama (Llama 3) for document analysis, decision support, and automated customer interaction workflows.</li>
+  <li>Designed MCP server architectures exposing tools and resources to LLMs for structured reasoning over insurance data; integrated with n8n to orchestrate multi-step agentic pipelines across APIs, databases, and third-party services.</li>
+  <li>Applied prompt engineering techniques (few-shot prompting, structured outputs, tool calling, prompt evaluation) to improve LLM accuracy on insurance-domain tasks; benchmarked outputs across GPT-4o, Claude, and Gemini for production suitability.</li>
+</ul>
+
+<h2>Technical Skills</h2>
+<div class="skills">
+  <p><b>Languages:</b> Python, SQL, C++, C#, TypeScript</p>
+  <p><b>AI / ML:</b> Generative AI, LLMs, RAG, NLP, Machine Learning, Deep Learning, Prompt Engineering, Fine-Tuning (LoRA, QLoRA), Agentic AI, Real-Time Voice AI</p>
+  <p><b>Voice AI Framework:</b> Pipecat, Twilio Media Streams, Silero/WebRTC VAD</p>
+  <p><b>STT/TTS Providers:</b> Sarvam AI, Deepgram, ElevenLabs, Cartesia, Azure Speech, Google Speech</p>
+  <p><b>LLM Providers:</b> OpenAI, Anthropic Claude, Google Gemini, Groq, Mistral, DeepSeek, OpenRouter, Sarvam AI</p>
+  <p><b>Vector Search / RAG:</b> OpenAI Embeddings (text-embedding-3-small), Cosine-Similarity Retrieval, Semantic Chunking, PostgreSQL-Backed Knowledge Bases</p>
+  <p><b>Backend &amp; APIs:</b> FastAPI, Flask, REST APIs, WebSockets, AsyncIO, Uvicorn, Gunicorn</p>
+  <p><b>Engineering:</b> Microservices, Distributed Systems, System Design, Async Programming</p>
+  <p><b>Agentic &amp; Automation:</b> MCP (Model Context Protocol), Function Calling / Structured Outputs, n8n, Selenium, Playwright</p>
+  <p><b>Enterprise / Full-Stack:</b> Angular, .NET, Entity Framework Core, RBAC &amp; Multi-Tenant Architecture</p>
+  <p><b>Libraries:</b> NumPy, Pandas, Scikit-learn, TensorFlow, RapidFuzz, OpenCV</p>
+  <p><b>Infra &amp; DevOps:</b> Docker, Docker Compose, Git, Linux, CI/CD, Prometheus, Grafana, Structured Logging (structlog)</p>
+  <p><b>Cloud:</b> AWS (S3), Azure</p>
+  <p><b>Databases:</b> PostgreSQL, MySQL, SQLite, Redis</p>
+  <p><b>Tools:</b> GitHub, Postman, VS Code, Google Colab, PyCharm</p>
+</div>
+
+<h2>Education</h2>
+<div class="row"><b>University of Mumbai &mdash; Master of Computer Applications</b><b>Sept. 2024 &ndash; May 2026</b></div>
+<div>Mumbai, India</div>
+<div class="row" style="margin-top:4px"><b>Nagindas Khandwala College &mdash; B.Sc. Computer Science</b><b>Jun. 2021 &ndash; May 2024</b></div>
+<div>Mumbai, India</div>
+
+<h2>Certifications</h2>
+<ul>
+  <li><b>Cloud Computing and Distributed Systems</b> &mdash; NPTEL (Elite), IIT Kanpur &mdash; Score: 76% &mdash; Jan&ndash;Mar 2026</li>
+  <li><b>Claude 101 &mdash; Anthropic Claude AI Fundamentals</b> &mdash; Anthropic</li>
+</ul>
+
+</body>
+</html>
