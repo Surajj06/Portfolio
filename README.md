@@ -163,6 +163,15 @@ a `@case` for them in `project-scene.component.html` (plus its stylesheet block)
   `frontend/src/app/shared/project-art/` (and, for a bespoke 3D cover, a case in
   `shared/project-scene/`), and add its route to
   `frontend/routes.txt` (prerender) and `frontend/src/sitemap.xml`.
+- **Live demos:** each project can carry a `demo` (`{ heading, intro }`) in
+  `portfolio-content.ts`; the case-study page then shows an interactive,
+  in-browser version of the project's real logic. The demo components live in
+  `frontend/src/app/shared/demos/` and are mapped to project ids in
+  `project-demo.component.ts` (each is lazy-loaded with `@defer`). Demo data is
+  synthetic — never paste real records, credentials, or company names into them.
+- **No company names in projects:** project copy, demos and cover art must stay
+  generic ("Partner A", "a quotation portal"). The employer appears only in the
+  Experience entry and the resume.
 - Resume: replace `frontend/src/assets/resume.pdf`. It always downloads as
   `Suraj_resume.pdf` (`profile.resumeFileName`; `vercel.json` sets the same name
   for direct visits).

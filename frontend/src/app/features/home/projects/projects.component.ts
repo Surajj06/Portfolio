@@ -25,7 +25,7 @@ export class ProjectsComponent {
   private readonly motion = inject(MotionService);
   private readonly injector = inject(Injector);
 
-  readonly filters: Filter[] = ['All', 'AI / ML', 'Data', 'Backend & Full-stack'];
+  readonly filters: Filter[] = ['All', 'AI / ML', 'Data', 'Automation', 'Backend & Full-stack'];
   readonly active = signal<Filter>('All');
 
   /** GSAP kit, once loaded (null until then / when motion isn't allowed). */

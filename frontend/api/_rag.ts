@@ -202,7 +202,8 @@ function buildChunks(): Chunk[] {
       title: `${base.title} (project ${base.index})`,
       text:
         `${base.title}: ${base.summary} ${base.description} Focus: ${base.concepts.join(', ')}. ` +
-        `Category: ${meta.categories.join(', ')}. Highlights: ${meta.highlights.map((h) => `${h.value} ${h.label}`).join('; ')}.`,
+        `Category: ${meta.categories.join(', ')}. Highlights: ${meta.highlights.map((h) => `${h.value} ${h.label}`).join('; ')}.` +
+        (base.demo ? ` Live demo on its case-study page: ${base.demo.heading}. ${base.demo.intro}` : ''),
       keywords: 'project built portfolio work case study',
       url
     });

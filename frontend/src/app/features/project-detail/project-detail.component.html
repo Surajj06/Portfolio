@@ -24,6 +24,11 @@
           </ul>
 
           <div class="links rise" style="--d: 5">
+            @if (p.demo) {
+              <a class="btn btn--primary" href="#demo" (click)="jump($event, 'demo')">
+                Try the live demo <app-icon name="arrow-down" class="icon-nudge" [size]="18" />
+              </a>
+            }
             @if (p.githubUrl) {
               <a class="btn btn--ghost" [href]="p.githubUrl" target="_blank" rel="noopener noreferrer">
                 <app-icon name="github" [size]="18" /> GitHub
@@ -59,6 +64,15 @@
         </ul>
       </div>
     </header>
+
+    @if (p.demo) {
+      <section class="container demo-sec" id="demo" aria-labelledby="demo-title" appReveal>
+        <p class="demo-sec__kicker mono">Live demo · works in your browser</p>
+        <h2 class="demo-sec__title" id="demo-title">{{ p.demo.heading }}</h2>
+        <p class="lede demo-sec__intro">{{ p.demo.intro }}</p>
+        <app-project-demo [id]="p.id" />
+      </section>
+    }
 
     <div class="container case-layout">
       <aside class="toc" aria-label="On this page">

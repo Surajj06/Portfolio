@@ -31,7 +31,7 @@
                   </div>
                 }
               </div>
-              <div class="bb" style="--x: -13; --y: -3; --z: 9"><div class="bb__in float"><span class="hud"><strong>10K+</strong><small>daily capacity</small></span></div></div>
+              <div class="bb" style="--x: -13; --y: -3; --z: 9"><div class="bb__in float"><span class="hud"><strong>13</strong><small>LLM providers</small></span></div></div>
               <div class="bb" style="--x: 6; --y: -12; --z: 8"><div class="bb__in float f2"><span class="pill"><i class="live"></i>LIVE</span></div></div>
             }
 
@@ -143,12 +143,78 @@
               <i class="ping" style="--x: 4.8; --y: -2"></i>
               <i class="ping" style="--x: 4.8; --y: -2; --d: -1.2s"></i>
               <i class="radar"></i>
-              <div class="bb" style="--x: -13; --y: -9; --z: 7"><div class="bb__in float"><span class="hud"><strong>74+</strong><small>APIs checked</small></span></div></div>
+              <div class="bb" style="--x: -13; --y: -9; --z: 7"><div class="bb__in float"><span class="hud"><strong>83</strong><small>APIs checked</small></span></div></div>
               <div class="bb" style="--x: 6; --y: -5; --z: 6.2"><div class="bb__in float f2"><span class="pill pill--bad">DOWN</span></div></div>
               <div class="bb" style="--x: 13; --y: 3; --z: 4.2"><div class="bb__in float f3"><span class="pill pill--warn">SLOW</span></div></div>
               <div class="bb" style="--x: 2; --y: 13.5; --z: 0.5"><div class="bb__in">
                 <span class="beat"><svg viewBox="0 0 720 40" preserveAspectRatio="none"><path [attr.d]="beatPath" /></svg></span>
               </div></div>
+            }
+
+            <!-- ============ 02 · MMV extractor: a crawl tree, level by level, with a sweeping scan ============ -->
+            @case ('mmv-data-extractor') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 14"></i>
+              <i class="slab" style="--z: 1; --k: 0"></i>
+              <i class="slab" style="--z: 4.4; --k: 1"></i>
+              <i class="slab" style="--z: 7.8; --k: 2"></i>
+              <i class="slab" style="--z: 11.2; --k: 3"></i>
+              <i class="sweep"></i>
+              <b class="bx a" style="--x: -1.5; --y: -1.5; --w: 3; --d: 3; --h: 1; --z: 1"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              @for (x of [-9, -1.2, 6.6]; track x) {
+                <b class="bx n" style="--y: -1.2; --w: 2.4; --d: 2.4; --h: 0.9; --z: 4.4" [style.--x]="x"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              @for (x of [-11.5, -8.5, -5.5, -2.5, 0.5, 3.5, 6.5, 9.5]; track x) {
+                <b class="bx n" style="--y: -0.9; --w: 1.6; --d: 1.6; --h: 0.7; --z: 7.8" [style.--x]="x"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              @for (x of [-12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]; track x) {
+                <b class="bx a" style="--y: -0.6; --w: 1; --d: 1; --h: 0.5; --z: 11.2" [style.--x]="x"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              <div class="bb" style="--x: -14; --y: 7; --z: 1.6"><div class="bb__in"><span class="pill">Type</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 5"><div class="bb__in"><span class="pill">Make</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 8.4"><div class="bb__in"><span class="pill">Model</span></div></div>
+              <div class="bb" style="--x: -14; --y: 7; --z: 11.8"><div class="bb__in"><span class="pill pill--a">Variant</span></div></div>
+              <div class="bb" style="--x: 12; --y: -9; --z: 5"><div class="bb__in float"><span class="hud"><strong>4,534</strong><small>variants</small></span></div></div>
+            }
+
+            <!-- ============ 03 · MMV inserter: check before every insert ============ -->
+            @case ('mmv-master-inserter') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 13"></i>
+              <i class="ripple" style="--i: 0"></i>
+              <i class="ripple" style="--i: 1"></i>
+              <b class="bx n" style="--x: -7; --y: -4; --w: 14; --d: 8; --h: 1.2"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <b class="bx n" style="--x: -7; --y: -4; --w: 14; --d: 8; --h: 1.2; --z: 1.4"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <b class="bx a" style="--x: -2; --y: -1; --w: 4; --d: 2; --h: 1; --z: 2.8"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <div class="bb" style="--x: -14; --y: -7; --z: 6"><div class="bb__in float"><span class="pill">Alias map</span></div></div>
+              <div class="bb" style="--x: 11; --y: -6; --z: 8"><div class="bb__in float f2"><span class="pill pill--a">Found or inserted</span></div></div>
+              <div class="bb" style="--x: 10; --y: 7; --z: 3"><div class="bb__in float f3"><span class="hud"><strong>2,200+</strong><small>aliases</small></span></div></div>
+            }
+
+            <!-- ============ 05 · Mapping workspace: highlighted rows, one transaction ============ -->
+            @case ('vehicle-mapping-workspace') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 13.5"></i>
+              @for (r of [0, 1, 2, 3, 4]; track r) {
+                <b class="bx" [class.a]="r === 1 || r === 3" [class.n]="r !== 1 && r !== 3" style="--x: -9; --w: 18; --d: 2.2; --h: 0.8" [style.--y]="-6 + r * 3.2"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              }
+              <div class="bb" style="--x: 12; --y: -4; --z: 7"><div class="bb__in float"><span class="pill pill--a">1 transaction</span></div></div>
+              <div class="bb" style="--x: -14; --y: -9; --z: 5"><div class="bb__in float f2"><span class="pill">Yellow IDs only</span></div></div>
+              <div class="bb" style="--x: 11; --y: 7; --z: 3"><div class="bb__in float f3"><span class="hud"><strong>19</strong><small>partner configs</small></span></div></div>
+            }
+
+            <!-- ============ 10 · Daily report: a timed trigger, a reply, a deadline ============ -->
+            @case ('daily-report-automation') {
+              <i class="ground"></i>
+              <i class="ring" style="--r: 13"></i>
+              <i class="ripple" style="--i: 0"></i>
+              <i class="ripple" style="--i: 1"></i>
+              <b class="bx a" style="--x: -2; --y: -2; --w: 4; --d: 4; --h: 3"><i class="t"></i><i class="f"></i><i class="r"></i></b>
+              <i class="beam" style="--r: 0deg"></i>
+              <i class="beam" style="--r: 90deg"></i>
+              <div class="bb" style="--x: -13; --y: -3; --z: 7"><div class="bb__in float"><span class="hud"><strong>30 min</strong><small>trigger</small></span></div></div>
+              <div class="bb" style="--x: 7; --y: -9; --z: 8"><div class="bb__in float f2"><span class="pill pill--a">17:30 question</span></div></div>
+              <div class="bb" style="--x: 8; --y: 8; --z: 3"><div class="bb__in float f3"><span class="pill">Report by 21:00</span></div></div>
             }
 
             <!-- Any project without a bespoke scene: a quiet orbit around an accent block. -->

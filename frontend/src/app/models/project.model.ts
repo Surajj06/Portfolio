@@ -4,7 +4,7 @@ export interface CaseStudySection {
 }
 
 /** Filter groups shown on the projects grid. A project can belong to several. */
-export type ProjectCategory = 'AI / ML' | 'Data' | 'Backend & Full-stack';
+export type ProjectCategory = 'AI / ML' | 'Data' | 'Automation' | 'Backend & Full-stack';
 
 /** Colour used for a project's generated cover art and highlights. */
 export type ProjectAccent = 'lime' | 'violet' | 'sky' | 'coral' | 'pink' | 'amber' | 'mint';
@@ -28,6 +28,8 @@ export interface ProjectBase {
   screenshotUrl: string | null;
   githubUrl: string | null;
   liveUrl: string | null;
+  /** A small in-browser version of the project's real logic, shown on its case-study page. */
+  demo?: { heading: string; intro: string };
   caseStudy: {
     problem: string;
     whyItWasDifficult: string;

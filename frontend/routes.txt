@@ -1,8 +1,12 @@
 /
 /projects/ai-voice-calling-platform
+/projects/mmv-data-extractor
+/projects/mmv-master-inserter
 /projects/vehicle-catalogue-matching-engine
+/projects/vehicle-mapping-workspace
 /projects/conversational-quote-assistant
-/projects/whatsapp-document-verification-bot
 /projects/agent-gamification-platform
-/projects/stock-intelligence-engine
 /projects/api-health-monitor
+/projects/stock-intelligence-engine
+/projects/daily-report-automation
+/projects/whatsapp-document-verification-bot

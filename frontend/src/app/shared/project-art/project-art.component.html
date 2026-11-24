@@ -107,6 +107,90 @@
       }
       <path class="heart" d="M28 252H132l12-30 16 60 14-44 10 14H452" />
     }
+    @case ('mmv-data-extractor') {
+      <!-- crawl tree: type -> makes -> models -> variants, a crawler dot walking it -->
+      <path class="ln" d="M70 150 C110 150 110 78 150 78 M70 150 H150 M70 150 C110 150 110 222 150 222" />
+      <path class="ln" d="M214 78 C240 78 240 46 266 46 M214 78 H266 M214 78 C240 78 240 110 266 110" />
+      <path class="ln" d="M214 150 C240 150 240 134 266 134 M214 150 C240 150 240 168 266 168" />
+      <path class="ln" d="M214 222 C240 222 240 204 266 204 M214 222 C240 222 240 240 266 240" />
+      <path class="ln dash" d="M330 46 H380 M330 78 H380 M330 110 H380 M330 134 H380 M330 168 H380 M330 204 H380 M330 240 H380" />
+      <circle class="a" cx="56" cy="150" r="16" />
+      <rect class="ink" x="150" y="64" width="64" height="28" rx="9" />
+      <rect class="a" x="150" y="136" width="64" height="28" rx="9" />
+      <rect class="ink" x="150" y="208" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="32" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="64" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="96" width="64" height="28" rx="9" />
+      <rect class="a" x="266" y="120" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="154" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="190" width="64" height="28" rx="9" />
+      <rect class="ink" x="266" y="226" width="64" height="28" rx="9" />
+      <rect class="soft" x="380" y="36" width="72" height="20" rx="10" />
+      <rect class="soft" x="380" y="68" width="52" height="20" rx="10" />
+      <rect class="a" x="380" y="124" width="72" height="20" rx="10" />
+      <rect class="soft" x="380" y="194" width="60" height="20" rx="10" />
+      @for (i of [0, 1, 2]; track i) {
+        <circle class="a dotpulse" [attr.cx]="304" [attr.cy]="46 + i * 94" r="4" [style.--i]="i" />
+      }
+      <text class="mono" x="28" y="190">GET</text>
+    }
+    @case ('mmv-master-inserter') {
+      <!-- incoming rows checked, a new one slotting into a master table -->
+      @for (row of [0, 1, 2]; track row) {
+        <rect class="ink" x="30" [attr.y]="44 + row * 52" width="150" height="36" rx="10" />
+        <rect class="ln-fill" x="44" [attr.y]="56 + row * 52" width="74" height="6" rx="3" />
+        <rect class="ln-fill" x="44" [attr.y]="68 + row * 52" width="48" height="6" rx="3" />
+      }
+      <path class="line a-stroke" d="M180 62 C220 62 224 118 262 118" />
+      <path class="ln dash" d="M180 114 C220 114 224 118 262 118" />
+      <path class="line a-stroke" d="M180 166 C220 166 224 130 262 130" />
+      <rect class="doc" x="262" y="40" width="190" height="220" rx="16" />
+      <rect class="soft" x="262" y="40" width="190" height="34" rx="16" />
+      @for (row of [0, 1, 2, 3]; track row) {
+        <rect class="ln-fill" x="280" [attr.y]="92 + row * 30" [attr.width]="row === 2 ? 0 : 110" height="7" rx="3.5" />
+        <rect class="ln-fill" x="396" [attr.y]="92 + row * 30" [attr.width]="row === 2 ? 0 : 38" height="7" rx="3.5" />
+      }
+      <rect class="a bar" x="272" y="170" width="170" height="26" rx="8" style="--i: 2" />
+      <path class="tick" d="M286 183h14M293 176v14" />
+      <rect class="onacc" x="312" y="179" width="90" height="7" rx="3.5" />
+      <circle class="a" cx="436" cy="236" r="12" />
+      <path class="tick" d="m430 236 4 4 8-9" />
+    }
+    @case ('vehicle-mapping-workspace') {
+      <!-- workbook with yellow-highlighted rows, validated then applied -->
+      <rect class="doc" x="28" y="30" width="300" height="240" rx="16" />
+      @for (row of rows; track row) {
+        <rect [class]="row === 1 || row === 3 ? 'a' : 'ink'" x="44" [attr.y]="48 + row * 44" width="268" height="32" rx="8" />
+        <rect [class]="row === 1 || row === 3 ? 'onacc' : 'ln-fill'" x="58" [attr.y]="60 + row * 44" width="34" height="8" rx="4" />
+        <rect [class]="row === 1 || row === 3 ? 'onacc' : 'ln-fill'" x="108" [attr.y]="60 + row * 44" width="80" height="8" rx="4" />
+        <rect [class]="row === 1 || row === 3 ? 'onacc' : 'ln-fill'" x="204" [attr.y]="60 + row * 44" width="56" height="8" rx="4" />
+      }
+      <path class="line a-stroke" d="M328 92 C360 92 360 150 392 150 M328 180 C360 180 360 150 392 150" />
+      <rect class="ink" x="392" y="118" width="64" height="64" rx="18" />
+      <path class="a-stroke thick" d="m408 150 12 12 22-26" />
+      <rect class="ln" x="372" y="204" width="92" height="30" rx="15" />
+      <text class="mono" x="388" y="223">ALL-OR-NONE</text>
+    }
+    @case ('daily-report-automation') {
+      <!-- clock -> mail -> report -->
+      <circle class="ln" cx="96" cy="110" r="62" />
+      <circle class="soft" cx="96" cy="110" r="46" />
+      <path class="a-stroke thick" d="M96 110V76M96 110l24 14" />
+      <circle class="a" cx="96" cy="110" r="6" />
+      <text class="mono" x="62" y="206">17:30</text>
+      <path class="ln dash" d="M170 110H214" />
+      <rect class="ink" x="214" y="76" width="92" height="68" rx="12" />
+      <path class="ln" d="m220 86 40 30 40-30" />
+      <circle class="a dotpulse" cx="296" cy="84" r="7" style="--i: 0" />
+      <path class="ln dash" d="M306 110H340" />
+      <rect class="doc" x="340" y="40" width="116" height="152" rx="14" />
+      <rect class="a" x="356" y="58" width="42" height="10" rx="5" />
+      @for (row of [0, 1, 2, 3, 4]; track row) {
+        <rect class="ln-fill" x="356" [attr.y]="84 + row * 20" [attr.width]="row % 2 ? 62 : 84" height="7" rx="3.5" />
+      }
+      <rect class="ln" x="340" y="224" width="116" height="30" rx="15" />
+      <text class="mono" x="356" y="243">BY 21:00</text>
+    }
     @default {
       <circle class="a" cx="240" cy="150" r="40" />
     }
