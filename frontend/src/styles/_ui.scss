@@ -292,3 +292,14 @@ h3 em,
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* More tactile, expressive controls across the portfolio. */
+.btn, .icon-btn, .filter { -webkit-tap-highlight-color: transparent; }
+.btn:focus-visible, .icon-btn:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 4px;
+}
+@media (hover: hover) {
+  .icon-btn:hover { transform: translateY(-4px) rotate(-8deg); }
+  .btn--primary:hover { box-shadow: 0 0 0 4px var(--accent-soft), 0 16px 38px -14px rgba(214, 255, 63, .55); }
+}
